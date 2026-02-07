@@ -1,26 +1,38 @@
+import { getApps } from "firebase/app"
+
 // Utility function to verify Firebase configuration
 export function verifyFirebaseConfig() {
-  const config = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  }
+  try {
+    const apps = getApps()
+    if (apps.length === 0) {
+      return {
+        isValid: false,
+        message: "Firebase app is not initialized. Please check your Firebase configuration in lib/firebase.ts.",
+      }
+    }
 
-  const missingVars = Object.entries(config)
-    .filter(([_, value]) => !value)
-    .map(([key]) => key)
+    const app = apps[0]
+    const options = app.options
 
-  if (missingVars.length > 0) {
+    // Check for placeholder values
+    if (
+      !options.apiKey ||
+      options.apiKey === "YOUR_API_KEY" ||
+      !options.projectId ||
+      options.projectId === "YOUR_PROJECT_ID"
+    ) {
+      return {
+        isValid: false,
+        message:
+          "Firebase configuration contains placeholder values. Please update lib/firebase.ts with your actual Firebase project credentials.",
+      }
+    }
+
+    return { isValid: true }
+  } catch (error) {
     return {
       isValid: false,
-      missingVars,
-      message: `Missing Firebase configuration variables: ${missingVars.join(", ")}`,
+      message: "Error verifying Firebase configuration. Please check your setup.",
     }
   }
-
-  return { isValid: true }
 }
-

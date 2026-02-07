@@ -9,24 +9,19 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Dr Tooth Dental Clinic - Patient Appointment System",
   description: "Manage dental appointments efficiently",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
-// Make sure the AuthProvider is properly wrapping all content
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-background text-text`}>
+    <html lang="en" className="dark">
+      <body className={`${inter.className} antialiased`} suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )
 }
-
-
-
-import './globals.css'

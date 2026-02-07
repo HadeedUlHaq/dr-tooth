@@ -1,18 +1,25 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { getAppointment, updateAppointment, deleteAppointment, createAppointment } from "@/lib/appointmentService"
 import { collection, getDocs, query, where } from "firebase/firestore"
 import { db } from "@/lib/firebase"
-import type { Appointment, User } from "@/lib/types"
-import { Edit, Trash } from "lucide-react"
+import type { Appointment, AppointmentStatus, User } from "@/lib/types"
+import { Edit, Trash, Calendar, Clock, UserIcon, Phone, FileText, CheckCircle, XCircle, UserPlus, BadgeCheck } from "lucide-react"
 import Link from "next/link"
+import { useParams } from "next/navigation"
+import { DatePicker } from "@/components/ui/date-picker"
+import { TimePicker } from "@/components/ui/time-picker"
+import { searchPatients, createPatient } from "@/lib/patientService"
+import type { Patient } from "@/lib/types"
 
-export default function AppointmentDetail({ params }: { params: { id: string } }) {
+export default function AppointmentDetail() {
+  const params = useParams()
+  const id = params.id as string
+
   const { user, userData } = useAuth()
   const router = useRouter()
   const [appointment, setAppointment] = useState<Appointment | null>(null)
@@ -25,7 +32,7 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
   const [notes, setNotes] = useState("")
   const [doctorId, setDoctorId] = useState("")
   const [doctors, setDoctors] = useState<User[]>([])
-  const [status, setStatus] = useState<string>("")
+  const [status, setStatus] = useState<AppointmentStatus>("scheduled")
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState("")
@@ -35,11 +42,18 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
   const [followUpIsOnCall, setFollowUpIsOnCall] = useState(false)
   const [followUpNotes, setFollowUpNotes] = useState("")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [registeredPatient, setRegisteredPatient] = useState<Patient | null>(null)
+  const [showRegisterForm, setShowRegisterForm] = useState(false)
+  const [registerTreatment, setRegisterTreatment] = useState("Consultation")
+  const [registerAddress, setRegisterAddress] = useState("")
+  const [registerNotes, setRegisterNotes] = useState("")
+  const [registering, setRegistering] = useState(false)
+  const [checkingPatient, setCheckingPatient] = useState(true)
 
   useEffect(() => {
     const fetchAppointment = async () => {
       try {
-        const appointmentData = await getAppointment(params.id)
+        const appointmentData = await getAppointment(id)
         setAppointment(appointmentData)
 
         if (appointmentData) {
@@ -68,7 +82,7 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
 
         const doctorsList: User[] = []
         querySnapshot.forEach((doc) => {
-          doctorsList.push({ ...doc.data(), id: doc.id } as User)
+          doctorsList.push({ ...doc.data(), uid: doc.id } as User)
         })
 
         setDoctors(doctorsList)
@@ -77,9 +91,11 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
       }
     }
 
-    fetchAppointment()
-    fetchDoctors()
-  }, [params.id])
+    if (id) {
+      fetchAppointment()
+      fetchDoctors()
+    }
+  }, [id])
 
   useEffect(() => {
     if (isOnCall) {
@@ -93,8 +109,62 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
     }
   }, [followUpIsOnCall])
 
+  // Check if patient is registered in the directory
+  useEffect(() => {
+    const checkPatientRegistration = async () => {
+      if (!appointment?.patientName) {
+        setCheckingPatient(false)
+        return
+      }
+      try {
+        const results = await searchPatients(appointment.patientName)
+        const exactMatch = results.find(
+          (p) => p.name.toLowerCase() === appointment.patientName.toLowerCase()
+        )
+        setRegisteredPatient(exactMatch || null)
+      } catch (error) {
+        console.error("Error checking patient registration:", error)
+      } finally {
+        setCheckingPatient(false)
+      }
+    }
+
+    if (appointment) {
+      checkPatientRegistration()
+    }
+  }, [appointment])
+
+  const handleRegisterPatient = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!appointment) return
+
+    setRegistering(true)
+    try {
+      await createPatient({
+        name: appointment.patientName,
+        phone: appointment.patientPhone || "",
+        treatmentRequired: registerTreatment,
+        address: registerAddress,
+        notes: registerNotes,
+        createdBy: user?.uid || "",
+      })
+
+      // Re-check registration
+      const results = await searchPatients(appointment.patientName)
+      const exactMatch = results.find(
+        (p) => p.name.toLowerCase() === appointment.patientName.toLowerCase()
+      )
+      setRegisteredPatient(exactMatch || null)
+      setShowRegisterForm(false)
+    } catch (error: any) {
+      setError(error.message || "Failed to register patient")
+    } finally {
+      setRegistering(false)
+    }
+  }
+
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString + "T00:00:00")
     return date.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -120,17 +190,17 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
   const getStatusColor = (status: string) => {
     switch (status) {
       case "scheduled":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-500/15 text-blue-400"
       case "confirmed":
-        return "bg-green-100 text-green-800"
+        return "bg-green-500/15 text-green-400"
       case "completed":
-        return "bg-purple-100 text-purple-800"
+        return "bg-purple-500/15 text-purple-400"
       case "missed":
-        return "bg-red-100 text-red-800"
+        return "bg-red-500/15 text-red-400"
       case "cancelled":
-        return "bg-gray-100 text-gray-800"
+        return "bg-white/[0.05] text-[#8A8F98]"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-white/[0.05] text-[#8A8F98]"
     }
   }
 
@@ -158,17 +228,17 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
         patientPhone,
         date,
         time: isOnCall ? "on-call" : time,
-        doctorId: doctorId || null,
-        doctorName: selectedDoctor ? selectedDoctor.name : null,
+        doctorId: doctorId || undefined,
+        doctorName: selectedDoctor ? selectedDoctor.name : undefined,
         notes,
         status,
         updatedBy: user?.uid || "",
       }
 
-      await updateAppointment(params.id, appointmentData)
+      await updateAppointment(id, appointmentData)
 
       // Refresh appointment data
-      const updatedAppointment = await getAppointment(params.id)
+      const updatedAppointment = await getAppointment(id)
       setAppointment(updatedAppointment)
 
       setIsEditing(false)
@@ -179,17 +249,17 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
     }
   }
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = async (newStatus: AppointmentStatus) => {
     setUpdating(true)
 
     try {
-      await updateAppointment(params.id, {
+      await updateAppointment(id, {
         status: newStatus,
         updatedBy: user?.uid || "",
       })
 
       // Refresh appointment data
-      const updatedAppointment = await getAppointment(params.id)
+      const updatedAppointment = await getAppointment(id)
       setAppointment(updatedAppointment)
       setStatus(newStatus)
 
@@ -227,16 +297,16 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
         patientPhone: appointment?.patientPhone || "",
         date: followUpDate,
         time: followUpIsOnCall ? "on-call" : followUpTime,
-        doctorId: doctorId || null,
-        doctorName: selectedDoctor ? selectedDoctor.name : null,
+        doctorId: doctorId || undefined,
+        doctorName: selectedDoctor ? selectedDoctor.name : undefined,
         notes: followUpNotes,
-        status: "scheduled",
+        status: "scheduled" as const,
         isFollowUp: true,
-        previousAppointmentId: params.id,
+        previousAppointmentId: id,
         createdBy: user?.uid || "",
       }
 
-      await createAppointment(followUpData as any)
+      await createAppointment(followUpData)
       router.push("/dashboard/appointments")
     } catch (error: any) {
       setError(error.message || "Failed to create follow-up appointment")
@@ -249,7 +319,7 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
     setUpdating(true)
 
     try {
-      await deleteAppointment(params.id)
+      await deleteAppointment(id)
       router.push("/dashboard/appointments")
     } catch (error: any) {
       setError(error.message || "Failed to delete appointment")
@@ -260,7 +330,7 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -268,11 +338,11 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
   if (!appointment) {
     return (
       <div className="text-center py-8">
-        <h2 className="text-2xl font-semibold text-gray-900">Appointment Not Found</h2>
-        <p className="mt-2 text-gray-500">The appointment you're looking for doesn't exist or has been deleted.</p>
+        <h2 className="text-2xl font-semibold text-[#EDEDEF]">Appointment Not Found</h2>
+        <p className="mt-2 text-[#8A8F98]">The appointment you&apos;re looking for doesn&apos;t exist or has been deleted.</p>
         <Link
           href="/dashboard/appointments"
-          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90"
+          className="mt-4 inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
         >
           Back to Appointments
         </Link>
@@ -284,8 +354,8 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Appointment Details</h1>
-          <p className="mt-1 text-sm text-gray-500">View and manage appointment information</p>
+          <h1 className="text-2xl font-semibold text-[#EDEDEF]">Appointment Details</h1>
+          <p className="mt-1 text-sm text-[#8A8F98]">View and manage appointment information</p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-3">
           {!isEditing &&
@@ -293,7 +363,7 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  className="inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
@@ -301,7 +371,7 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
                 {(userData?.role === "receptionist" || userData?.role === "admin") && (
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="inline-flex items-center px-4 py-2 border border-error rounded-md shadow-sm text-sm font-medium text-white bg-error hover:bg-error/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error"
+                    className="inline-flex items-center px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors"
                   >
                     <Trash className="h-4 w-4 mr-2" />
                     Delete
@@ -312,26 +382,30 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
         </div>
       </div>
 
-      {error && <div className="bg-error/10 border border-error text-error px-4 py-3 rounded">{error}</div>}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
 
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium text-gray-900">Delete Appointment</h3>
-            <p className="mt-2 text-sm text-gray-500">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium text-[#EDEDEF]">Delete Appointment</h3>
+            <p className="mt-2 text-sm text-[#8A8F98]">
               Are you sure you want to delete this appointment? This action cannot be undone.
             </p>
             <div className="mt-4 flex justify-end space-x-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={updating}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-error hover:bg-error/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error disabled:opacity-50"
+                className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
                 {updating ? "Deleting..." : "Delete"}
               </button>
@@ -340,71 +414,70 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
         </div>
       )}
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
         {isEditing ? (
           <div className="px-4 py-5 sm:p-6">
             <form onSubmit={handleUpdate} className="space-y-6">
               <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 <div className="sm:col-span-3">
-                  <label htmlFor="patientName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="patientName" className="block text-sm font-medium text-[#8A8F98]">
                     Patient Name *
                   </label>
-                  <div className="mt-1">
+                  <div className="mt-1 relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <UserIcon className="h-5 w-5 text-gray-500" />
+                    </div>
                     <input
                       type="text"
                       id="patientName"
                       value={patientName}
                       onChange={(e) => setPatientName(e.target.value)}
-                      className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="patientPhone" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="patientPhone" className="block text-sm font-medium text-[#8A8F98]">
                     Patient Phone
                   </label>
-                  <div className="mt-1">
+                  <div className="mt-1 relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Phone className="h-5 w-5 text-gray-500" />
+                    </div>
                     <input
                       type="tel"
                       id="patientPhone"
                       value={patientPhone}
                       onChange={(e) => setPatientPhone(e.target.value)}
-                      className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
                     />
                   </div>
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="date" className="block text-sm font-medium text-[#8A8F98]">
                     Date *
                   </label>
                   <div className="mt-1">
-                    <input
-                      type="date"
-                      id="date"
+                    <DatePicker
                       value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      min={new Date().toISOString().split("T")[0]}
-                      className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
-                      required
+                      onChange={(val) => setDate(val)}
+                      minDate={new Date()}
                     />
                   </div>
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="time" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="time" className="block text-sm font-medium text-[#8A8F98]">
                     Time
                   </label>
                   <div className="mt-1">
-                    <input
-                      type="time"
-                      id="time"
+                    <TimePicker
                       value={time}
-                      onChange={(e) => setTime(e.target.value)}
+                      onChange={(val) => setTime(val)}
                       disabled={isOnCall}
-                      className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
                   <div className="mt-2">
@@ -414,9 +487,9 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
                         id="onCall"
                         checked={isOnCall}
                         onChange={(e) => setIsOnCall(e.target.checked)}
-                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                        className="h-4 w-4 text-[#5E6AD2] focus:ring-[#5E6AD2] border-white/10 rounded bg-[#0F0F12]"
                       />
-                      <label htmlFor="onCall" className="ml-2 block text-sm text-gray-900">
+                      <label htmlFor="onCall" className="ml-2 block text-sm text-[#EDEDEF]">
                         On Call (No specific time)
                       </label>
                     </div>
@@ -424,15 +497,18 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="status" className="block text-sm font-medium text-[#8A8F98]">
                     Status
                   </label>
-                  <div className="mt-1">
+                  <div className="mt-1 relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <CheckCircle className="h-5 w-5 text-gray-500" />
+                    </div>
                     <select
                       id="status"
                       value={status}
-                      onChange={(e) => setStatus(e.target.value)}
-                      className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                      onChange={(e) => setStatus(e.target.value as AppointmentStatus)}
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
                     >
                       <option value="scheduled">Scheduled</option>
                       <option value="confirmed">Confirmed</option>
@@ -444,15 +520,18 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="doctor" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="doctor" className="block text-sm font-medium text-[#8A8F98]">
                     Assign Doctor
                   </label>
-                  <div className="mt-1">
+                  <div className="mt-1 relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <UserIcon className="h-5 w-5 text-gray-500" />
+                    </div>
                     <select
                       id="doctor"
                       value={doctorId}
                       onChange={(e) => setDoctorId(e.target.value)}
-                      className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
                       disabled={userData?.role === "doctor"} // Disable if the user is a doctor
                     >
                       <option value="">Select a doctor</option>
@@ -466,16 +545,19 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
                 </div>
 
                 <div className="sm:col-span-6">
-                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="notes" className="block text-sm font-medium text-[#8A8F98]">
                     Notes
                   </label>
-                  <div className="mt-1">
+                  <div className="mt-1 relative">
+                    <div className="absolute top-3 left-3 flex items-start pointer-events-none">
+                      <FileText className="h-5 w-5 text-gray-500" />
+                    </div>
                     <textarea
                       id="notes"
                       rows={3}
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
                     />
                   </div>
                 </div>
@@ -485,14 +567,14 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="bg-gray-200 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2 px-4 text-sm font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updating}
-                  className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                  className="ml-3 inline-flex justify-center py-2 px-4 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50"
                 >
                   {updating ? "Saving..." : "Save Changes"}
                 </button>
@@ -502,45 +584,73 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
         ) : (
           <div className="px-4 py-5 sm:p-6">
             <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
-              <div>
-                <h3 className="text-lg font-medium leading-6 text-gray-900">Patient Information</h3>
-                <div className="mt-5 border-t border-gray-200">
-                  <dl className="divide-y divide-gray-200">
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
+                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
+                  <UserIcon className="h-5 w-5 mr-2 text-[#5E6AD2]" />
+                  Patient Information
+                </h3>
+                <div className="mt-5 border-t border-white/[0.06]">
+                  <dl className="divide-y divide-white/[0.06]">
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                      <dt className="text-sm font-medium text-gray-500">Name</dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{appointment.patientName}</dd>
+                      <dt className="text-sm font-medium text-[#8A8F98]">Name</dt>
+                      <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">{appointment.patientName}</dd>
                     </div>
                     {appointment.patientPhone && (
                       <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                        <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{appointment.patientPhone}</dd>
+                        <dt className="text-sm font-medium text-[#8A8F98]">Phone</dt>
+                        <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">{appointment.patientPhone}</dd>
                       </div>
                     )}
+                    <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                      <dt className="text-sm font-medium text-[#8A8F98]">Directory</dt>
+                      <dd className="mt-1 sm:mt-0 sm:col-span-2">
+                        {checkingPatient ? (
+                          <span className="text-xs text-[#8A8F98]">Checking...</span>
+                        ) : registeredPatient ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400">
+                            <BadgeCheck className="h-3.5 w-3.5" />
+                            Registered patient
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowRegisterForm(true)}
+                            className="inline-flex items-center gap-1.5 text-xs text-[#5E6AD2] hover:text-[#6872D9] transition-colors"
+                          >
+                            <UserPlus className="h-3.5 w-3.5" />
+                            Register this patient
+                          </button>
+                        )}
+                      </dd>
+                    </div>
                   </dl>
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-lg font-medium leading-6 text-gray-900">Appointment Details</h3>
-                <div className="mt-5 border-t border-gray-200">
-                  <dl className="divide-y divide-gray-200">
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
+                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
+                  <Calendar className="h-5 w-5 mr-2 text-[#5E6AD2]" />
+                  Appointment Details
+                </h3>
+                <div className="mt-5 border-t border-white/[0.06]">
+                  <dl className="divide-y divide-white/[0.06]">
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                      <dt className="text-sm font-medium text-gray-500">Date</dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      <dt className="text-sm font-medium text-[#8A8F98]">Date</dt>
+                      <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">
                         {formatDate(appointment.date)}
                       </dd>
                     </div>
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                      <dt className="text-sm font-medium text-gray-500">Time</dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      <dt className="text-sm font-medium text-[#8A8F98]">Time</dt>
+                      <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">
                         {formatTime(appointment.time)}
                       </dd>
                     </div>
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                      <dt className="text-sm font-medium text-gray-500">Status</dt>
+                      <dt className="text-sm font-medium text-[#8A8F98]">Status</dt>
                       <dd className="mt-1 sm:mt-0 sm:col-span-2">
                         <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                          className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
                             appointment.status,
                           )}`}
                         >
@@ -550,17 +660,17 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
                     </div>
                     {appointment.doctorName && (
                       <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                        <dt className="text-sm font-medium text-gray-500">Doctor</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        <dt className="text-sm font-medium text-[#8A8F98]">Doctor</dt>
+                        <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">
                           Dr. {appointment.doctorName}
                         </dd>
                       </div>
                     )}
                     {appointment.isFollowUp && (
                       <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                        <dt className="text-sm font-medium text-gray-500">Type</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-accent/20 text-accent">
+                        <dt className="text-sm font-medium text-[#8A8F98]">Type</dt>
+                        <dd className="mt-1 text-sm sm:mt-0 sm:col-span-2">
+                          <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-[#5E6AD2]/15 text-[#5E6AD2] border border-[#5E6AD2]/30">
                             Follow-up Appointment
                           </span>
                         </dd>
@@ -571,31 +681,126 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
               </div>
 
               {appointment.notes && (
-                <div className="sm:col-span-2">
-                  <h3 className="text-lg font-medium leading-6 text-gray-900">Notes</h3>
-                  <div className="mt-5 border-t border-gray-200 py-4">
-                    <p className="text-sm text-gray-900 whitespace-pre-line">{appointment.notes}</p>
+                <div className="sm:col-span-2 bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
+                  <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
+                    <FileText className="h-5 w-5 mr-2 text-[#5E6AD2]" />
+                    Notes
+                  </h3>
+                  <div className="mt-5 border-t border-white/[0.06] py-4">
+                    <p className="text-sm text-[#EDEDEF] whitespace-pre-line">{appointment.notes}</p>
                   </div>
                 </div>
               )}
             </div>
 
+            {showRegisterForm && !registeredPatient && (
+              <div className="mt-6 border-t border-white/[0.06] pt-6">
+                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
+                  <UserPlus className="h-5 w-5 mr-2 text-[#5E6AD2]" />
+                  Register Patient to Directory
+                </h3>
+                <p className="mt-1 text-sm text-[#8A8F98]">
+                  Add <strong className="text-[#EDEDEF]">{appointment.patientName}</strong> to the patient directory
+                </p>
+                <form onSubmit={handleRegisterPatient} className="mt-4 space-y-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-sm font-medium text-[#8A8F98]">Name</label>
+                      <div className="mt-1">
+                        <input
+                          type="text"
+                          value={appointment.patientName}
+                          disabled
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-400 block w-full text-sm px-3 py-2.5 opacity-60"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#8A8F98]">Phone</label>
+                      <div className="mt-1">
+                        <input
+                          type="text"
+                          value={appointment.patientPhone || ""}
+                          disabled
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-400 block w-full text-sm px-3 py-2.5 opacity-60"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#8A8F98]">Treatment Required</label>
+                      <div className="mt-1">
+                        <input
+                          type="text"
+                          value={registerTreatment}
+                          onChange={(e) => setRegisterTreatment(e.target.value)}
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                          placeholder="e.g. Consultation, Root Canal"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#8A8F98]">Address</label>
+                      <div className="mt-1">
+                        <input
+                          type="text"
+                          value={registerAddress}
+                          onChange={(e) => setRegisterAddress(e.target.value)}
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                          placeholder="Patient address"
+                        />
+                      </div>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-[#8A8F98]">Notes</label>
+                      <div className="mt-1">
+                        <textarea
+                          rows={2}
+                          value={registerNotes}
+                          onChange={(e) => setRegisterNotes(e.target.value)}
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                          placeholder="Additional notes about the patient"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowRegisterForm(false)}
+                      className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={registering}
+                      className="inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50"
+                    >
+                      {registering ? "Registering..." : "Register Patient"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
             {appointment.status === "scheduled" && (
-              <div className="mt-6 border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">Appointment Actions</h3>
+              <div className="mt-6 border-t border-white/[0.06] pt-6">
+                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF]">Appointment Actions</h3>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     onClick={() => handleStatusChange("confirmed")}
                     disabled={updating}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-success hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
+                    <CheckCircle className="h-4 w-4 mr-2" />
                     Confirm Appointment
                   </button>
                   <button
                     onClick={() => handleStatusChange("cancelled")}
                     disabled={updating}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-error hover:bg-error/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
+                    <XCircle className="h-4 w-4 mr-2" />
                     Cancel Appointment
                   </button>
                 </div>
@@ -603,21 +808,23 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
             )}
 
             {(appointment.status === "scheduled" || appointment.status === "confirmed") && (
-              <div className="mt-6 border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">Patient Attendance</h3>
+              <div className="mt-6 border-t border-white/[0.06] pt-6">
+                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF]">Patient Attendance</h3>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     onClick={() => handleStatusChange("completed")}
                     disabled={updating}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-success hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
+                    <CheckCircle className="h-4 w-4 mr-2" />
                     Patient Attended
                   </button>
                   <button
                     onClick={() => handleStatusChange("missed")}
                     disabled={updating}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-error hover:bg-error/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
+                    <XCircle className="h-4 w-4 mr-2" />
                     Patient Missed
                   </button>
                 </div>
@@ -625,16 +832,17 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
             )}
 
             {appointment.status === "missed" && (
-              <div className="mt-6 border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">Reschedule Missed Appointment</h3>
+              <div className="mt-6 border-t border-white/[0.06] pt-6">
+                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF]">Reschedule Missed Appointment</h3>
                 <div className="mt-4">
                   <Link
                     href={{
                       pathname: "/dashboard/appointments/new",
                       query: { patientName: appointment.patientName, patientPhone: appointment.patientPhone },
                     }}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    className="inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
                   >
+                    <Calendar className="h-4 w-4 mr-2" />
                     Reschedule Appointment
                   </Link>
                 </div>
@@ -645,44 +853,40 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
       </div>
 
       {showFollowUpForm && (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Schedule Follow-up Appointment</h3>
-            <div className="mt-2 max-w-xl text-sm text-gray-500">
+            <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
+              <Calendar className="h-5 w-5 mr-2 text-[#5E6AD2]" />
+              Schedule Follow-up Appointment
+            </h3>
+            <div className="mt-2 max-w-xl text-sm text-[#8A8F98]">
               <p>Create a follow-up appointment for this patient.</p>
             </div>
 
             <form onSubmit={handleCreateFollowUp} className="mt-5 space-y-6">
               <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 <div className="sm:col-span-3">
-                  <label htmlFor="followUpDate" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="followUpDate" className="block text-sm font-medium text-[#8A8F98]">
                     Follow-up Date *
                   </label>
                   <div className="mt-1">
-                    <input
-                      type="date"
-                      id="followUpDate"
+                    <DatePicker
                       value={followUpDate}
-                      onChange={(e) => setFollowUpDate(e.target.value)}
-                      min={new Date().toISOString().split("T")[0]}
-                      className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
-                      required
+                      onChange={(val) => setFollowUpDate(val)}
+                      minDate={new Date()}
                     />
                   </div>
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="followUpTime" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="followUpTime" className="block text-sm font-medium text-[#8A8F98]">
                     Follow-up Time
                   </label>
                   <div className="mt-1">
-                    <input
-                      type="time"
-                      id="followUpTime"
+                    <TimePicker
                       value={followUpTime}
-                      onChange={(e) => setFollowUpTime(e.target.value)}
+                      onChange={(val) => setFollowUpTime(val)}
                       disabled={followUpIsOnCall}
-                      className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
                   <div className="mt-2">
@@ -692,9 +896,9 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
                         id="followUpOnCall"
                         checked={followUpIsOnCall}
                         onChange={(e) => setFollowUpIsOnCall(e.target.checked)}
-                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                        className="h-4 w-4 text-[#5E6AD2] focus:ring-[#5E6AD2] border-white/10 rounded bg-[#0F0F12]"
                       />
-                      <label htmlFor="followUpOnCall" className="ml-2 block text-sm text-gray-900">
+                      <label htmlFor="followUpOnCall" className="ml-2 block text-sm text-[#EDEDEF]">
                         On Call (No specific time)
                       </label>
                     </div>
@@ -702,16 +906,19 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
                 </div>
 
                 <div className="sm:col-span-6">
-                  <label htmlFor="followUpNotes" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="followUpNotes" className="block text-sm font-medium text-[#8A8F98]">
                     Follow-up Notes
                   </label>
-                  <div className="mt-1">
+                  <div className="mt-1 relative">
+                    <div className="absolute top-3 left-3 flex items-start pointer-events-none">
+                      <FileText className="h-5 w-5 text-gray-500" />
+                    </div>
                     <textarea
                       id="followUpNotes"
                       rows={3}
                       value={followUpNotes}
                       onChange={(e) => setFollowUpNotes(e.target.value)}
-                      className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
                       placeholder="Reason for follow-up appointment"
                     />
                   </div>
@@ -722,14 +929,14 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
                 <button
                   type="button"
                   onClick={() => setShowFollowUpForm(false)}
-                  className="bg-gray-200 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2 px-4 text-sm font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updating}
-                  className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                  className="ml-3 inline-flex justify-center py-2 px-4 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50"
                 >
                   {updating ? "Scheduling..." : "Schedule Follow-up"}
                 </button>
@@ -741,4 +948,3 @@ export default function AppointmentDetail({ params }: { params: { id: string } }
     </div>
   )
 }
-

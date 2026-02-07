@@ -6,7 +6,6 @@ import {
   getTodayAppointments,
   getWeeklyAppointments,
   getMonthlyAppointments,
-  getDoctorAppointments,
 } from "@/lib/appointmentService"
 import type { Appointment } from "@/lib/types"
 import { Calendar, Clock, Search, User } from "lucide-react"
@@ -26,23 +25,19 @@ export default function AppointmentsList() {
       try {
         let fetchedAppointments: Appointment[] = []
 
-        if (userData?.role === "doctor") {
-          fetchedAppointments = await getDoctorAppointments(userData.uid)
-        } else {
-          switch (timeFilter) {
-            case "today":
-              fetchedAppointments = await getTodayAppointments()
-              break
-            case "week":
-              fetchedAppointments = await getWeeklyAppointments()
-              break
-            case "month":
-              fetchedAppointments = await getMonthlyAppointments()
-              break
-            default:
-              fetchedAppointments = await getMonthlyAppointments()
-              break
-          }
+        switch (timeFilter) {
+          case "today":
+            fetchedAppointments = await getTodayAppointments()
+            break
+          case "week":
+            fetchedAppointments = await getWeeklyAppointments()
+            break
+          case "month":
+            fetchedAppointments = await getMonthlyAppointments()
+            break
+          default:
+            fetchedAppointments = await getMonthlyAppointments()
+            break
         }
 
         setAppointments(fetchedAppointments)
@@ -54,12 +49,11 @@ export default function AppointmentsList() {
     }
 
     fetchAppointments()
-  }, [timeFilter, userData])
+  }, [timeFilter])
 
   useEffect(() => {
     let filtered = [...appointments]
 
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(
         (appointment) =>
@@ -68,7 +62,6 @@ export default function AppointmentsList() {
       )
     }
 
-    // Filter by status
     if (statusFilter !== "all") {
       filtered = filtered.filter((appointment) => appointment.status === statusFilter)
     }
@@ -77,17 +70,12 @@ export default function AppointmentsList() {
   }, [appointments, searchTerm, statusFilter])
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    })
+    const date = new Date(dateString + "T00:00:00")
+    return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
   }
 
   const formatTime = (time: string | "on-call") => {
     if (time === "on-call") return "On Call"
-
     try {
       const [hours, minutes] = time.split(":")
       const hour = Number.parseInt(hours)
@@ -101,25 +89,19 @@ export default function AppointmentsList() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "scheduled":
-        return "bg-blue-100 text-blue-800"
-      case "confirmed":
-        return "bg-green-100 text-green-800"
-      case "completed":
-        return "bg-purple-100 text-purple-800"
-      case "missed":
-        return "bg-red-100 text-red-800"
-      case "cancelled":
-        return "bg-gray-100 text-gray-800"
-      default:
-        return "bg-gray-100 text-gray-800"
+      case "scheduled": return "bg-blue-500/15 text-blue-400"
+      case "confirmed": return "bg-green-500/15 text-green-400"
+      case "completed": return "bg-purple-500/15 text-purple-400"
+      case "missed": return "bg-red-500/15 text-red-400"
+      case "cancelled": return "bg-white/[0.05] text-[#8A8F98]"
+      default: return "bg-white/[0.05] text-[#8A8F98]"
     }
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -128,14 +110,14 @@ export default function AppointmentsList() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Appointments</h1>
-          <p className="mt-1 text-sm text-gray-500">Manage all patient appointments</p>
+          <h1 className="text-2xl font-semibold text-[#EDEDEF] tracking-tight">Appointments</h1>
+          <p className="mt-1 text-sm text-[#8A8F98]">Manage all patient appointments</p>
         </div>
         {(userData?.role === "receptionist" || userData?.role === "doctor" || userData?.role === "admin") && (
           <div className="mt-4 sm:mt-0">
             <Link
               href="/dashboard/appointments/new"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/50 focus:ring-offset-2 focus:ring-offset-[#050506] transition-colors shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
             >
               New Appointment
             </Link>
@@ -143,24 +125,24 @@ export default function AppointmentsList() {
         )}
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative rounded-md shadow-sm max-w-xs w-full">
+      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/[0.06]">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="relative max-w-xs w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
+                <Search className="h-4 w-4 text-white/30" />
               </div>
               <input
                 type="text"
-                className="focus:ring-primary focus:border-primary block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                className="block w-full pl-10 pr-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
                 placeholder="Search patients..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="mt-3 sm:mt-0 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               <select
-                className="block w-full sm:w-auto pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+                className="block w-full sm:w-auto px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value as any)}
               >
@@ -170,7 +152,7 @@ export default function AppointmentsList() {
                 <option value="all">All Time</option>
               </select>
               <select
-                className="block w-full sm:w-auto pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+                className="block w-full sm:w-auto px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -186,48 +168,46 @@ export default function AppointmentsList() {
         </div>
         <div className="overflow-hidden">
           {filteredAppointments.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">No appointments found.</div>
+            <div className="text-center py-10 text-[#8A8F98] text-sm">No appointments found.</div>
           ) : (
-            <ul className="divide-y divide-gray-200">
+            <ul className="divide-y divide-white/[0.06]">
               {filteredAppointments.map((appointment) => (
                 <li key={appointment.id}>
-                  <Link href={`/dashboard/appointments/${appointment.id}`} className="block hover:bg-gray-50">
-                    <div className="px-4 py-4 sm:px-6">
+                  <Link href={`/dashboard/appointments/${appointment.id}`} className="block hover:bg-white/[0.03] transition-colors">
+                    <div className="px-5 py-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <User className="h-5 w-5 text-gray-400 mr-2" />
-                          <p className="text-sm font-medium text-primary truncate">{appointment.patientName}</p>
+                          <User className="h-4 w-4 text-white/40 mr-2" />
+                          <p className="text-sm font-medium text-[#5E6AD2] truncate">{appointment.patientName}</p>
                           {appointment.isFollowUp && (
-                            <span className="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-accent/20 text-accent">
+                            <span className="ml-2 px-2 py-0.5 inline-flex text-xs font-medium rounded-full bg-[#5E6AD2]/15 text-[#5E6AD2] border border-[#5E6AD2]/30">
                               Follow-up
                             </span>
                           )}
                         </div>
-                        <div className="ml-2 flex-shrink-0 flex">
-                          <p
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                              appointment.status,
-                            )}`}
+                        <div className="ml-2 flex-shrink-0">
+                          <span
+                            className={`px-2.5 py-0.5 inline-flex text-xs font-medium rounded-full ${getStatusColor(appointment.status)}`}
                           >
                             {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                          </p>
+                          </span>
                         </div>
                       </div>
                       <div className="mt-2 sm:flex sm:justify-between">
                         <div className="sm:flex">
-                          <p className="flex items-center text-sm text-gray-500">
-                            <Clock className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                          <p className="flex items-center text-sm text-[#8A8F98]">
+                            <Clock className="flex-shrink-0 mr-1.5 h-3.5 w-3.5 text-white/30" />
                             {formatTime(appointment.time)}
                           </p>
                           {appointment.doctorName && (
-                            <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                              <User className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                            <p className="mt-2 flex items-center text-sm text-[#8A8F98] sm:mt-0 sm:ml-6">
+                              <User className="flex-shrink-0 mr-1.5 h-3.5 w-3.5 text-white/30" />
                               Dr. {appointment.doctorName}
                             </p>
                           )}
                         </div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                          <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                        <div className="mt-2 flex items-center text-sm text-[#8A8F98] sm:mt-0">
+                          <Calendar className="flex-shrink-0 mr-1.5 h-3.5 w-3.5 text-white/30" />
                           <p>{formatDate(appointment.date)}</p>
                         </div>
                       </div>
@@ -242,4 +222,3 @@ export default function AppointmentsList() {
     </div>
   )
 }
-

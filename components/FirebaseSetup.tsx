@@ -32,34 +32,34 @@ export default function FirebaseSetup() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
-      <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold text-primary mb-4">Firebase Configuration Required</h2>
+    <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 p-4">
+      <div className="bg-[#0a0a0c] border border-white/[0.06] p-6 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)]">
+        <h2 className="text-2xl font-bold text-[#5E6AD2] mb-4">Firebase Configuration Required</h2>
 
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-          <p className="text-yellow-800">
+        <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <p className="text-amber-400 text-sm">
             Your Firebase configuration is not properly set up. You need to update the Firebase configuration in your
             project.
           </p>
         </div>
 
-        <button onClick={() => setShowInstructions(!showInstructions)} className="mb-4 text-primary underline">
+        <button onClick={() => setShowInstructions(!showInstructions)} className="mb-4 text-[#5E6AD2] hover:text-[#6872D9] underline transition-colors">
           {showInstructions ? "Hide Instructions" : "Show Setup Instructions"}
         </button>
 
         {showInstructions && (
           <div className="mb-6 space-y-4">
-            <h3 className="text-lg font-semibold">How to Set Up Firebase:</h3>
+            <h3 className="text-lg font-semibold text-[#EDEDEF]">How to Set Up Firebase:</h3>
 
             <div>
-              <h4 className="font-medium">1. Create a Firebase Project</h4>
-              <p className="text-sm text-gray-600 ml-4">
+              <h4 className="font-medium text-[#EDEDEF]">1. Create a Firebase Project</h4>
+              <p className="text-sm text-[#8A8F98] ml-4">
                 Go to the{" "}
                 <a
                   href="https://console.firebase.google.com/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary underline"
+                  className="text-[#5E6AD2] underline"
                 >
                   Firebase Console
                 </a>{" "}
@@ -68,34 +68,34 @@ export default function FirebaseSetup() {
             </div>
 
             <div>
-              <h4 className="font-medium">2. Enable Authentication</h4>
-              <p className="text-sm text-gray-600 ml-4">
+              <h4 className="font-medium text-[#EDEDEF]">2. Enable Authentication</h4>
+              <p className="text-sm text-[#8A8F98] ml-4">
                 In your Firebase project, go to Authentication and enable Email/Password authentication.
               </p>
             </div>
 
             <div>
-              <h4 className="font-medium">3. Create a Web App</h4>
-              <p className="text-sm text-gray-600 ml-4">
+              <h4 className="font-medium text-[#EDEDEF]">3. Create a Web App</h4>
+              <p className="text-sm text-[#8A8F98] ml-4">
                 In your Firebase project settings, add a new Web App and register it.
               </p>
             </div>
 
             <div>
-              <h4 className="font-medium">4. Get Your Firebase Configuration</h4>
-              <p className="text-sm text-gray-600 ml-4">
+              <h4 className="font-medium text-[#EDEDEF]">4. Get Your Firebase Configuration</h4>
+              <p className="text-sm text-[#8A8F98] ml-4">
                 After registering your app, Firebase will show you a configuration object. Copy this configuration.
               </p>
             </div>
 
             <div>
-              <h4 className="font-medium">5. Update Your Firebase Configuration</h4>
-              <p className="text-sm text-gray-600 ml-4">
-                Open the file <code className="bg-gray-100 px-1 py-0.5 rounded">lib/firebase.ts</code> in your project
-                and replace the <code className="bg-gray-100 px-1 py-0.5 rounded">FIREBASE_CONFIG_FALLBACK</code> object
+              <h4 className="font-medium text-[#EDEDEF]">5. Update Your Firebase Configuration</h4>
+              <p className="text-sm text-[#8A8F98] ml-4">
+                Open the file <code className="bg-white/[0.08] px-1 py-0.5 rounded text-[#EDEDEF]">lib/firebase.ts</code> in your project
+                and replace the <code className="bg-white/[0.08] px-1 py-0.5 rounded text-[#EDEDEF]">FIREBASE_CONFIG_FALLBACK</code> object
                 with your actual Firebase configuration.
               </p>
-              <pre className="bg-gray-100 p-2 rounded text-xs mt-2 overflow-x-auto">
+              <pre className="bg-white/[0.05] border border-white/[0.06] p-2 rounded-lg text-xs mt-2 overflow-x-auto text-[#EDEDEF]">
                 {`const FIREBASE_CONFIG_FALLBACK = {
   apiKey: "YOUR_ACTUAL_API_KEY",
   authDomain: "YOUR_ACTUAL_AUTH_DOMAIN",
@@ -108,12 +108,12 @@ export default function FirebaseSetup() {
             </div>
 
             <div>
-              <h4 className="font-medium">6. Set Up Environment Variables (Recommended)</h4>
-              <p className="text-sm text-gray-600 ml-4">
+              <h4 className="font-medium text-[#EDEDEF]">6. Set Up Environment Variables (Recommended)</h4>
+              <p className="text-sm text-[#8A8F98] ml-4">
                 For better security, set up environment variables in your Vercel project settings or in a{" "}
-                <code className="bg-gray-100 px-1 py-0.5 rounded">.env.local</code> file:
+                <code className="bg-white/[0.08] px-1 py-0.5 rounded text-[#EDEDEF]">.env.local</code> file:
               </p>
-              <pre className="bg-gray-100 p-2 rounded text-xs mt-2 overflow-x-auto">
+              <pre className="bg-white/[0.05] border border-white/[0.06] p-2 rounded-lg text-xs mt-2 overflow-x-auto text-[#EDEDEF]">
                 {`NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
@@ -128,7 +128,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id`}
         <div className="flex justify-end">
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+            className="px-4 py-2 bg-[#5E6AD2] text-white rounded-lg hover:bg-[#6872D9] shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] transition-colors font-medium text-sm"
           >
             Refresh Page
           </button>
@@ -137,4 +137,3 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id`}
     </div>
   )
 }
-

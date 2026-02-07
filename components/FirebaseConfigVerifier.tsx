@@ -17,15 +17,14 @@ export default function FirebaseConfigVerifier() {
   if (!configError) return null
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg max-w-md w-full">
-        <h2 className="text-xl font-bold text-error mb-4">Firebase Configuration Error</h2>
-        <p className="mb-4">{configError}</p>
-        <p className="text-sm text-gray-600">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+      <div className="bg-[#0a0a0c] border border-white/[0.06] p-6 rounded-2xl max-w-md w-full shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)]">
+        <h2 className="text-xl font-bold text-red-400 mb-4">Firebase Configuration Error</h2>
+        <p className="mb-4 text-[#EDEDEF] text-sm">{configError}</p>
+        <p className="text-sm text-[#8A8F98]">
           Please check your environment variables and make sure they are correctly set in your Vercel project settings.
         </p>
       </div>
     </div>
   )
 }
-

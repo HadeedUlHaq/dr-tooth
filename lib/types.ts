@@ -28,3 +28,15 @@ export interface Appointment {
   updatedBy?: string
 }
 
+export interface Patient {
+  id: string
+  name: string
+  phone: string
+  address?: string
+  treatmentRequired: string // default: "Consultation"
+  notes?: string
+  createdAt: string
+  createdBy: string
+  updatedAt?: string
+}
+

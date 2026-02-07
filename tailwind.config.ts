@@ -20,12 +20,10 @@ const config: Config = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          light: "#48CAE4", // Light Blue - Fresh & Clean
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
-          light: "#48CAE4", // Light Blue - Fresh & Clean
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -38,7 +36,6 @@ const config: Config = {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
-          DEFAULT: "#FFC107", // Yellow - Highlights & Warnings
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -49,13 +46,10 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
         success: {
-          DEFAULT: "#28A745", // Green - Confirmations
+          DEFAULT: "#22c55e",
         },
         error: {
-          DEFAULT: "#DC3545", // Red - Alerts & Missed Appointments
-        },
-        text: {
-          DEFAULT: "#212529", // Dark Gray - Readability
+          DEFAULT: "#ef4444",
         },
       },
       borderRadius: {
@@ -69,4 +63,3 @@ const config: Config = {
 }
 
 export default config
-
