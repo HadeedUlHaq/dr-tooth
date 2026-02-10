@@ -40,3 +40,12 @@ export interface Patient {
   updatedAt?: string
 }
 
+export interface ActivityLog {
+  id: string
+  type: "patient_added" | "patient_updated" | "patient_deleted" | "appointment_created" | "appointment_updated" | "appointment_status_changed" | "appointment_deleted"
+  message: string
+  actorName: string
+  actorId: string
+  createdAt: string
+}
+

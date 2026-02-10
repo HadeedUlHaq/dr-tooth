@@ -1,0 +1,176 @@
+"use client"
+
+import { useEffect, useState, useRef } from "react"
+import { Bell } from "lucide-react"
+import { subscribeToActivities } from "@/lib/activityService"
+import { showToast } from "@/components/ui/toast-notification"
+import type { ActivityLog } from "@/lib/types"
+
+function timeAgo(dateString: string): string {
+  const now = new Date()
+  const date = new Date(dateString)
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+  if (seconds < 60) return "just now"
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  return `${days}d ago`
+}
+
+function getTypeIcon(type: ActivityLog["type"]): string {
+  switch (type) {
+    case "patient_added":
+      return "👤"
+    case "patient_updated":
+    case "patient_deleted":
+      return "📋"
+    case "appointment_created":
+      return "📅"
+    case "appointment_updated":
+    case "appointment_status_changed":
+      return "🔄"
+    case "appointment_deleted":
+      return "🗑️"
+    default:
+      return "📌"
+  }
+}
+
+interface NotificationBellProps {
+  currentUserId?: string
+}
+
+export function NotificationBell({ currentUserId }: NotificationBellProps) {
+  const [activities, setActivities] = useState<ActivityLog[]>([])
+  const [isOpen, setIsOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [lastReadTimestamp, setLastReadTimestamp] = useState<string>("")
+  const panelRef = useRef<HTMLDivElement>(null)
+  const prevActivitiesRef = useRef<ActivityLog[]>([])
+  const isInitialLoad = useRef(true)
+
+  // Subscribe to activity log
+  useEffect(() => {
+    const unsubscribe = subscribeToActivities((newActivities) => {
+      // Show toast for new activities from OTHER users (not on initial load)
+      if (!isInitialLoad.current && prevActivitiesRef.current.length > 0) {
+        const prevIds = new Set(prevActivitiesRef.current.map((a) => a.id))
+        const brandNew = newActivities.filter(
+          (a) => !prevIds.has(a.id) && a.actorId !== currentUserId
+        )
+        brandNew.forEach((activity) => {
+          showToast(activity.message, "info")
+        })
+      }
+
+      isInitialLoad.current = false
+      prevActivitiesRef.current = newActivities
+      setActivities(newActivities)
+
+      // Calculate unread count
+      const stored = localStorage.getItem("lastReadNotification")
+      const lastRead = stored || ""
+      const unread = newActivities.filter(
+        (a) => a.createdAt > lastRead && a.actorId !== currentUserId
+      ).length
+      setUnreadCount(unread)
+      setLastReadTimestamp(lastRead)
+    })
+
+    return () => unsubscribe()
+  }, [currentUserId])
+
+  // Click outside to close
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [isOpen])
+
+  const handleToggle = () => {
+    const opening = !isOpen
+    setIsOpen(opening)
+
+    if (opening) {
+      // Mark all as read
+      const now = new Date().toISOString()
+      localStorage.setItem("lastReadNotification", now)
+      setUnreadCount(0)
+      setLastReadTimestamp(now)
+    }
+  }
+
+  return (
+    <div className="relative" ref={panelRef}>
+      {/* Bell Button */}
+      <button
+        onClick={handleToggle}
+        className="relative p-2 rounded-lg text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+      >
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {/* Dropdown Panel */}
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#0a0a0c] border border-white/[0.08] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] z-50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/[0.06]">
+            <h3 className="text-sm font-semibold text-[#EDEDEF]">Notifications</h3>
+          </div>
+
+          <div className="max-h-80 overflow-y-auto">
+            {activities.length === 0 ? (
+              <div className="px-4 py-8 text-center text-sm text-[#8A8F98]">
+                No new notifications.
+              </div>
+            ) : (
+              activities.map((activity) => {
+                const isUnread =
+                  activity.createdAt > lastReadTimestamp &&
+                  activity.actorId !== currentUserId
+                return (
+                  <div
+                    key={activity.id}
+                    className={`px-4 py-3 border-b border-white/[0.04] last:border-b-0 ${
+                      isUnread ? "bg-[#5E6AD2]/[0.04]" : ""
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-base mt-0.5 flex-shrink-0">
+                        {getTypeIcon(activity.type)}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-[#EDEDEF] leading-snug">
+                          {activity.message}
+                        </p>
+                        <p className="text-xs text-[#8A8F98] mt-1">
+                          {timeAgo(activity.createdAt)}
+                        </p>
+                      </div>
+                      {isUnread && (
+                        <span className="mt-1.5 h-2 w-2 rounded-full bg-[#5E6AD2] flex-shrink-0" />
+                      )}
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

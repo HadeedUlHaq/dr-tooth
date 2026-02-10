@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { getAppointment, updateAppointment, deleteAppointment, createAppointment } from "@/lib/appointmentService"
@@ -14,6 +14,7 @@ import { useParams } from "next/navigation"
 import { DatePicker } from "@/components/ui/date-picker"
 import { TimePicker } from "@/components/ui/time-picker"
 import { searchPatients, createPatient } from "@/lib/patientService"
+import { logActivity } from "@/lib/activityService"
 import type { Patient } from "@/lib/types"
 
 export default function AppointmentDetailClient() {
@@ -49,6 +50,19 @@ export default function AppointmentDetailClient() {
   const [registerNotes, setRegisterNotes] = useState("")
   const [registering, setRegistering] = useState(false)
   const [checkingPatient, setCheckingPatient] = useState(true)
+  const registerFormRef = useRef<HTMLDivElement>(null)
+  const registerTreatmentInputRef = useRef<HTMLInputElement>(null)
+
+  const handleShowRegisterForm = () => {
+    setShowRegisterForm(true)
+    // Wait for form to render, then scroll and focus
+    setTimeout(() => {
+      registerFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+      setTimeout(() => {
+        registerTreatmentInputRef.current?.focus()
+      }, 400)
+    }, 50)
+  }
 
   useEffect(() => {
     const fetchAppointment = async () => {
@@ -149,6 +163,13 @@ export default function AppointmentDetailClient() {
         createdBy: user?.uid || "",
       })
 
+      await logActivity({
+        type: "patient_added",
+        message: `${userData?.name || "Someone"} registered patient ${appointment.patientName} from appointment`,
+        actorName: userData?.name || "Unknown",
+        actorId: user?.uid || "",
+      })
+
       // Re-check registration
       const results = await searchPatients(appointment.patientName)
       const exactMatch = results.find(
@@ -236,6 +257,12 @@ export default function AppointmentDetailClient() {
       }
 
       await updateAppointment(id, appointmentData)
+      await logActivity({
+        type: "appointment_updated",
+        message: `${userData?.name || "Someone"} updated appointment for ${patientName}`,
+        actorName: userData?.name || "Unknown",
+        actorId: user?.uid || "",
+      })
 
       // Refresh appointment data
       const updatedAppointment = await getAppointment(id)
@@ -256,6 +283,12 @@ export default function AppointmentDetailClient() {
       await updateAppointment(id, {
         status: newStatus,
         updatedBy: user?.uid || "",
+      })
+      await logActivity({
+        type: "appointment_status_changed",
+        message: `${userData?.name || "Someone"} marked ${appointment?.patientName || "appointment"} as ${newStatus}`,
+        actorName: userData?.name || "Unknown",
+        actorId: user?.uid || "",
       })
 
       // Refresh appointment data
@@ -307,6 +340,12 @@ export default function AppointmentDetailClient() {
       }
 
       await createAppointment(followUpData)
+      await logActivity({
+        type: "appointment_created",
+        message: `${userData?.name || "Someone"} scheduled a follow-up for ${appointment?.patientName || "patient"}`,
+        actorName: userData?.name || "Unknown",
+        actorId: user?.uid || "",
+      })
       router.push("/dashboard/appointments")
     } catch (error: any) {
       setError(error.message || "Failed to create follow-up appointment")
@@ -319,6 +358,12 @@ export default function AppointmentDetailClient() {
     setUpdating(true)
 
     try {
+      await logActivity({
+        type: "appointment_deleted",
+        message: `${userData?.name || "Someone"} deleted appointment for ${appointment?.patientName || "patient"}`,
+        actorName: userData?.name || "Unknown",
+        actorId: user?.uid || "",
+      })
       await deleteAppointment(id)
       router.push("/dashboard/appointments")
     } catch (error: any) {
@@ -614,7 +659,7 @@ export default function AppointmentDetailClient() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => setShowRegisterForm(true)}
+                            onClick={handleShowRegisterForm}
                             className="inline-flex items-center gap-1.5 text-xs text-[#5E6AD2] hover:text-[#6872D9] transition-colors"
                           >
                             <UserPlus className="h-3.5 w-3.5" />
@@ -694,7 +739,7 @@ export default function AppointmentDetailClient() {
             </div>
 
             {showRegisterForm && !registeredPatient && (
-              <div className="mt-6 border-t border-white/[0.06] pt-6">
+              <div ref={registerFormRef} className="mt-6 border-t border-white/[0.06] pt-6">
                 <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
                   <UserPlus className="h-5 w-5 mr-2 text-[#5E6AD2]" />
                   Register Patient to Directory
@@ -711,7 +756,7 @@ export default function AppointmentDetailClient() {
                           type="text"
                           value={appointment.patientName}
                           disabled
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-400 block w-full text-sm px-3 py-2.5 opacity-60"
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-400 block w-full text-sm px-3 py-2.5 min-h-[44px] opacity-60"
                         />
                       </div>
                     </div>
@@ -722,7 +767,7 @@ export default function AppointmentDetailClient() {
                           type="text"
                           value={appointment.patientPhone || ""}
                           disabled
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-400 block w-full text-sm px-3 py-2.5 opacity-60"
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-400 block w-full text-sm px-3 py-2.5 min-h-[44px] opacity-60"
                         />
                       </div>
                     </div>
@@ -730,10 +775,11 @@ export default function AppointmentDetailClient() {
                       <label className="block text-sm font-medium text-[#8A8F98]">Treatment Required</label>
                       <div className="mt-1">
                         <input
+                          ref={registerTreatmentInputRef}
                           type="text"
                           value={registerTreatment}
                           onChange={(e) => setRegisterTreatment(e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
                           placeholder="e.g. Consultation, Root Canal"
                         />
                       </div>
@@ -745,7 +791,7 @@ export default function AppointmentDetailClient() {
                           type="text"
                           value={registerAddress}
                           onChange={(e) => setRegisterAddress(e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
                           placeholder="Patient address"
                         />
                       </div>
@@ -757,24 +803,24 @@ export default function AppointmentDetailClient() {
                           rows={2}
                           value={registerNotes}
                           onChange={(e) => setRegisterNotes(e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
                           placeholder="Additional notes about the patient"
                         />
                       </div>
                     </div>
                   </div>
-                  <div className="flex justify-end gap-3">
+                  <div className="flex flex-col sm:flex-row justify-end gap-3">
                     <button
                       type="button"
                       onClick={() => setShowRegisterForm(false)}
-                      className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+                      className="px-4 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors min-h-[44px]"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={registering}
-                      className="inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50"
+                      className="inline-flex items-center justify-center px-4 py-2.5 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50 min-h-[44px]"
                     >
                       {registering ? "Registering..." : "Register Patient"}
                     </button>

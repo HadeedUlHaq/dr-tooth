@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import {
   getTodayAppointments,
   getWeeklyAppointments,
   getMonthlyAppointments,
 } from "@/lib/appointmentService"
+import { subscribeToCollection } from "@/lib/activityService"
 import type { Appointment } from "@/lib/types"
 import { Calendar, Clock, Search, User } from "lucide-react"
 import Link from "next/link"
@@ -20,36 +21,44 @@ export default function AppointmentsList() {
   const [timeFilter, setTimeFilter] = useState<"today" | "week" | "month" | "all">("today")
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        let fetchedAppointments: Appointment[] = []
+  const fetchAppointments = useCallback(async () => {
+    try {
+      let fetchedAppointments: Appointment[] = []
 
-        switch (timeFilter) {
-          case "today":
-            fetchedAppointments = await getTodayAppointments()
-            break
-          case "week":
-            fetchedAppointments = await getWeeklyAppointments()
-            break
-          case "month":
-            fetchedAppointments = await getMonthlyAppointments()
-            break
-          default:
-            fetchedAppointments = await getMonthlyAppointments()
-            break
-        }
-
-        setAppointments(fetchedAppointments)
-      } catch (error) {
-        console.error("Error fetching appointments:", error)
-      } finally {
-        setLoading(false)
+      switch (timeFilter) {
+        case "today":
+          fetchedAppointments = await getTodayAppointments()
+          break
+        case "week":
+          fetchedAppointments = await getWeeklyAppointments()
+          break
+        case "month":
+          fetchedAppointments = await getMonthlyAppointments()
+          break
+        default:
+          fetchedAppointments = await getMonthlyAppointments()
+          break
       }
-    }
 
-    fetchAppointments()
+      setAppointments(fetchedAppointments)
+    } catch (error) {
+      console.error("Error fetching appointments:", error)
+    } finally {
+      setLoading(false)
+    }
   }, [timeFilter])
+
+  useEffect(() => {
+    fetchAppointments()
+  }, [fetchAppointments])
+
+  // Real-time sync: re-fetch when appointments collection changes
+  useEffect(() => {
+    const unsubscribe = subscribeToCollection("appointments", () => {
+      fetchAppointments()
+    })
+    return () => unsubscribe()
+  }, [fetchAppointments])
 
   useEffect(() => {
     let filtered = [...appointments]

@@ -13,6 +13,7 @@ import { AlertTriangle, CheckCircle } from "lucide-react"
 import { DatePicker } from "@/components/ui/date-picker"
 import { TimePicker } from "@/components/ui/time-picker"
 import { PatientSearch } from "@/components/ui/patient-search"
+import { logActivity } from "@/lib/activityService"
 import type { Patient } from "@/lib/types"
 
 export default function NewAppointment() {
@@ -154,6 +155,12 @@ export default function NewAppointment() {
       }
 
       await createAppointment(appointmentData)
+      await logActivity({
+        type: "appointment_created",
+        message: `${userData?.name || "Someone"} created an appointment for ${patientName}`,
+        actorName: userData?.name || "Unknown",
+        actorId: user?.uid || "",
+      })
       router.push("/dashboard/appointments")
     } catch (error: any) {
       setError(error.message || "Failed to create appointment")

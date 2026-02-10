@@ -13,6 +13,8 @@ import {
   sendConfirmationNotification,
   requestNotificationPermission,
 } from "@/lib/notificationService"
+import { NotificationBell } from "@/components/ui/notification-bell"
+import { ToastContainer } from "@/components/ui/toast-notification"
 
 export default function DashboardLayout({
   children,
@@ -111,7 +113,8 @@ export default function DashboardLayout({
                 <h1 className="text-lg font-semibold text-[#EDEDEF] tracking-tight">Dr Tooth Dental Clinic</h1>
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
+              <NotificationBell currentUserId={user?.uid} />
               <div className="hidden md:block">
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-[#8A8F98]">
@@ -271,6 +274,8 @@ export default function DashboardLayout({
           </main>
         </div>
       </div>
+
+      <ToastContainer />
     </div>
   )
 }
