@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { Bell } from "lucide-react"
-import { subscribeToActivities } from "@/lib/activityService"
+import { Bell, Trash2 } from "lucide-react"
+import { subscribeToActivities, deleteActivity, clearAllActivities } from "@/lib/activityService"
 import { showToast } from "@/components/ui/toast-notification"
 import type { ActivityLog } from "@/lib/types"
 
@@ -109,6 +109,15 @@ export function NotificationBell({ currentUserId }: NotificationBellProps) {
     }
   }
 
+  const handleDeleteOne = async (e: React.MouseEvent, activityId: string) => {
+    e.stopPropagation()
+    await deleteActivity(activityId)
+  }
+
+  const handleClearAll = async () => {
+    await clearAllActivities()
+  }
+
   return (
     <div className="relative" ref={panelRef}>
       {/* Bell Button */}
@@ -127,14 +136,23 @@ export function NotificationBell({ currentUserId }: NotificationBellProps) {
       {/* Dropdown Panel */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#0a0a0c] border border-white/[0.08] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] z-50 overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/[0.06]">
+          <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[#EDEDEF]">Notifications</h3>
+            {activities.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="flex items-center gap-1.5 text-xs text-[#8A8F98] hover:text-red-400 transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Clear All
+              </button>
+            )}
           </div>
 
           <div className="max-h-80 overflow-y-auto">
             {activities.length === 0 ? (
               <div className="px-4 py-8 text-center text-sm text-[#8A8F98]">
-                No new notifications.
+                No notifications.
               </div>
             ) : (
               activities.map((activity) => {
@@ -144,7 +162,7 @@ export function NotificationBell({ currentUserId }: NotificationBellProps) {
                 return (
                   <div
                     key={activity.id}
-                    className={`px-4 py-3 border-b border-white/[0.04] last:border-b-0 ${
+                    className={`group px-4 py-3 border-b border-white/[0.04] last:border-b-0 ${
                       isUnread ? "bg-[#5E6AD2]/[0.04]" : ""
                     }`}
                   >
@@ -160,9 +178,18 @@ export function NotificationBell({ currentUserId }: NotificationBellProps) {
                           {timeAgo(activity.createdAt)}
                         </p>
                       </div>
-                      {isUnread && (
-                        <span className="mt-1.5 h-2 w-2 rounded-full bg-[#5E6AD2] flex-shrink-0" />
-                      )}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {isUnread && (
+                          <span className="mt-1.5 h-2 w-2 rounded-full bg-[#5E6AD2]" />
+                        )}
+                        <button
+                          onClick={(e) => handleDeleteOne(e, activity.id)}
+                          className="mt-0.5 p-1 rounded text-white/0 group-hover:text-[#8A8F98] hover:!text-red-400 hover:bg-white/[0.05] transition-all"
+                          title="Remove notification"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )

@@ -1,6 +1,9 @@
 import {
   collection,
   addDoc,
+  deleteDoc,
+  doc,
+  getDocs,
   onSnapshot,
   query,
   orderBy,
@@ -51,6 +54,27 @@ export const subscribeToActivities = (
     })
     callback(activities)
   })
+}
+
+export const deleteActivity = async (activityId: string): Promise<void> => {
+  try {
+    await deleteDoc(doc(db, COLLECTION_NAME, activityId))
+  } catch (error) {
+    console.error("Error deleting activity:", error)
+  }
+}
+
+export const clearAllActivities = async (): Promise<void> => {
+  try {
+    const q = query(collection(db, COLLECTION_NAME))
+    const snapshot = await getDocs(q)
+    const deletePromises = snapshot.docs.map((docSnap) =>
+      deleteDoc(doc(db, COLLECTION_NAME, docSnap.id))
+    )
+    await Promise.all(deletePromises)
+  } catch (error) {
+    console.error("Error clearing activities:", error)
+  }
 }
 
 // Subscribe to real-time changes on a Firestore collection

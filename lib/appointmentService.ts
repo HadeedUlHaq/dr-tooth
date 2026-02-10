@@ -8,6 +8,7 @@ import {
   getDocs,
   query,
   where,
+  orderBy,
   serverTimestamp,
 } from "firebase/firestore"
 import { db } from "./firebase"
@@ -203,6 +204,38 @@ export const getMonthlyAppointments = async (): Promise<Appointment[]> => {
     })
   } catch (error) {
     console.error("Error getting monthly appointments:", error)
+    throw error
+  }
+}
+
+export const getAllAppointments = async (): Promise<Appointment[]> => {
+  try {
+    const appointmentsRef = collection(db, COLLECTION_NAME)
+    const q = query(appointmentsRef, orderBy("date", "desc"))
+
+    const querySnapshot = await getDocs(q)
+    const appointments: Appointment[] = []
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data()
+      appointments.push({
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+        updatedAt: data.updatedAt?.toDate().toISOString(),
+      } as Appointment)
+    })
+
+    // Sort by date desc, then time
+    return appointments.sort((a, b) => {
+      const dateComparison = b.date.localeCompare(a.date)
+      if (dateComparison !== 0) return dateComparison
+      if (a.time === "on-call") return 1
+      if (b.time === "on-call") return -1
+      return a.time.localeCompare(b.time)
+    })
+  } catch (error) {
+    console.error("Error getting all appointments:", error)
     throw error
   }
 }
