@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
-      "Bash(del \"C:\\\\Users\\\\User\\\\Downloads\\\\dental-clinic\\\\pnpm-lock.yaml\")"
+      "Bash(del \"C:\\\\Users\\\\User\\\\Downloads\\\\dental-clinic\\\\pnpm-lock.yaml\")",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }
