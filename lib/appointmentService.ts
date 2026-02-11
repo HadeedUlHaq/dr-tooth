@@ -16,6 +16,16 @@ import type { Appointment } from "./types"
 
 const COLLECTION_NAME = "appointments"
 
+// Format a Date as YYYY-MM-DD in the user's LOCAL timezone (not UTC).
+// Using toISOString().split("T")[0] converts to UTC first, which shifts
+// the date backwards for timezones ahead of UTC (e.g. PKT = UTC+5).
+const toLocalDateString = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
 export const createAppointment = async (appointmentData: Omit<Appointment, "id" | "createdAt">): Promise<string> => {
   try {
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
@@ -79,7 +89,7 @@ export const getTodayAppointments = async (): Promise<Appointment[]> => {
   try {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const todayStr = today.toISOString().split("T")[0]
+    const todayStr = toLocalDateString(today)
 
     const appointmentsRef = collection(db, COLLECTION_NAME)
     // Simplified query - only filter by date without ordering
@@ -121,11 +131,11 @@ export const getWeeklyAppointments = async (): Promise<Appointment[]> => {
   try {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const todayStr = today.toISOString().split("T")[0]
+    const todayStr = toLocalDateString(today)
 
     const nextWeek = new Date(today)
     nextWeek.setDate(nextWeek.getDate() + 7)
-    const nextWeekStr = nextWeek.toISOString().split("T")[0]
+    const nextWeekStr = toLocalDateString(nextWeek)
 
     const appointmentsRef = collection(db, COLLECTION_NAME)
     // Use a simpler query that doesn't require a composite index
@@ -167,11 +177,11 @@ export const getMonthlyAppointments = async (): Promise<Appointment[]> => {
   try {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const todayStr = today.toISOString().split("T")[0]
+    const todayStr = toLocalDateString(today)
 
     const nextMonth = new Date(today)
     nextMonth.setMonth(nextMonth.getMonth() + 1)
-    const nextMonthStr = nextMonth.toISOString().split("T")[0]
+    const nextMonthStr = toLocalDateString(nextMonth)
 
     const appointmentsRef = collection(db, COLLECTION_NAME)
     // Use a simpler query that doesn't require a composite index
@@ -282,7 +292,7 @@ export const checkOverlappingAppointments = async (
 export const getUpcomingAppointments = async (minutesThreshold: number): Promise<Appointment[]> => {
   try {
     const now = new Date()
-    const today = now.toISOString().split("T")[0]
+    const today = toLocalDateString(now)
 
     const appointmentsRef = collection(db, COLLECTION_NAME)
     const q = query(appointmentsRef, where("date", "==", today), where("status", "in", ["scheduled", "confirmed"]))
@@ -318,7 +328,7 @@ export const getUpcomingAppointments = async (minutesThreshold: number): Promise
 export const getAppointmentsNeedingConfirmation = async (): Promise<Appointment[]> => {
   try {
     const now = new Date()
-    const today = now.toISOString().split("T")[0]
+    const today = toLocalDateString(now)
 
     const appointmentsRef = collection(db, COLLECTION_NAME)
     const q = query(appointmentsRef, where("date", "==", today), where("status", "==", "scheduled"))
