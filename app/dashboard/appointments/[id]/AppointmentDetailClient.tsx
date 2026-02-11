@@ -15,6 +15,8 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { TimePicker } from "@/components/ui/time-picker"
 import { searchPatients, createPatient } from "@/lib/patientService"
 import { logActivity } from "@/lib/activityService"
+import { PhoneInput } from "@/components/ui/phone-input"
+import { CallButton } from "@/components/ui/call-button"
 import type { Patient } from "@/lib/types"
 
 export default function AppointmentDetailClient() {
@@ -487,16 +489,11 @@ export default function AppointmentDetailClient() {
                   <label htmlFor="patientPhone" className="block text-sm font-medium text-[#8A8F98]">
                     Patient Phone
                   </label>
-                  <div className="mt-1 relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Phone className="h-5 w-5 text-gray-500" />
-                    </div>
-                    <input
-                      type="tel"
+                  <div className="mt-1">
+                    <PhoneInput
                       id="patientPhone"
                       value={patientPhone}
-                      onChange={(e) => setPatientPhone(e.target.value)}
-                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                      onChange={setPatientPhone}
                     />
                   </div>
                 </div>
@@ -643,7 +640,12 @@ export default function AppointmentDetailClient() {
                     {appointment.patientPhone && (
                       <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
                         <dt className="text-sm font-medium text-[#8A8F98]">Phone</dt>
-                        <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">{appointment.patientPhone}</dd>
+                        <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">
+                          <div className="flex items-center gap-3">
+                            <span>{appointment.patientPhone}</span>
+                            <CallButton phone={appointment.patientPhone} size="md" />
+                          </div>
+                        </dd>
                       </div>
                     )}
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">

@@ -20,7 +20,13 @@ import {
   ChevronDown,
   ChevronUp,
   Check,
+  Upload,
+  FileSpreadsheet,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react"
+import { PhoneInput } from "@/components/ui/phone-input"
+import { CallButton } from "@/components/ui/call-button"
 
 export default function PatientsPage() {
   const { user, userData } = useAuth()
@@ -48,6 +54,142 @@ export default function PatientsPage() {
 
   // Delete
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
+
+  // Import
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importRows, setImportRows] = useState<{ name: string; phone: string }[]>([])
+  const [importLoading, setImportLoading] = useState(false)
+  const [importResult, setImportResult] = useState<{ success: number; skipped: number } | null>(null)
+  const [importError, setImportError] = useState("")
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setImportError("")
+    setImportResult(null)
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const text = event.target?.result as string
+      if (!text) {
+        setImportError("Could not read file")
+        return
+      }
+
+      const lines = text.split(/\r?\n/).filter((line) => line.trim())
+      if (lines.length < 2) {
+        setImportError("File appears empty or has no data rows")
+        return
+      }
+
+      // Detect delimiter: tab, comma, or semicolon
+      const headerLine = lines[0]
+      let delimiter = "\t"
+      if (!headerLine.includes("\t")) {
+        delimiter = headerLine.includes(",") ? "," : ";"
+      }
+
+      // Parse header to find name and phone columns
+      const headers = headerLine.split(delimiter).map((h) => h.trim().toLowerCase().replace(/['"]/g, ""))
+      const nameIdx = headers.findIndex((h) =>
+        h === "name" || h === "patient name" || h === "full name" || h === "patient"
+      )
+      const phoneIdx = headers.findIndex((h) =>
+        h === "phone" || h === "phone number" || h === "phonenumber" || h === "mobile" || h === "contact"
+      )
+
+      if (nameIdx === -1 || phoneIdx === -1) {
+        setImportError(
+          `Could not find required columns. Found: "${headers.join('", "')}". Need a "Name" column and a "Phone Number" column.`
+        )
+        return
+      }
+
+      // Parse data rows
+      const rows: { name: string; phone: string }[] = []
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(delimiter).map((c) => c.trim().replace(/^["']|["']$/g, ""))
+        const name = cols[nameIdx]?.trim()
+        const phone = cols[phoneIdx]?.trim()
+        if (name && phone) {
+          rows.push({ name, phone })
+        }
+      }
+
+      if (rows.length === 0) {
+        setImportError("No valid rows found. Each row needs a name and phone number.")
+        return
+      }
+
+      setImportRows(rows)
+    }
+
+    reader.onerror = () => {
+      setImportError("Failed to read file")
+    }
+
+    reader.readAsText(file)
+    // Reset file input so the same file can be re-selected
+    e.target.value = ""
+  }
+
+  const handleImportConfirm = async () => {
+    if (importRows.length === 0) return
+
+    setImportLoading(true)
+    setImportError("")
+    setImportResult(null)
+
+    let success = 0
+    let skipped = 0
+
+    // Get existing patient phones to avoid duplicates
+    const existingPhones = new Set(patients.map((p) => p.phone.replace(/\s+/g, "")))
+
+    for (const row of importRows) {
+      const normalizedPhone = row.phone.replace(/\s+/g, "")
+      if (existingPhones.has(normalizedPhone)) {
+        skipped++
+        continue
+      }
+
+      try {
+        await createPatient({
+          name: row.name,
+          phone: row.phone,
+          treatmentRequired: "Consultation",
+          createdBy: user?.uid || "",
+        })
+        existingPhones.add(normalizedPhone)
+        success++
+      } catch (error) {
+        console.error(`Failed to import ${row.name}:`, error)
+        skipped++
+      }
+    }
+
+    if (success > 0) {
+      await logActivity({
+        type: "patient_added",
+        message: `${userData?.name || "Someone"} imported ${success} patient${success !== 1 ? "s" : ""} from spreadsheet`,
+        actorName: userData?.name || "Unknown",
+        actorId: user?.uid || "",
+      })
+    }
+
+    setImportResult({ success, skipped })
+    setImportRows([])
+    await fetchPatients()
+    setImportLoading(false)
+  }
+
+  const handleCloseImportModal = () => {
+    setShowImportModal(false)
+    setImportRows([])
+    setImportResult(null)
+    setImportError("")
+  }
 
   useEffect(() => {
     fetchPatients()
@@ -196,7 +338,14 @@ export default function PatientsPage() {
             Register and manage patients
           </p>
         </div>
-        <div className="mt-4 sm:mt-0">
+        <div className="mt-4 sm:mt-0 flex gap-2">
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="inline-flex items-center px-4 py-2.5 rounded-lg text-sm font-medium text-[#EDEDEF] bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.06] transition-colors"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Import
+          </button>
           <button
             onClick={() => setShowForm(!showForm)}
             className="inline-flex items-center px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/50 focus:ring-offset-2 focus:ring-offset-[#050506] transition-colors shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
@@ -249,12 +398,10 @@ export default function PatientsPage() {
                   <label className="block text-sm font-medium text-[#8A8F98] mb-1">
                     Phone Number *
                   </label>
-                  <input
-                    type="tel"
+                  <PhoneInput
                     value={formPhone}
-                    onChange={(e) => setFormPhone(e.target.value)}
-                    className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
-                    placeholder="Phone number"
+                    onChange={setFormPhone}
+                    placeholder="302 2726035"
                     required
                   />
                 </div>
@@ -393,15 +540,16 @@ export default function PatientsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {editingPatient?.id === patient.id ? (
-                        <input
-                          type="tel"
+                        <PhoneInput
                           value={editPhone}
-                          onChange={(e) => setEditPhone(e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                          onChange={setEditPhone}
                         />
                       ) : (
-                        <div className="text-sm text-[#8A8F98]">
-                          {patient.phone}
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-[#8A8F98]">
+                            {patient.phone}
+                          </span>
+                          <CallButton phone={patient.phone} size="sm" />
                         </div>
                       )}
                     </td>
@@ -503,11 +651,9 @@ export default function PatientsPage() {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-[#8A8F98] mb-1">Phone</label>
-                      <input
-                        type="tel"
+                      <PhoneInput
                         value={editPhone}
-                        onChange={(e) => setEditPhone(e.target.value)}
-                        className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                        onChange={setEditPhone}
                       />
                     </div>
                     <div>
@@ -556,8 +702,11 @@ export default function PatientsPage() {
                           <div className="text-sm font-medium text-[#EDEDEF] truncate">
                             {patient.name}
                           </div>
-                          <div className="text-xs text-[#8A8F98] mt-0.5">
-                            {patient.phone}
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-[#8A8F98]">
+                              {patient.phone}
+                            </span>
+                            <CallButton phone={patient.phone} size="sm" />
                           </div>
                         </div>
                       </div>
@@ -627,6 +776,159 @@ export default function PatientsPage() {
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 rounded-xl p-2.5">
+                  <FileSpreadsheet className="h-5 w-5 text-[#5E6AD2]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-[#EDEDEF]">Import Patients</h3>
+                  <p className="text-xs text-[#8A8F98]">From CSV or Google Sheets export</p>
+                </div>
+              </div>
+              <button
+                onClick={handleCloseImportModal}
+                className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Success Result */}
+            {importResult && (
+              <div className="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg px-4 py-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                  <span>
+                    Imported <strong>{importResult.success}</strong> patient{importResult.success !== 1 ? "s" : ""} successfully.
+                    {importResult.skipped > 0 && (
+                      <> Skipped <strong>{importResult.skipped}</strong> (duplicates or errors).</>
+                    )}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Error */}
+            {importError && (
+              <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg px-4 py-3 text-sm">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <span>{importError}</span>
+                </div>
+              </div>
+            )}
+
+            {/* File picker — show when no rows parsed and no result */}
+            {importRows.length === 0 && !importResult && (
+              <div className="flex-1">
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/[0.1] hover:border-[#5E6AD2]/40 rounded-xl p-8 cursor-pointer transition-colors group">
+                  <Upload className="h-10 w-10 text-[#8A8F98] group-hover:text-[#5E6AD2] transition-colors mb-3" />
+                  <span className="text-sm font-medium text-[#EDEDEF]">
+                    Choose a file or drag it here
+                  </span>
+                  <span className="text-xs text-[#8A8F98] mt-1">
+                    CSV, TSV, or TXT with Name &amp; Phone Number columns
+                  </span>
+                  <input
+                    type="file"
+                    accept=".csv,.tsv,.txt,.xls,.xlsx"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                </label>
+                <div className="mt-4 bg-white/[0.03] border border-white/[0.06] rounded-lg p-3">
+                  <p className="text-xs text-[#8A8F98] font-medium mb-1.5">Expected format:</p>
+                  <div className="font-mono text-xs text-[#EDEDEF]/60 space-y-0.5">
+                    <p>Name, Phone Number</p>
+                    <p>Misses Arshad, +92 315 5658886</p>
+                    <p>Asim, +92 300 0453332</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Preview table — show when rows are parsed */}
+            {importRows.length > 0 && (
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <p className="text-sm text-[#8A8F98] mb-3">
+                  Found <strong className="text-[#EDEDEF]">{importRows.length}</strong> contact{importRows.length !== 1 ? "s" : ""}. Review and confirm:
+                </p>
+                <div className="overflow-y-auto flex-1 border border-white/[0.06] rounded-lg">
+                  <table className="min-w-full divide-y divide-white/[0.06]">
+                    <thead className="bg-white/[0.03] sticky top-0">
+                      <tr>
+                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                          #
+                        </th>
+                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                          Phone
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.06]">
+                      {importRows.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-white/[0.03]">
+                          <td className="px-4 py-2 text-xs text-[#8A8F98]">{idx + 1}</td>
+                          <td className="px-4 py-2 text-sm text-[#EDEDEF]">{row.name}</td>
+                          <td className="px-4 py-2 text-sm text-[#8A8F98]">{row.phone}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-end gap-3 mt-4 pt-4 border-t border-white/[0.06]">
+                  <button
+                    onClick={() => { setImportRows([]); setImportError("") }}
+                    className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
+                  >
+                    Choose Different File
+                  </button>
+                  <button
+                    onClick={handleImportConfirm}
+                    disabled={importLoading}
+                    className="inline-flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] disabled:opacity-50 min-h-[44px] transition-colors"
+                  >
+                    {importLoading ? (
+                      <>
+                        <span className="inline-block h-4 w-4 border-2 border-white/40 border-t-transparent rounded-full animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        Import {importRows.length} Patient{importRows.length !== 1 ? "s" : ""}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Close button after result */}
+            {importResult && importRows.length === 0 && (
+              <div className="flex justify-end mt-4 pt-4 border-t border-white/[0.06]">
+                <button
+                  onClick={handleCloseImportModal}
+                  className="inline-flex items-center py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] min-h-[44px] transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

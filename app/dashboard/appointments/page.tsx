@@ -10,6 +10,7 @@ import {
 import { subscribeToCollection } from "@/lib/activityService"
 import type { Appointment } from "@/lib/types"
 import { Calendar, Clock, Search, User } from "lucide-react"
+import { CallButton } from "@/components/ui/call-button"
 import Link from "next/link"
 
 export default function AppointmentsList() {
@@ -185,11 +186,14 @@ export default function AppointmentsList() {
                   <Link href={`/dashboard/appointments/${appointment.id}`} className="block hover:bg-white/[0.03] transition-colors">
                     <div className="px-5 py-4">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 text-white/40 mr-2" />
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-white/40" />
                           <p className="text-sm font-medium text-[#5E6AD2] truncate">{appointment.patientName}</p>
+                          {appointment.patientPhone && (
+                            <CallButton phone={appointment.patientPhone} size="sm" />
+                          )}
                           {appointment.isFollowUp && (
-                            <span className="ml-2 px-2 py-0.5 inline-flex text-xs font-medium rounded-full bg-[#5E6AD2]/15 text-[#5E6AD2] border border-[#5E6AD2]/30">
+                            <span className="px-2 py-0.5 inline-flex text-xs font-medium rounded-full bg-[#5E6AD2]/15 text-[#5E6AD2] border border-[#5E6AD2]/30">
                               Follow-up
                             </span>
                           )}

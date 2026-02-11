@@ -10,6 +10,7 @@ import { collection, getDocs, query, where } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import type { User } from "@/lib/types"
 import { AlertTriangle, CheckCircle } from "lucide-react"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { DatePicker } from "@/components/ui/date-picker"
 import { TimePicker } from "@/components/ui/time-picker"
 import { PatientSearch } from "@/components/ui/patient-search"
@@ -228,12 +229,10 @@ export default function NewAppointment() {
                     Patient Phone
                   </label>
                   <div className="mt-1">
-                    <input
-                      type="tel"
+                    <PhoneInput
                       id="patientPhone"
                       value={patientPhone}
-                      onChange={(e) => setPatientPhone(e.target.value)}
-                      className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                      onChange={setPatientPhone}
                     />
                   </div>
                 </div>
