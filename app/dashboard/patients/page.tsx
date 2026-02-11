@@ -19,12 +19,18 @@ import {
   User,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Check,
   Upload,
   FileSpreadsheet,
   AlertCircle,
   CheckCircle2,
+  Lock,
 } from "lucide-react"
+
+const IMPORT_PASSCODE = "Systems@@123456789"
+const PATIENTS_PER_PAGE = 20
 import { PhoneInput } from "@/components/ui/phone-input"
 import { CallButton } from "@/components/ui/call-button"
 
@@ -34,6 +40,7 @@ export default function PatientsPage() {
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Quick add form
   const [showForm, setShowForm] = useState(false)
@@ -61,6 +68,9 @@ export default function PatientsPage() {
   const [importLoading, setImportLoading] = useState(false)
   const [importResult, setImportResult] = useState<{ success: number; skipped: number } | null>(null)
   const [importError, setImportError] = useState("")
+  const [importPasscode, setImportPasscode] = useState("")
+  const [importUnlocked, setImportUnlocked] = useState(false)
+  const [importPasscodeError, setImportPasscodeError] = useState("")
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -189,6 +199,19 @@ export default function PatientsPage() {
     setImportRows([])
     setImportResult(null)
     setImportError("")
+    setImportPasscode("")
+    setImportUnlocked(false)
+    setImportPasscodeError("")
+  }
+
+  const handleImportPasscode = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (importPasscode === IMPORT_PASSCODE) {
+      setImportUnlocked(true)
+      setImportPasscodeError("")
+    } else {
+      setImportPasscodeError("Invalid passcode. Contact your administrator.")
+    }
   }
 
   useEffect(() => {
@@ -218,7 +241,15 @@ export default function PatientsPage() {
     } else {
       setFilteredPatients(patients)
     }
+    setCurrentPage(1)
   }, [patients, searchTerm])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredPatients.length / PATIENTS_PER_PAGE)
+  const paginatedPatients = filteredPatients.slice(
+    (currentPage - 1) * PATIENTS_PER_PAGE,
+    currentPage * PATIENTS_PER_PAGE
+  )
 
   const fetchPatients = async () => {
     try {
@@ -500,7 +531,7 @@ export default function PatientsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.06]">
-              {filteredPatients.length === 0 ? (
+              {paginatedPatients.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
@@ -512,7 +543,7 @@ export default function PatientsPage() {
                   </td>
                 </tr>
               ) : (
-                filteredPatients.map((patient) => (
+                paginatedPatients.map((patient) => (
                   <tr
                     key={patient.id}
                     className="hover:bg-white/[0.03] transition-colors"
@@ -625,14 +656,14 @@ export default function PatientsPage() {
 
         {/* Mobile Cards (hidden on desktop) */}
         <div className="sm:hidden divide-y divide-white/[0.06]">
-          {filteredPatients.length === 0 ? (
+          {paginatedPatients.length === 0 ? (
             <div className="px-4 py-10 text-center text-sm text-[#8A8F98]">
               {searchTerm
                 ? "No patients match your search."
                 : "No patients registered yet. Tap \"Add Patient\" to get started."}
             </div>
           ) : (
-            filteredPatients.map((patient) => (
+            paginatedPatients.map((patient) => (
               <div
                 key={patient.id}
                 className="p-4 hover:bg-white/[0.03] transition-colors"
@@ -744,10 +775,45 @@ export default function PatientsPage() {
           )}
         </div>
 
-        {/* Patient count */}
-        <div className="px-4 sm:px-5 py-3 border-t border-white/[0.06] text-xs text-[#8A8F98]">
-          {filteredPatients.length} patient{filteredPatients.length !== 1 ? "s" : ""}
-          {searchTerm && ` matching "${searchTerm}"`}
+        {/* Patient count + Pagination */}
+        <div className="px-4 sm:px-5 py-3 border-t border-white/[0.06] flex items-center justify-between">
+          <span className="text-xs text-[#8A8F98]">
+            {filteredPatients.length === 0
+              ? "0 patients"
+              : `${(currentPage - 1) * PATIENTS_PER_PAGE + 1}\u2013${Math.min(currentPage * PATIENTS_PER_PAGE, filteredPatients.length)} of ${filteredPatients.length} patient${filteredPatients.length !== 1 ? "s" : ""}`}
+            {searchTerm && ` matching \u201c${searchTerm}\u201d`}
+          </span>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-1.5 rounded-lg text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#8A8F98] transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`min-w-[28px] h-7 rounded-lg text-xs font-medium transition-colors ${
+                    page === currentPage
+                      ? "bg-[#5E6AD2] text-white"
+                      : "text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05]"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="p-1.5 rounded-lg text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#8A8F98] transition-colors"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -784,6 +850,68 @@ export default function PatientsPage() {
       {showImportModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
+
+            {/* Passcode Gate */}
+            {!importUnlocked ? (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 rounded-xl p-2.5">
+                      <Lock className="h-5 w-5 text-[#5E6AD2]" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-[#EDEDEF]">Protected Import</h3>
+                      <p className="text-xs text-[#8A8F98]">Enter system passcode to import contacts</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCloseImportModal}
+                    className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {importPasscodeError && (
+                  <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg px-4 py-2 text-sm">
+                    {importPasscodeError}
+                  </div>
+                )}
+
+                <form onSubmit={handleImportPasscode}>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-[#8A8F98] mb-1">
+                      System Passcode
+                    </label>
+                    <input
+                      type="password"
+                      value={importPasscode}
+                      onChange={(e) => setImportPasscode(e.target.value)}
+                      className="w-full px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors min-h-[44px]"
+                      placeholder="Enter passcode..."
+                      autoFocus
+                      required
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={handleCloseImportModal}
+                      className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] min-h-[44px] transition-colors"
+                    >
+                      Unlock
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+            <>
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -928,6 +1056,8 @@ export default function PatientsPage() {
                   Done
                 </button>
               </div>
+            )}
+            </>
             )}
           </div>
         </div>
