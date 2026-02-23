@@ -8,16 +8,17 @@ import { getAppointment, updateAppointment, deleteAppointment, createAppointment
 import { collection, getDocs, query, where } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import type { Appointment, AppointmentStatus, User } from "@/lib/types"
-import { Edit, Trash, Calendar, Clock, UserIcon, Phone, FileText, CheckCircle, XCircle, UserPlus, BadgeCheck } from "lucide-react"
+import { Edit, Trash, Calendar, Clock, UserIcon, Phone, FileText, CheckCircle, XCircle, UserPlus, BadgeCheck, Receipt } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { DatePicker } from "@/components/ui/date-picker"
 import { TimePicker } from "@/components/ui/time-picker"
 import { searchPatients, createPatient } from "@/lib/patientService"
 import { logActivity } from "@/lib/activityService"
+import { getInvoiceByAppointment } from "@/lib/invoiceService"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { CallButton } from "@/components/ui/call-button"
-import type { Patient } from "@/lib/types"
+import type { Patient, Invoice } from "@/lib/types"
 
 export default function AppointmentDetailClient() {
   const params = useParams()
@@ -52,6 +53,7 @@ export default function AppointmentDetailClient() {
   const [registerNotes, setRegisterNotes] = useState("")
   const [registering, setRegistering] = useState(false)
   const [checkingPatient, setCheckingPatient] = useState(true)
+  const [linkedInvoice, setLinkedInvoice] = useState<Invoice | null>(null)
   const registerFormRef = useRef<HTMLDivElement>(null)
   const registerTreatmentInputRef = useRef<HTMLInputElement>(null)
 
@@ -149,6 +151,22 @@ export default function AppointmentDetailClient() {
       checkPatientRegistration()
     }
   }, [appointment])
+
+  // Check if an invoice exists for this appointment
+  useEffect(() => {
+    const checkInvoice = async () => {
+      if (!id) return
+      try {
+        const inv = await getInvoiceByAppointment(id)
+        setLinkedInvoice(inv)
+      } catch (error) {
+        console.error("Error checking invoice:", error)
+      }
+    }
+    if (appointment) {
+      checkInvoice()
+    }
+  }, [appointment, id])
 
   const handleRegisterPatient = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -893,6 +911,42 @@ export default function AppointmentDetailClient() {
                     <Calendar className="h-4 w-4 mr-2" />
                     Reschedule Appointment
                   </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Invoice Action — admin and receptionist only */}
+            {(userData?.role === "admin" || userData?.role === "receptionist") && (
+              <div className="mt-6 border-t border-white/[0.06] pt-6">
+                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-[#5E6AD2]" />
+                  Invoice
+                </h3>
+                <div className="mt-4">
+                  {linkedInvoice ? (
+                    <Link
+                      href={`/dashboard/invoices/${linkedInvoice.id}`}
+                      className="inline-flex items-center px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+                    >
+                      <Receipt className="h-4 w-4 mr-2" />
+                      View Invoice
+                      <span className={`ml-2 px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${
+                        linkedInvoice.status === "paid" ? "bg-emerald-500/15 text-emerald-400" :
+                        linkedInvoice.status === "partial" ? "bg-amber-500/15 text-amber-400" :
+                        "bg-red-500/15 text-red-400"
+                      }`}>
+                        {linkedInvoice.status}
+                      </span>
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/dashboard/invoices/new?appointmentId=${id}&patientName=${encodeURIComponent(appointment.patientName)}&patientPhone=${encodeURIComponent(appointment.patientPhone || "")}`}
+                      className="inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
+                    >
+                      <Receipt className="h-4 w-4 mr-2" />
+                      Create Invoice
+                    </Link>
+                  )}
                 </div>
               </div>
             )}

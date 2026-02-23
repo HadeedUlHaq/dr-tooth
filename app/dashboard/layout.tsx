@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Calendar, LogOut, Menu, User, X, Home, PlusCircle, Users, Contact } from "lucide-react"
+import { Calendar, LogOut, Menu, User, X, Home, PlusCircle, Users, Contact, Receipt } from "lucide-react"
 import { getUpcomingAppointments, getAppointmentsNeedingConfirmation } from "@/lib/appointmentService"
 import {
   sendAppointmentNotification,
@@ -194,6 +194,16 @@ export default function DashboardLayout({
                     Patients
                   </Link>
                 )}
+                {(userData?.role === "admin" || userData?.role === "receptionist") && (
+                  <Link
+                    href="/dashboard/invoices"
+                    className={navLinkClass}
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    <Receipt className="mr-3 h-5 w-5" />
+                    Invoices
+                  </Link>
+                )}
                 {userData?.role === "admin" && (
                   <Link
                     href="/dashboard/users"
@@ -240,6 +250,12 @@ export default function DashboardLayout({
                     <Link href="/dashboard/patients" className={navLinkClass}>
                       <Contact className="mr-3 h-5 w-5" />
                       Patients
+                    </Link>
+                  )}
+                  {(userData?.role === "admin" || userData?.role === "receptionist") && (
+                    <Link href="/dashboard/invoices" className={navLinkClass}>
+                      <Receipt className="mr-3 h-5 w-5" />
+                      Invoices
                     </Link>
                   )}
                   {userData?.role === "admin" && (

@@ -116,3 +116,24 @@
 .animate-slide-in {
   animation: slide-in 0.25s ease-out;
 }
+
+/* Print styles — hide app chrome, show only invoice */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .print\:block {
+    display: block !important;
+  }
+
+  /* Hide scrollbars in print */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}

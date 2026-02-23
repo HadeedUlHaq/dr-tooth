@@ -9,7 +9,8 @@ import {
   deletePatient,
 } from "@/lib/patientService"
 import { logActivity, subscribeToCollection } from "@/lib/activityService"
-import type { Patient } from "@/lib/types"
+import { getInvoicesByPatient } from "@/lib/invoiceService"
+import type { Patient, Invoice } from "@/lib/types"
 import {
   Search,
   Plus,
@@ -27,7 +28,10 @@ import {
   AlertCircle,
   CheckCircle2,
   Lock,
+  Receipt,
+  Eye,
 } from "lucide-react"
+import Link from "next/link"
 
 const IMPORT_PASSCODE = "Systems@@123456789"
 const PATIENTS_PER_PAGE = 20
@@ -71,6 +75,11 @@ export default function PatientsPage() {
   const [importPasscode, setImportPasscode] = useState("")
   const [importUnlocked, setImportUnlocked] = useState(false)
   const [importPasscodeError, setImportPasscodeError] = useState("")
+
+  // Billing history
+  const [billingPatient, setBillingPatient] = useState<Patient | null>(null)
+  const [billingInvoices, setBillingInvoices] = useState<Invoice[]>([])
+  const [billingLoading, setBillingLoading] = useState(false)
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -211,6 +220,20 @@ export default function PatientsPage() {
       setImportPasscodeError("")
     } else {
       setImportPasscodeError("Invalid passcode. Contact your administrator.")
+    }
+  }
+
+  const openBillingHistory = async (patient: Patient) => {
+    setBillingPatient(patient)
+    setBillingLoading(true)
+    try {
+      const invoices = await getInvoicesByPatient(patient.name)
+      setBillingInvoices(invoices)
+    } catch (error) {
+      console.error("Error fetching billing:", error)
+      setBillingInvoices([])
+    } finally {
+      setBillingLoading(false)
     }
   }
 
@@ -630,6 +653,15 @@ export default function PatientsPage() {
                         </div>
                       ) : (
                         <div className="flex items-center justify-end gap-2">
+                          {(userData?.role === "admin" || userData?.role === "receptionist") && (
+                            <button
+                              onClick={() => openBillingHistory(patient)}
+                              className="text-[#8A8F98] hover:text-[#5E6AD2] p-1 transition-colors"
+                              title="Billing History"
+                            >
+                              <Receipt className="h-4 w-4" />
+                            </button>
+                          )}
                           <button
                             onClick={() => startEdit(patient)}
                             className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
@@ -742,6 +774,15 @@ export default function PatientsPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                        {(userData?.role === "admin" || userData?.role === "receptionist") && (
+                          <button
+                            onClick={() => openBillingHistory(patient)}
+                            className="text-[#8A8F98] hover:text-[#5E6AD2] p-2 transition-colors"
+                            title="Billing"
+                          >
+                            <Receipt className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => startEdit(patient)}
                           className="text-[#8A8F98] hover:text-[#EDEDEF] p-2 transition-colors"
@@ -1058,6 +1099,99 @@ export default function PatientsPage() {
               </div>
             )}
             </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Billing History Modal — admin/receptionist only */}
+      {billingPatient && (userData?.role === "admin" || userData?.role === "receptionist") && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 rounded-xl p-2.5">
+                  <Receipt className="h-5 w-5 text-[#5E6AD2]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-[#EDEDEF]">Billing History</h3>
+                  <p className="text-xs text-[#8A8F98]">{billingPatient.name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setBillingPatient(null); setBillingInvoices([]) }}
+                className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {billingLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <div className="w-8 h-8 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : billingInvoices.length === 0 ? (
+              <div className="text-center py-10">
+                <p className="text-sm text-[#8A8F98]">No invoices found for this patient.</p>
+                <Link
+                  href={`/dashboard/invoices/new?patientName=${encodeURIComponent(billingPatient.name)}&patientPhone=${encodeURIComponent(billingPatient.phone)}&patientId=${billingPatient.id}`}
+                  className="mt-4 inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg text-sm font-medium transition-colors"
+                  onClick={() => setBillingPatient(null)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Invoice
+                </Link>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-3">
+                {billingInvoices.map((inv) => (
+                  <Link
+                    key={inv.id}
+                    href={`/dashboard/invoices/${inv.id}`}
+                    className="block p-3 bg-white/[0.03] border border-white/[0.06] rounded-lg hover:bg-white/[0.05] transition-colors"
+                    onClick={() => setBillingPatient(null)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-[#EDEDEF]">
+                          Rs. {inv.total.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-[#8A8F98] mt-0.5">
+                          {new Date(inv.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          {" · "}
+                          {inv.lineItems.map((li) => li.serviceName).join(", ")}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize ${
+                          inv.status === "paid" ? "bg-emerald-500/15 text-emerald-400" :
+                          inv.status === "partial" ? "bg-amber-500/15 text-amber-400" :
+                          "bg-red-500/15 text-red-400"
+                        }`}>
+                          {inv.status}
+                        </span>
+                        <Eye className="h-4 w-4 text-[#8A8F98]" />
+                      </div>
+                    </div>
+                    {inv.balanceDue > 0 && (
+                      <div className="mt-1 text-xs text-red-400">
+                        Balance due: Rs. {inv.balanceDue.toLocaleString()}
+                      </div>
+                    )}
+                  </Link>
+                ))}
+
+                <div className="pt-3 border-t border-white/[0.06]">
+                  <Link
+                    href={`/dashboard/invoices/new?patientName=${encodeURIComponent(billingPatient.name)}&patientPhone=${encodeURIComponent(billingPatient.phone)}&patientId=${billingPatient.id}`}
+                    className="inline-flex items-center text-sm text-[#5E6AD2] hover:text-[#6872D9] font-medium transition-colors"
+                    onClick={() => setBillingPatient(null)}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Create New Invoice
+                  </Link>
+                </div>
+              </div>
             )}
           </div>
         </div>
