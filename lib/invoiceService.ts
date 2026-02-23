@@ -138,6 +138,28 @@ export const getInvoicesByPatient = async (
   }
 }
 
+export const getInvoicesByPatientId = async (
+  patientId: string
+): Promise<Invoice[]> => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where("patientId", "==", patientId)
+    )
+    const snapshot = await getDocs(q)
+    const invoices: Invoice[] = []
+    snapshot.forEach((docSnap) => {
+      invoices.push(parseInvoiceDoc(docSnap))
+    })
+    // Sort client-side (newest first) to avoid composite index requirement
+    invoices.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    return invoices
+  } catch (error) {
+    console.error("Error fetching patient invoices by ID:", error)
+    throw error
+  }
+}
+
 export const getInvoiceByAppointment = async (
   appointmentId: string
 ): Promise<Invoice | null> => {

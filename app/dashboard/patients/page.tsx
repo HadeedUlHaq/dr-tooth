@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import {
   getPatients,
@@ -9,8 +9,8 @@ import {
   deletePatient,
 } from "@/lib/patientService"
 import { logActivity, subscribeToCollection } from "@/lib/activityService"
-import { getInvoicesByPatient } from "@/lib/invoiceService"
-import { getLabCasesByPatient } from "@/lib/labService"
+import { getInvoicesByPatientId } from "@/lib/invoiceService"
+import { getLabCasesByPatientId } from "@/lib/labService"
 import type { Patient, Invoice, LabCase } from "@/lib/types"
 import {
   Search,
@@ -32,6 +32,7 @@ import {
   Receipt,
   Eye,
   Package,
+  MoreHorizontal,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -87,6 +88,22 @@ export default function PatientsPage() {
   const [labPatient, setLabPatient] = useState<Patient | null>(null)
   const [labCases, setLabCases] = useState<LabCase[]>([])
   const [labLoading, setLabLoading] = useState(false)
+
+  // Actions dropdown
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenDropdownId(null)
+      }
+    }
+    if (openDropdownId) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [openDropdownId])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -234,7 +251,7 @@ export default function PatientsPage() {
     setBillingPatient(patient)
     setBillingLoading(true)
     try {
-      const invoices = await getInvoicesByPatient(patient.name)
+      const invoices = await getInvoicesByPatientId(patient.id)
       setBillingInvoices(invoices)
     } catch (error) {
       console.error("Error fetching billing:", error)
@@ -248,7 +265,7 @@ export default function PatientsPage() {
     setLabPatient(patient)
     setLabLoading(true)
     try {
-      const cases = await getLabCasesByPatient(patient.name)
+      const cases = await getLabCasesByPatientId(patient.id)
       setLabCases(cases)
     } catch (error) {
       console.error("Error fetching lab cases:", error)
@@ -673,37 +690,48 @@ export default function PatientsPage() {
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-end gap-2">
-                          {(userData?.role === "admin" || userData?.role === "receptionist") && (
-                            <button
-                              onClick={() => openBillingHistory(patient)}
-                              className="text-[#8A8F98] hover:text-[#5E6AD2] p-1 transition-colors"
-                              title="Billing History"
-                            >
-                              <Receipt className="h-4 w-4" />
-                            </button>
+                        <div className="relative" ref={openDropdownId === patient.id ? dropdownRef : undefined}>
+                          <button
+                            onClick={() => setOpenDropdownId(openDropdownId === patient.id ? null : patient.id)}
+                            className="text-[#8A8F98] hover:text-[#EDEDEF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </button>
+                          {openDropdownId === patient.id && (
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-[#0F0F12] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1 z-20">
+                              {(userData?.role === "admin" || userData?.role === "receptionist") && (
+                                <button
+                                  onClick={() => { openBillingHistory(patient); setOpenDropdownId(null) }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                                >
+                                  <Receipt className="h-4 w-4" />
+                                  Billing History
+                                </button>
+                              )}
+                              <button
+                                onClick={() => { openLabCases(patient); setOpenDropdownId(null) }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                              >
+                                <Package className="h-4 w-4" />
+                                Lab Cases
+                              </button>
+                              <button
+                                onClick={() => { startEdit(patient); setOpenDropdownId(null) }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                              >
+                                <Edit className="h-4 w-4" />
+                                Edit Patient
+                              </button>
+                              <div className="my-1 border-t border-white/[0.06]" />
+                              <button
+                                onClick={() => { setShowDeleteConfirm(patient.id); setOpenDropdownId(null) }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                              >
+                                <Trash className="h-4 w-4" />
+                                Delete Patient
+                              </button>
+                            </div>
                           )}
-                          <button
-                            onClick={() => openLabCases(patient)}
-                            className="text-[#8A8F98] hover:text-[#5E6AD2] p-1 transition-colors"
-                            title="Lab Cases"
-                          >
-                            <Package className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => startEdit(patient)}
-                            className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
-                            title="Edit"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => setShowDeleteConfirm(patient.id)}
-                            className="text-[#8A8F98] hover:text-red-400 p-1 transition-colors"
-                            title="Delete"
-                          >
-                            <Trash className="h-4 w-4" />
-                          </button>
                         </div>
                       )}
                     </td>
@@ -801,37 +829,48 @@ export default function PatientsPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-                        {(userData?.role === "admin" || userData?.role === "receptionist") && (
-                          <button
-                            onClick={() => openBillingHistory(patient)}
-                            className="text-[#8A8F98] hover:text-[#5E6AD2] p-2 transition-colors"
-                            title="Billing"
-                          >
-                            <Receipt className="h-4 w-4" />
-                          </button>
+                      <div className="relative ml-2 flex-shrink-0" ref={openDropdownId === `mobile-${patient.id}` ? dropdownRef : undefined}>
+                        <button
+                          onClick={() => setOpenDropdownId(openDropdownId === `mobile-${patient.id}` ? null : `mobile-${patient.id}`)}
+                          className="text-[#8A8F98] hover:text-[#EDEDEF] p-2 rounded-lg hover:bg-white/[0.05] transition-colors"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </button>
+                        {openDropdownId === `mobile-${patient.id}` && (
+                          <div className="absolute right-0 top-full mt-1 w-48 bg-[#0F0F12] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1 z-20">
+                            {(userData?.role === "admin" || userData?.role === "receptionist") && (
+                              <button
+                                onClick={() => { openBillingHistory(patient); setOpenDropdownId(null) }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                              >
+                                <Receipt className="h-4 w-4" />
+                                Billing History
+                              </button>
+                            )}
+                            <button
+                              onClick={() => { openLabCases(patient); setOpenDropdownId(null) }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                            >
+                              <Package className="h-4 w-4" />
+                              Lab Cases
+                            </button>
+                            <button
+                              onClick={() => { startEdit(patient); setOpenDropdownId(null) }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                            >
+                              <Edit className="h-4 w-4" />
+                              Edit Patient
+                            </button>
+                            <div className="my-1 border-t border-white/[0.06]" />
+                            <button
+                              onClick={() => { setShowDeleteConfirm(patient.id); setOpenDropdownId(null) }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                            >
+                              <Trash className="h-4 w-4" />
+                              Delete Patient
+                            </button>
+                          </div>
                         )}
-                        <button
-                          onClick={() => openLabCases(patient)}
-                          className="text-[#8A8F98] hover:text-[#5E6AD2] p-2 transition-colors"
-                          title="Lab Cases"
-                        >
-                          <Package className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => startEdit(patient)}
-                          className="text-[#8A8F98] hover:text-[#EDEDEF] p-2 transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => setShowDeleteConfirm(patient.id)}
-                          className="text-[#8A8F98] hover:text-red-400 p-2 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </button>
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -868,19 +907,46 @@ export default function PatientsPage() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`min-w-[28px] h-7 rounded-lg text-xs font-medium transition-colors ${
-                    page === currentPage
-                      ? "bg-[#5E6AD2] text-white"
-                      : "text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05]"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+              {(() => {
+                const maxVisible = 5
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2))
+                let endPage = startPage + maxVisible - 1
+                if (endPage > totalPages) {
+                  endPage = totalPages
+                  startPage = Math.max(1, endPage - maxVisible + 1)
+                }
+                const pages: (number | "ellipsis-start" | "ellipsis-end")[] = []
+                if (startPage > 1) {
+                  pages.push(1)
+                  if (startPage > 2) pages.push("ellipsis-start")
+                }
+                for (let i = startPage; i <= endPage; i++) {
+                  if (!pages.includes(i)) pages.push(i)
+                }
+                if (endPage < totalPages) {
+                  if (endPage < totalPages - 1) pages.push("ellipsis-end")
+                  pages.push(totalPages)
+                }
+                return pages.map((page) =>
+                  typeof page === "string" ? (
+                    <span key={page} className="min-w-[28px] h-7 flex items-center justify-center text-xs text-[#8A8F98]">
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`min-w-[28px] h-7 rounded-lg text-xs font-medium transition-colors ${
+                        page === currentPage
+                          ? "bg-[#5E6AD2] text-white"
+                          : "text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05]"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )
+              })()}
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}

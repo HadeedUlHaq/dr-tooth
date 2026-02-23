@@ -134,3 +134,25 @@ export const getLabCasesByPatient = async (
     throw error
   }
 }
+
+export const getLabCasesByPatientId = async (
+  patientId: string
+): Promise<LabCase[]> => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where("patientId", "==", patientId)
+    )
+    const snapshot = await getDocs(q)
+    const cases: LabCase[] = []
+    snapshot.forEach((docSnap) => {
+      cases.push(parseLabCaseDoc(docSnap))
+    })
+    // Sort client-side (newest first) to avoid composite index requirement
+    cases.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    return cases
+  } catch (error) {
+    console.error("Error fetching patient lab cases by ID:", error)
+    throw error
+  }
+}

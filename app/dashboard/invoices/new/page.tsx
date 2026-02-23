@@ -41,7 +41,7 @@ export default function NewInvoicePage() {
   const [patientName, setPatientName] = useState(prefillPatient)
   const [patientPhone, setPatientPhone] = useState(prefillPhone)
   const [appointmentId] = useState(prefillAppointmentId)
-  const [patientId] = useState(prefillPatientId)
+  const [patientId, setPatientId] = useState(prefillPatientId)
   const [lineItems, setLineItems] = useState<LineItem[]>([
     { serviceName: "Consultation", price: 0 },
   ])
@@ -118,6 +118,7 @@ export default function NewInvoicePage() {
   const selectPatient = (patient: Patient) => {
     setPatientName(patient.name)
     setPatientPhone(patient.phone)
+    setPatientId(patient.id)
     setPatientSearch("")
     setShowPatientDropdown(false)
   }
