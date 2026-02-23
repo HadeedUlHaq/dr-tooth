@@ -10,7 +10,8 @@ import {
 } from "@/lib/patientService"
 import { logActivity, subscribeToCollection } from "@/lib/activityService"
 import { getInvoicesByPatient } from "@/lib/invoiceService"
-import type { Patient, Invoice } from "@/lib/types"
+import { getLabCasesByPatient } from "@/lib/labService"
+import type { Patient, Invoice, LabCase } from "@/lib/types"
 import {
   Search,
   Plus,
@@ -30,6 +31,7 @@ import {
   Lock,
   Receipt,
   Eye,
+  Package,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -80,6 +82,11 @@ export default function PatientsPage() {
   const [billingPatient, setBillingPatient] = useState<Patient | null>(null)
   const [billingInvoices, setBillingInvoices] = useState<Invoice[]>([])
   const [billingLoading, setBillingLoading] = useState(false)
+
+  // Lab cases
+  const [labPatient, setLabPatient] = useState<Patient | null>(null)
+  const [labCases, setLabCases] = useState<LabCase[]>([])
+  const [labLoading, setLabLoading] = useState(false)
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -234,6 +241,20 @@ export default function PatientsPage() {
       setBillingInvoices([])
     } finally {
       setBillingLoading(false)
+    }
+  }
+
+  const openLabCases = async (patient: Patient) => {
+    setLabPatient(patient)
+    setLabLoading(true)
+    try {
+      const cases = await getLabCasesByPatient(patient.name)
+      setLabCases(cases)
+    } catch (error) {
+      console.error("Error fetching lab cases:", error)
+      setLabCases([])
+    } finally {
+      setLabLoading(false)
     }
   }
 
@@ -663,6 +684,13 @@ export default function PatientsPage() {
                             </button>
                           )}
                           <button
+                            onClick={() => openLabCases(patient)}
+                            className="text-[#8A8F98] hover:text-[#5E6AD2] p-1 transition-colors"
+                            title="Lab Cases"
+                          >
+                            <Package className="h-4 w-4" />
+                          </button>
+                          <button
                             onClick={() => startEdit(patient)}
                             className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
                             title="Edit"
@@ -783,6 +811,13 @@ export default function PatientsPage() {
                             <Receipt className="h-4 w-4" />
                           </button>
                         )}
+                        <button
+                          onClick={() => openLabCases(patient)}
+                          className="text-[#8A8F98] hover:text-[#5E6AD2] p-2 transition-colors"
+                          title="Lab Cases"
+                        >
+                          <Package className="h-4 w-4" />
+                        </button>
                         <button
                           onClick={() => startEdit(patient)}
                           className="text-[#8A8F98] hover:text-[#EDEDEF] p-2 transition-colors"
@@ -1191,6 +1226,83 @@ export default function PatientsPage() {
                     Create New Invoice
                   </Link>
                 </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Lab Cases Modal — all roles can view */}
+      {labPatient && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 rounded-xl p-2.5">
+                  <Package className="h-5 w-5 text-[#5E6AD2]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-[#EDEDEF]">Lab Cases</h3>
+                  <p className="text-xs text-[#8A8F98]">{labPatient.name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setLabPatient(null); setLabCases([]) }}
+                className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {labLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <div className="w-8 h-8 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : labCases.length === 0 ? (
+              <div className="text-center py-10">
+                <p className="text-sm text-[#8A8F98]">No lab cases found for this patient.</p>
+                {(userData?.role === "admin" || userData?.role === "receptionist") && (
+                  <Link
+                    href="/dashboard/lab-tracking"
+                    className="mt-4 inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg text-sm font-medium transition-colors"
+                    onClick={() => setLabPatient(null)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Go to Lab Tracking
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-3">
+                {labCases.map((lc) => {
+                  const statusColor =
+                    lc.status === "Fitted/Completed" ? "bg-emerald-500/15 text-emerald-400" :
+                    lc.status === "Received from Lab" ? "bg-cyan-500/15 text-cyan-400" :
+                    lc.status === "Sent to Lab" ? "bg-amber-500/15 text-amber-400" :
+                    lc.status === "Impression Taken" ? "bg-purple-500/15 text-purple-400" :
+                    "bg-blue-500/15 text-blue-400"
+                  return (
+                    <div key={lc.id} className="p-3 bg-white/[0.03] border border-white/[0.06] rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-medium text-[#EDEDEF]">{lc.toothDetails}</div>
+                          <div className="text-xs text-[#8A8F98] mt-0.5">{lc.material} · {lc.labName === "None" ? "No lab" : lc.labName}</div>
+                        </div>
+                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusColor}`}>
+                          {lc.status}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex gap-4 text-xs text-[#8A8F98]">
+                        {lc.sentDate && (
+                          <span>Sent: {new Date(lc.sentDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                        )}
+                        {lc.receivedDate && (
+                          <span>Received: {new Date(lc.receivedDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>

@@ -42,7 +42,7 @@ export interface Patient {
 
 export interface ActivityLog {
   id: string
-  type: "patient_added" | "patient_updated" | "patient_deleted" | "appointment_created" | "appointment_updated" | "appointment_status_changed" | "appointment_deleted" | "invoice_created" | "invoice_updated" | "invoice_deleted" | "payment_recorded"
+  type: "patient_added" | "patient_updated" | "patient_deleted" | "appointment_created" | "appointment_updated" | "appointment_status_changed" | "appointment_deleted" | "invoice_created" | "invoice_updated" | "invoice_deleted" | "payment_recorded" | "lab_case_created" | "lab_case_updated"
   message: string
   actorName: string
   actorId: string
@@ -87,6 +87,34 @@ export interface Invoice {
   payments: PaymentLog[]
   createdAt: string
   createdBy: string
+  updatedAt?: string
+}
+
+// ── Lab Tracking ──
+
+export type LabName = "Tanveer Dental Lab" | "Zubair Dental Lab" | "None"
+export type LabCaseStatus =
+  | "Preparation/Cutting Done"
+  | "Impression Taken"
+  | "Sent to Lab"
+  | "Received from Lab"
+  | "Fitted/Completed"
+
+export interface LabCase {
+  id: string
+  patientId: string
+  patientName: string
+  patientPhone?: string
+  material: string
+  toothDetails: string
+  labName: LabName
+  status: LabCaseStatus
+  sentDate?: string
+  receivedDate?: string
+  notes?: string
+  createdAt: string
+  createdBy: string
+  updatedBy?: string
   updatedAt?: string
 }
 

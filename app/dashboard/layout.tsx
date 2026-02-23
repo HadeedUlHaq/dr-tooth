@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Calendar, LogOut, Menu, User, X, Home, PlusCircle, Users, Contact, Receipt } from "lucide-react"
+import { Calendar, LogOut, Menu, User, X, Home, PlusCircle, Users, Contact, Receipt, Package } from "lucide-react"
 import { getUpcomingAppointments, getAppointmentsNeedingConfirmation } from "@/lib/appointmentService"
 import {
   sendAppointmentNotification,
@@ -204,6 +204,14 @@ export default function DashboardLayout({
                     Invoices
                   </Link>
                 )}
+                <Link
+                  href="/dashboard/lab-tracking"
+                  className={navLinkClass}
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <Package className="mr-3 h-5 w-5" />
+                  Lab Tracking
+                </Link>
                 {userData?.role === "admin" && (
                   <Link
                     href="/dashboard/users"
@@ -258,6 +266,10 @@ export default function DashboardLayout({
                       Invoices
                     </Link>
                   )}
+                  <Link href="/dashboard/lab-tracking" className={navLinkClass}>
+                    <Package className="mr-3 h-5 w-5" />
+                    Lab Tracking
+                  </Link>
                   {userData?.role === "admin" && (
                     <Link href="/dashboard/users" className={navLinkClass}>
                       <Users className="mr-3 h-5 w-5" />
