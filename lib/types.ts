@@ -26,6 +26,9 @@ export interface Appointment {
   createdBy: string
   updatedAt?: string
   updatedBy?: string
+  isLate?: boolean
+  originalTime?: string
+  delayReason?: string
 }
 
 export interface Patient {
@@ -42,7 +45,7 @@ export interface Patient {
 
 export interface ActivityLog {
   id: string
-  type: "patient_added" | "patient_updated" | "patient_deleted" | "appointment_created" | "appointment_updated" | "appointment_status_changed" | "appointment_deleted" | "invoice_created" | "invoice_updated" | "invoice_deleted" | "payment_recorded" | "lab_case_created" | "lab_case_updated"
+  type: "patient_added" | "patient_updated" | "patient_deleted" | "appointment_created" | "appointment_updated" | "appointment_status_changed" | "appointment_deleted" | "appointment_delayed" | "invoice_created" | "invoice_updated" | "invoice_deleted" | "payment_recorded" | "lab_case_created" | "lab_case_updated"
   message: string
   actorName: string
   actorId: string

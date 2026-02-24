@@ -10,6 +10,7 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  deleteField,
 } from "firebase/firestore"
 import { db } from "./firebase"
 import type { Appointment } from "./types"
@@ -48,6 +49,24 @@ export const updateAppointment = async (id: string, appointmentData: Partial<App
     })
   } catch (error) {
     console.error("Error updating appointment:", error)
+    throw error
+  }
+}
+
+// Reverts isLate, originalTime and delayReason by hard-deleting them from Firestore
+export const removeLateStatus = async (id: string, originalTime: string, updatedBy: string): Promise<void> => {
+  try {
+    const appointmentRef = doc(db, COLLECTION_NAME, id)
+    await updateDoc(appointmentRef, {
+      time: originalTime,
+      isLate: deleteField(),
+      originalTime: deleteField(),
+      delayReason: deleteField(),
+      updatedAt: serverTimestamp(),
+      updatedBy,
+    })
+  } catch (error) {
+    console.error("Error removing late status:", error)
     throw error
   }
 }

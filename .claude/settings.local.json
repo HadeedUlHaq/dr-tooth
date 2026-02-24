@@ -5,7 +5,9 @@
       "Bash(del \"C:\\\\Users\\\\User\\\\Downloads\\\\dental-clinic\\\\pnpm-lock.yaml\")",
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
-      "Bash(npx next dev:*)"
+      "Bash(npx next dev:*)",
+      "Bash(npm ls:*)",
+      "Bash(dir:*)"
     ]
   }
 }

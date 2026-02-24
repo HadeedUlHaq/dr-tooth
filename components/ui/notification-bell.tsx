@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useMemo } from "react"
 import { Bell, Trash2 } from "lucide-react"
 import { subscribeToActivities, deleteActivity, clearAllActivities } from "@/lib/activityService"
 import { showToast } from "@/components/ui/toast-notification"
-import type { ActivityLog } from "@/lib/types"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import type { ActivityLog, UserRole } from "@/lib/types"
 
 function timeAgo(dateString: string): string {
   const now = new Date()
@@ -34,23 +35,66 @@ function getTypeIcon(type: ActivityLog["type"]): string {
       return "🔄"
     case "appointment_deleted":
       return "🗑️"
+    case "appointment_delayed":
+      return "⏰"
+    case "invoice_created":
+    case "invoice_updated":
+    case "invoice_deleted":
+      return "🧾"
+    case "payment_recorded":
+      return "💰"
+    case "lab_case_created":
+    case "lab_case_updated":
+      return "🦷"
     default:
       return "📌"
   }
 }
 
+const APPOINTMENT_TYPES: ActivityLog["type"][] = [
+  "patient_added", "patient_updated", "patient_deleted",
+  "appointment_created", "appointment_updated", "appointment_status_changed",
+  "appointment_deleted", "appointment_delayed",
+]
+
+const LAB_TYPES: ActivityLog["type"][] = [
+  "lab_case_created", "lab_case_updated",
+]
+
+const INVOICE_TYPES: ActivityLog["type"][] = [
+  "invoice_created", "invoice_updated", "invoice_deleted", "payment_recorded",
+]
+
 interface NotificationBellProps {
   currentUserId?: string
+  userRole?: UserRole
 }
 
-export function NotificationBell({ currentUserId }: NotificationBellProps) {
+export function NotificationBell({ currentUserId, userRole }: NotificationBellProps) {
   const [activities, setActivities] = useState<ActivityLog[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const [lastReadTimestamp, setLastReadTimestamp] = useState<string>("")
+  const [activeTab, setActiveTab] = useState("appointments")
   const panelRef = useRef<HTMLDivElement>(null)
   const prevActivitiesRef = useRef<ActivityLog[]>([])
   const isInitialLoad = useRef(true)
+  const userRoleRef = useRef(userRole)
+  userRoleRef.current = userRole
+
+  // Filtered lists by category
+  const appointmentActivities = useMemo(
+    () => activities.filter((a) => APPOINTMENT_TYPES.includes(a.type)),
+    [activities]
+  )
+  const labActivities = useMemo(
+    () => activities.filter((a) => LAB_TYPES.includes(a.type)),
+    [activities]
+  )
+  const invoiceActivities = useMemo(
+    () => activities.filter((a) => INVOICE_TYPES.includes(a.type)),
+    [activities]
+  )
 
   // Subscribe to activity log
   useEffect(() => {
@@ -70,12 +114,15 @@ export function NotificationBell({ currentUserId }: NotificationBellProps) {
       prevActivitiesRef.current = newActivities
       setActivities(newActivities)
 
-      // Calculate unread count
+      // Calculate unread count (exclude invoice types for doctor role)
       const stored = localStorage.getItem("lastReadNotification")
       const lastRead = stored || ""
-      const unread = newActivities.filter(
-        (a) => a.createdAt > lastRead && a.actorId !== currentUserId
-      ).length
+      const unread = newActivities.filter((a) => {
+        if (a.actorId === currentUserId) return false
+        if (a.createdAt <= lastRead) return false
+        if (userRoleRef.current === "doctor" && INVOICE_TYPES.includes(a.type)) return false
+        return true
+      }).length
       setUnreadCount(unread)
       setLastReadTimestamp(lastRead)
     })
@@ -118,6 +165,55 @@ export function NotificationBell({ currentUserId }: NotificationBellProps) {
     await clearAllActivities()
   }
 
+  const renderActivityList = (items: ActivityLog[]) => {
+    if (items.length === 0) {
+      return (
+        <div className="px-4 py-8 text-center text-sm text-[#8A8F98]">
+          No notifications.
+        </div>
+      )
+    }
+    return items.map((activity) => {
+      const isUnread =
+        activity.createdAt > lastReadTimestamp &&
+        activity.actorId !== currentUserId
+      return (
+        <div
+          key={activity.id}
+          className={`group px-4 py-3 border-b border-white/[0.04] last:border-b-0 ${
+            isUnread ? "bg-[#5E6AD2]/[0.04]" : ""
+          }`}
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-base mt-0.5 flex-shrink-0">
+              {getTypeIcon(activity.type)}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-[#EDEDEF] leading-snug">
+                {activity.message}
+              </p>
+              <p className="text-xs text-[#8A8F98] mt-1">
+                {timeAgo(activity.createdAt)}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {isUnread && (
+                <span className="mt-1.5 h-2 w-2 rounded-full bg-[#5E6AD2]" />
+              )}
+              <button
+                onClick={(e) => handleDeleteOne(e, activity.id)}
+                className="mt-0.5 p-1 rounded text-white/0 group-hover:text-[#8A8F98] hover:!text-red-400 hover:bg-white/[0.05] transition-all"
+                title="Remove notification"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    })
+  }
+
   return (
     <div className="relative" ref={panelRef}>
       {/* Bell Button */}
@@ -149,53 +245,50 @@ export function NotificationBell({ currentUserId }: NotificationBellProps) {
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto">
-            {activities.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-[#8A8F98]">
-                No notifications.
-              </div>
-            ) : (
-              activities.map((activity) => {
-                const isUnread =
-                  activity.createdAt > lastReadTimestamp &&
-                  activity.actorId !== currentUserId
-                return (
-                  <div
-                    key={activity.id}
-                    className={`group px-4 py-3 border-b border-white/[0.04] last:border-b-0 ${
-                      isUnread ? "bg-[#5E6AD2]/[0.04]" : ""
-                    }`}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <div className="px-3 pt-2 pb-1 border-b border-white/[0.06]">
+              <TabsList className="w-full bg-white/[0.03] rounded-lg p-0.5 h-auto">
+                <TabsTrigger
+                  value="appointments"
+                  className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#5E6AD2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#8A8F98] data-[state=inactive]:bg-transparent rounded-md transition-colors"
+                >
+                  📅 Appointments
+                </TabsTrigger>
+                <TabsTrigger
+                  value="lab"
+                  className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#5E6AD2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#8A8F98] data-[state=inactive]:bg-transparent rounded-md transition-colors"
+                >
+                  🦷 Lab Cases
+                </TabsTrigger>
+                {userRole !== "doctor" && (
+                  <TabsTrigger
+                    value="invoices"
+                    className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#5E6AD2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#8A8F98] data-[state=inactive]:bg-transparent rounded-md transition-colors"
                   >
-                    <div className="flex items-start gap-3">
-                      <span className="text-base mt-0.5 flex-shrink-0">
-                        {getTypeIcon(activity.type)}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-[#EDEDEF] leading-snug">
-                          {activity.message}
-                        </p>
-                        <p className="text-xs text-[#8A8F98] mt-1">
-                          {timeAgo(activity.createdAt)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {isUnread && (
-                          <span className="mt-1.5 h-2 w-2 rounded-full bg-[#5E6AD2]" />
-                        )}
-                        <button
-                          onClick={(e) => handleDeleteOne(e, activity.id)}
-                          className="mt-0.5 p-1 rounded text-white/0 group-hover:text-[#8A8F98] hover:!text-red-400 hover:bg-white/[0.05] transition-all"
-                          title="Remove notification"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })
+                    🧾 Invoices
+                  </TabsTrigger>
+                )}
+              </TabsList>
+            </div>
+
+            <TabsContent value="appointments" className="mt-0">
+              <div className="max-h-72 overflow-y-auto">
+                {renderActivityList(appointmentActivities)}
+              </div>
+            </TabsContent>
+            <TabsContent value="lab" className="mt-0">
+              <div className="max-h-72 overflow-y-auto">
+                {renderActivityList(labActivities)}
+              </div>
+            </TabsContent>
+            {userRole !== "doctor" && (
+              <TabsContent value="invoices" className="mt-0">
+                <div className="max-h-72 overflow-y-auto">
+                  {renderActivityList(invoiceActivities)}
+                </div>
+              </TabsContent>
             )}
-          </div>
+          </Tabs>
         </div>
       )}
     </div>

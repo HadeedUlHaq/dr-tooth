@@ -708,9 +708,31 @@ export default function AppointmentDetailClient() {
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
                       <dt className="text-sm font-medium text-[#8A8F98]">Time</dt>
                       <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">
-                        {formatTime(appointment.time)}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {formatTime(appointment.time)}
+                          {appointment.isLate && appointment.originalTime && (appointment.status === "scheduled" || appointment.status === "confirmed") && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full animate-pulse bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                              Running {(() => {
+                                const [origH, origM] = appointment.originalTime!.split(":").map(Number)
+                                const t = typeof appointment.time === "string" && appointment.time !== "on-call" ? appointment.time : "00:00"
+                                const [newH, newM] = t.split(":").map(Number)
+                                let diff = (newH * 60 + newM) - (origH * 60 + origM)
+                                if (diff < 0) diff += 24 * 60
+                                return diff
+                              })()}m Late (Originally {formatTime(appointment.originalTime)})
+                            </span>
+                          )}
+                        </div>
                       </dd>
                     </div>
+                    {appointment.isLate && appointment.delayReason && (appointment.status === "scheduled" || appointment.status === "confirmed") && (
+                      <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                        <dt className="text-sm font-medium text-[#8A8F98]">Delay Reason</dt>
+                        <dd className="mt-1 text-sm text-orange-400 sm:mt-0 sm:col-span-2">
+                          {appointment.delayReason}
+                        </dd>
+                      </div>
+                    )}
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
                       <dt className="text-sm font-medium text-[#8A8F98]">Status</dt>
                       <dd className="mt-1 sm:mt-0 sm:col-span-2">

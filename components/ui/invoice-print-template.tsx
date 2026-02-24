@@ -175,7 +175,7 @@ export default function InvoicePrintTemplate({ invoice }: InvoicePrintTemplatePr
 
       <div className="header">
         <h1>DR TOOTH DENTAL CLINIC</h1>
-        <p>Professional Dental Care</p>
+        <p>Come Smile With Us</p>
       </div>
 
       <div className="meta-grid">

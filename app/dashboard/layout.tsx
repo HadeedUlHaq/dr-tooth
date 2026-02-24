@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Calendar, LogOut, Menu, User, X, Home, PlusCircle, Users, Contact, Receipt, Package } from "lucide-react"
+import { Calendar, CalendarDays, LogOut, Menu, User, X, Home, PlusCircle, Users, Contact, Receipt, Package } from "lucide-react"
 import { getUpcomingAppointments, getAppointmentsNeedingConfirmation } from "@/lib/appointmentService"
 import {
   sendAppointmentNotification,
@@ -114,7 +114,7 @@ export default function DashboardLayout({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <NotificationBell currentUserId={user?.uid} />
+              <NotificationBell currentUserId={user?.uid} userRole={userData?.role} />
               <div className="hidden md:block">
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-[#8A8F98]">
@@ -173,6 +173,14 @@ export default function DashboardLayout({
                 >
                   <Calendar className="mr-3 h-5 w-5" />
                   Appointments
+                </Link>
+                <Link
+                  href="/dashboard/calendar"
+                  className={navLinkClass}
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <CalendarDays className="mr-3 h-5 w-5" />
+                  Calendar
                 </Link>
                 {(userData?.role === "receptionist" || userData?.role === "doctor" || userData?.role === "admin") && (
                   <Link
@@ -247,6 +255,10 @@ export default function DashboardLayout({
                   <Link href="/dashboard/appointments" className={navLinkClass}>
                     <Calendar className="mr-3 h-5 w-5" />
                     Appointments
+                  </Link>
+                  <Link href="/dashboard/calendar" className={navLinkClass}>
+                    <CalendarDays className="mr-3 h-5 w-5" />
+                    Calendar
                   </Link>
                   {(userData?.role === "receptionist" || userData?.role === "doctor" || userData?.role === "admin") && (
                     <Link href="/dashboard/appointments/new" className={navLinkClass}>
