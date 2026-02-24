@@ -10,22 +10,21 @@ import type { LineItem, DiscountType, Patient } from "@/lib/types"
 import { Plus, Trash, Receipt, ChevronLeft, Search } from "lucide-react"
 import Link from "next/link"
 
-const DENTAL_SERVICES = [
-  "Consultation",
-  "Root Canal",
-  "Extraction",
-  "Scaling",
-  "Filling",
-  "Crown",
-  "Bridge",
-  "Denture",
-  "Whitening",
-  "X-Ray",
-  "Braces Adjustment",
-  "Implant",
-  "Veneer",
-  "Gum Treatment",
-  "Other",
+const DENTAL_SERVICES: { name: string; price: number }[] = [
+  { name: "Consultation", price: 1000 },
+  { name: "Root Canal", price: 15000 },
+  { name: "Extraction", price: 3000 },
+  { name: "Scaling", price: 5000 },
+  { name: "Filling", price: 3000 },
+  { name: "Crown", price: 15000 },
+  { name: "Bridge", price: 20000 },
+  { name: "Denture", price: 25000 },
+  { name: "Whitening", price: 8000 },
+  { name: "X-Ray", price: 1500 },
+  { name: "Braces Adjustment", price: 5000 },
+  { name: "Implant", price: 50000 },
+  { name: "Veneer", price: 15000 },
+  { name: "Gum Treatment", price: 5000 },
 ]
 
 export default function NewInvoicePage() {
@@ -43,7 +42,7 @@ export default function NewInvoicePage() {
   const [appointmentId] = useState(prefillAppointmentId)
   const [patientId, setPatientId] = useState(prefillPatientId)
   const [lineItems, setLineItems] = useState<LineItem[]>([
-    { serviceName: "Consultation", price: 0 },
+    { serviceName: "", price: 0 },
   ])
   const [discountType, setDiscountType] = useState<DiscountType>("flat")
   const [discountValue, setDiscountValue] = useState(0)
@@ -97,7 +96,7 @@ export default function NewInvoicePage() {
   )
 
   const addLineItem = () => {
-    setLineItems([...lineItems, { serviceName: "Consultation", price: 0 }])
+    setLineItems([...lineItems, { serviceName: "", price: 0 }])
   }
 
   const removeLineItem = (index: number) => {
@@ -279,28 +278,30 @@ export default function NewInvoicePage() {
                   <div key={index} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
                     <div className="flex-1 w-full sm:w-auto">
                       <label className="block text-xs font-medium text-[#8A8F98] mb-1">Service</label>
-                      <select
-                        value={DENTAL_SERVICES.includes(item.serviceName) ? item.serviceName : "Other"}
-                        onChange={(e) => updateLineItem(index, "serviceName", e.target.value)}
+                      <input
+                        type="text"
+                        list={`service-list-${index}`}
+                        value={item.serviceName}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          const match = DENTAL_SERVICES.find((s) => s.name === val)
+                          if (match) {
+                            const updated = [...lineItems]
+                            updated[index] = { ...updated[index], serviceName: val, price: match.price }
+                            setLineItems(updated)
+                          } else {
+                            updateLineItem(index, "serviceName", val)
+                          }
+                        }}
                         className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
-                      >
+                        placeholder="Type or select service..."
+                      />
+                      <datalist id={`service-list-${index}`}>
                         {DENTAL_SERVICES.map((s) => (
-                          <option key={s} value={s}>{s}</option>
+                          <option key={s.name} value={s.name} />
                         ))}
-                      </select>
+                      </datalist>
                     </div>
-                    {!DENTAL_SERVICES.includes(item.serviceName) && (
-                      <div className="flex-1 w-full sm:w-auto">
-                        <label className="block text-xs font-medium text-[#8A8F98] mb-1">Custom Name</label>
-                        <input
-                          type="text"
-                          value={item.serviceName}
-                          onChange={(e) => updateLineItem(index, "serviceName", e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
-                          placeholder="Service name"
-                        />
-                      </div>
-                    )}
                     <div className="w-full sm:w-40">
                       <label className="block text-xs font-medium text-[#8A8F98] mb-1">Price (Rs.)</label>
                       <input

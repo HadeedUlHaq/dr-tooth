@@ -119,6 +119,11 @@
 
 /* Print styles — hide app chrome, show only invoice */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 1cm;
+  }
+
   body {
     background: #fff !important;
     color: #000 !important;
@@ -128,8 +133,20 @@
     display: none !important;
   }
 
+  .print\:\!hidden {
+    display: none !important;
+  }
+
   .print\:block {
     display: block !important;
+  }
+
+  .print\:\!w-full {
+    width: 100% !important;
+  }
+
+  .print\:\!overflow-visible {
+    overflow: visible !important;
   }
 
   /* Hide scrollbars in print */

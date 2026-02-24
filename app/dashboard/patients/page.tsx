@@ -552,7 +552,7 @@ export default function PatientsPage() {
       )}
 
       {/* Patient List */}
-      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)]">
         {/* Search */}
         <div className="px-4 sm:px-5 py-4 border-b border-white/[0.06]">
           <div className="relative w-full sm:max-w-xs">
@@ -570,7 +570,7 @@ export default function PatientsPage() {
         </div>
 
         {/* Desktop Table (hidden on mobile) */}
-        <div className="hidden sm:block overflow-x-auto">
+        <div className="hidden sm:block">
           <table className="min-w-full divide-y divide-white/[0.06]">
             <thead className="bg-white/[0.03]">
               <tr>
@@ -591,7 +591,7 @@ export default function PatientsPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-white/[0.06] relative">
               {paginatedPatients.length === 0 ? (
                 <tr>
                   <td

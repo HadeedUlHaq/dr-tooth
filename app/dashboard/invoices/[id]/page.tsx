@@ -26,10 +26,21 @@ import {
 import Link from "next/link"
 import InvoicePrintTemplate from "@/components/ui/invoice-print-template"
 
-const DENTAL_SERVICES = [
-  "Consultation", "Root Canal", "Extraction", "Scaling", "Filling",
-  "Crown", "Bridge", "Denture", "Whitening", "X-Ray",
-  "Braces Adjustment", "Implant", "Veneer", "Gum Treatment", "Other",
+const DENTAL_SERVICES: { name: string; price: number }[] = [
+  { name: "Consultation", price: 1000 },
+  { name: "Root Canal", price: 15000 },
+  { name: "Extraction", price: 3000 },
+  { name: "Scaling", price: 5000 },
+  { name: "Filling", price: 3000 },
+  { name: "Crown", price: 15000 },
+  { name: "Bridge", price: 20000 },
+  { name: "Denture", price: 25000 },
+  { name: "Whitening", price: 8000 },
+  { name: "X-Ray", price: 1500 },
+  { name: "Braces Adjustment", price: 5000 },
+  { name: "Implant", price: 50000 },
+  { name: "Veneer", price: 15000 },
+  { name: "Gum Treatment", price: 5000 },
 ]
 
 export default function InvoiceDetailPage() {
@@ -321,19 +332,28 @@ export default function InvoiceDetailPage() {
                   {editItems.map((item, index) => (
                     <div key={index} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
                       <div className="flex-1 w-full sm:w-auto">
-                        <select
-                          value={DENTAL_SERVICES.includes(item.serviceName) ? item.serviceName : "Other"}
+                        <input
+                          type="text"
+                          list={`service-list-${index}`}
+                          value={item.serviceName}
                           onChange={(e) => {
                             const updated = [...editItems]
-                            updated[index] = { ...updated[index], serviceName: e.target.value }
+                            const val = e.target.value
+                            updated[index] = { ...updated[index], serviceName: val }
+                            const match = DENTAL_SERVICES.find((s) => s.name === val)
+                            if (match) {
+                              updated[index] = { ...updated[index], serviceName: val, price: match.price }
+                            }
                             setEditItems(updated)
                           }}
                           className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
-                        >
+                          placeholder="Type or select service..."
+                        />
+                        <datalist id={`service-list-${index}`}>
                           {DENTAL_SERVICES.map((s) => (
-                            <option key={s} value={s}>{s}</option>
+                            <option key={s.name} value={s.name} />
                           ))}
-                        </select>
+                        </datalist>
                       </div>
                       <div className="w-full sm:w-40">
                         <input
@@ -365,7 +385,7 @@ export default function InvoiceDetailPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setEditItems([...editItems, { serviceName: "Consultation", price: 0 }])}
+                  onClick={() => setEditItems([...editItems, { serviceName: "", price: 0 }])}
                   className="mt-3 inline-flex items-center text-sm text-[#5E6AD2] hover:text-[#6872D9] font-medium transition-colors"
                 >
                   <Plus className="h-4 w-4 mr-1" />

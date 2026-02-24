@@ -99,7 +99,7 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-[#0a0a0c]/80 backdrop-blur-sm border-b border-white/[0.06] sticky top-0 z-30">
+      <header className="bg-[#0a0a0c]/80 backdrop-blur-sm border-b border-white/[0.06] sticky top-0 z-30 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-14 items-center">
             <div className="flex items-center">
@@ -139,7 +139,7 @@ export default function DashboardLayout({
       <div className="flex flex-1">
         {/* Sidebar for mobile */}
         <div
-          className={`fixed inset-0 z-40 md:hidden transition-opacity duration-200 ${
+          className={`fixed inset-0 z-40 md:hidden transition-opacity duration-200 print:hidden ${
             isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         >
@@ -235,7 +235,7 @@ export default function DashboardLayout({
         </div>
 
         {/* Sidebar for desktop */}
-        <div className="hidden md:flex md:flex-shrink-0">
+        <div className="hidden md:flex md:flex-shrink-0 print:!hidden">
           <div className="flex flex-col w-60">
             <div className="flex flex-col h-0 flex-1 border-r border-white/[0.06] bg-[#0a0a0c]">
               <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
@@ -294,7 +294,7 @@ export default function DashboardLayout({
         </div>
 
         {/* Main content */}
-        <div className="flex flex-col w-0 flex-1 overflow-hidden">
+        <div className="flex flex-col w-0 flex-1 overflow-hidden print:!w-full print:!overflow-visible">
           <main className="flex-1 relative overflow-y-auto focus:outline-none">
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">{children}</div>
@@ -303,7 +303,9 @@ export default function DashboardLayout({
         </div>
       </div>
 
-      <ToastContainer />
+      <div className="print:hidden">
+        <ToastContainer />
+      </div>
     </div>
   )
 }
