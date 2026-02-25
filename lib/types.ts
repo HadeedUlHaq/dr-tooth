@@ -57,6 +57,7 @@ export interface ActivityLog {
 export interface LineItem {
   serviceName: string
   price: number // in Rupees
+  quantity?: number // default: 1
 }
 
 export type DiscountType = "percent" | "flat"

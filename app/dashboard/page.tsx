@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback, useRef } from "react"
+import { createPortal } from "react-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import {
   getTodayAppointments,
@@ -70,7 +71,9 @@ export default function Dashboard() {
 
   // Three-dots dropdown
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; right: number } | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const triggerButtonRef = useRef<HTMLButtonElement | null>(null)
 
   // Mark Late modal
   const [markLateAppointment, setMarkLateAppointment] = useState<Appointment | null>(null)
@@ -83,8 +86,12 @@ export default function Dashboard() {
   // Click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
+      // Let the trigger button's own onClick handle the toggle
+      if (triggerButtonRef.current && triggerButtonRef.current.contains(e.target as Node)) return
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpenDropdownId(null)
+        setDropdownPosition(null)
+        triggerButtonRef.current = null
       }
     }
     if (openDropdownId) {
@@ -388,7 +395,7 @@ export default function Dashboard() {
             Scheduled, Confirmed &amp; Late
           </span>
         </div>
-        <div className="overflow-hidden">
+        <div>
           {displayedAppointments.length === 0 ? (
             <div className="text-center py-10 text-[#8A8F98] text-sm">{getEmptyMessage()}</div>
           ) : (
@@ -467,28 +474,41 @@ export default function Dashboard() {
                       {(userData?.role === "admin" || userData?.role === "receptionist") &&
                         (appointment.status === "scheduled" || appointment.status === "confirmed") &&
                         appointment.time !== "on-call" && (
-                        <div
-                          className="relative flex items-center px-3 flex-shrink-0"
-                          ref={openDropdownId === appointment.id ? dropdownRef : undefined}
-                        >
+                        <div className="relative flex items-center px-3 flex-shrink-0">
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
                               e.preventDefault()
-                              setOpenDropdownId(openDropdownId === appointment.id ? null : appointment.id)
+                              if (openDropdownId === appointment.id) {
+                                setOpenDropdownId(null)
+                                setDropdownPosition(null)
+                                triggerButtonRef.current = null
+                              } else {
+                                const btn = e.currentTarget as HTMLButtonElement
+                                triggerButtonRef.current = btn
+                                const rect = btn.getBoundingClientRect()
+                                setDropdownPosition({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+                                setOpenDropdownId(appointment.id)
+                              }
                             }}
                             className="text-[#8A8F98] hover:text-[#EDEDEF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
-                          {openDropdownId === appointment.id && (
-                            <div className="absolute right-3 top-full mt-1 w-52 bg-[#0F0F12] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1 z-20">
+                          {openDropdownId === appointment.id && dropdownPosition && createPortal(
+                            <div
+                              ref={dropdownRef}
+                              style={{ position: "fixed", top: dropdownPosition.top, right: dropdownPosition.right, zIndex: 9999 }}
+                              className="w-52 bg-[#0F0F12] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1"
+                            >
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   e.preventDefault()
                                   setMarkLateAppointment(appointment)
                                   setOpenDropdownId(null)
+                                  setDropdownPosition(null)
+                                  triggerButtonRef.current = null
                                 }}
                                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-orange-400 hover:bg-orange-500/10 transition-colors"
                               >
@@ -502,6 +522,8 @@ export default function Dashboard() {
                                     e.preventDefault()
                                     handleRemoveLate(appointment)
                                     setOpenDropdownId(null)
+                                    setDropdownPosition(null)
+                                    triggerButtonRef.current = null
                                   }}
                                   disabled={revokingLateId === appointment.id}
                                   className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-50"
@@ -510,7 +532,8 @@ export default function Dashboard() {
                                   {revokingLateId === appointment.id ? "Reverting..." : "Remove Late Status"}
                                 </button>
                               )}
-                            </div>
+                            </div>,
+                            document.body
                           )}
                         </div>
                       )}

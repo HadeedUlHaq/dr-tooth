@@ -962,7 +962,7 @@ export default function AppointmentDetailClient() {
                     </Link>
                   ) : (
                     <Link
-                      href={`/dashboard/invoices/new?appointmentId=${id}&patientName=${encodeURIComponent(appointment.patientName)}&patientPhone=${encodeURIComponent(appointment.patientPhone || "")}`}
+                      href={`/dashboard/invoices/new?appointmentId=${id}&patientName=${encodeURIComponent(appointment.patientName)}&patientPhone=${encodeURIComponent(appointment.patientPhone || "")}${registeredPatient ? `&patientId=${registeredPatient.id}` : ""}`}
                       className="inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
                     >
                       <Receipt className="h-4 w-4 mr-2" />

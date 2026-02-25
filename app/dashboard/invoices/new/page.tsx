@@ -42,7 +42,7 @@ export default function NewInvoicePage() {
   const [appointmentId] = useState(prefillAppointmentId)
   const [patientId, setPatientId] = useState(prefillPatientId)
   const [lineItems, setLineItems] = useState<LineItem[]>([
-    { serviceName: "", price: 0 },
+    { serviceName: "", price: 0, quantity: 1 },
   ])
   const [discountType, setDiscountType] = useState<DiscountType>("flat")
   const [discountValue, setDiscountValue] = useState(0)
@@ -79,7 +79,7 @@ export default function NewInvoicePage() {
   }, [patientSearch])
 
   const subtotal = useMemo(
-    () => lineItems.reduce((sum, item) => sum + (item.price || 0), 0),
+    () => lineItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0),
     [lineItems]
   )
 
@@ -96,7 +96,7 @@ export default function NewInvoicePage() {
   )
 
   const addLineItem = () => {
-    setLineItems([...lineItems, { serviceName: "", price: 0 }])
+    setLineItems([...lineItems, { serviceName: "", price: 0, quantity: 1 }])
   }
 
   const removeLineItem = (index: number) => {
@@ -108,6 +108,8 @@ export default function NewInvoicePage() {
     const updated = [...lineItems]
     if (field === "price") {
       updated[index] = { ...updated[index], price: Number(value) || 0 }
+    } else if (field === "quantity") {
+      updated[index] = { ...updated[index], quantity: Math.max(1, Number(value) || 1) }
     } else {
       updated[index] = { ...updated[index], [field]: value }
     }
@@ -302,8 +304,18 @@ export default function NewInvoicePage() {
                         ))}
                       </datalist>
                     </div>
-                    <div className="w-full sm:w-40">
-                      <label className="block text-xs font-medium text-[#8A8F98] mb-1">Price (Rs.)</label>
+                    <div className="w-full sm:w-20">
+                      <label className="block text-xs font-medium text-[#8A8F98] mb-1">Qty</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity ?? 1}
+                        onChange={(e) => updateLineItem(index, "quantity", e.target.value)}
+                        className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors text-center"
+                      />
+                    </div>
+                    <div className="w-full sm:w-36">
+                      <label className="block text-xs font-medium text-[#8A8F98] mb-1">Unit Price (Rs.)</label>
                       <input
                         type="number"
                         min="0"
@@ -312,6 +324,12 @@ export default function NewInvoicePage() {
                         className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
                         placeholder="0"
                       />
+                    </div>
+                    <div className="hidden sm:flex flex-col justify-end">
+                      <label className="block text-xs font-medium text-[#8A8F98] mb-1 invisible">Total</label>
+                      <div className="h-[44px] flex items-center px-1 text-sm text-[#8A8F98] whitespace-nowrap">
+                        = Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                      </div>
                     </div>
                     <button
                       type="button"

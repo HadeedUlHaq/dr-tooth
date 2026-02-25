@@ -98,7 +98,7 @@ export default function InvoiceDetailPage() {
   }, [id])
 
   const editSubtotal = useMemo(
-    () => editItems.reduce((sum, item) => sum + (item.price || 0), 0),
+    () => editItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0),
     [editItems]
   )
   const editDiscountAmount = useMemo(() => {
@@ -355,7 +355,21 @@ export default function InvoiceDetailPage() {
                           ))}
                         </datalist>
                       </div>
-                      <div className="w-full sm:w-40">
+                      <div className="w-full sm:w-20">
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity ?? 1}
+                          onChange={(e) => {
+                            const updated = [...editItems]
+                            updated[index] = { ...updated[index], quantity: Math.max(1, Number(e.target.value) || 1) }
+                            setEditItems(updated)
+                          }}
+                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors text-center"
+                          placeholder="Qty"
+                        />
+                      </div>
+                      <div className="w-full sm:w-36">
                         <input
                           type="number"
                           min="0"
@@ -366,8 +380,13 @@ export default function InvoiceDetailPage() {
                             setEditItems(updated)
                           }}
                           className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
-                          placeholder="Price"
+                          placeholder="Unit Price"
                         />
+                      </div>
+                      <div className="hidden sm:flex flex-col justify-end">
+                        <div className="h-[44px] flex items-center px-1 text-sm text-[#8A8F98] whitespace-nowrap">
+                          = Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                        </div>
                       </div>
                       <button
                         type="button"
@@ -385,7 +404,7 @@ export default function InvoiceDetailPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setEditItems([...editItems, { serviceName: "", price: 0 }])}
+                  onClick={() => setEditItems([...editItems, { serviceName: "", price: 0, quantity: 1 }])}
                   className="mt-3 inline-flex items-center text-sm text-[#5E6AD2] hover:text-[#6872D9] font-medium transition-colors"
                 >
                   <Plus className="h-4 w-4 mr-1" />
@@ -456,16 +475,24 @@ export default function InvoiceDetailPage() {
                       <thead className="bg-white/[0.03]">
                         <tr>
                           <th className="px-4 py-2.5 text-left text-xs font-medium text-[#8A8F98] uppercase">Service</th>
-                          <th className="px-4 py-2.5 text-right text-xs font-medium text-[#8A8F98] uppercase">Price</th>
+                          <th className="px-4 py-2.5 text-center text-xs font-medium text-[#8A8F98] uppercase w-16">Qty</th>
+                          <th className="px-4 py-2.5 text-right text-xs font-medium text-[#8A8F98] uppercase">Unit Price</th>
+                          <th className="px-4 py-2.5 text-right text-xs font-medium text-[#8A8F98] uppercase">Total</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/[0.06]">
-                        {invoice.lineItems.map((item, i) => (
-                          <tr key={i}>
-                            <td className="px-4 py-3 text-sm text-[#EDEDEF]">{item.serviceName}</td>
-                            <td className="px-4 py-3 text-sm text-[#EDEDEF] text-right">Rs. {item.price.toLocaleString()}</td>
-                          </tr>
-                        ))}
+                        {invoice.lineItems.map((item, i) => {
+                          const qty = item.quantity || 1
+                          const rowTotal = item.price * qty
+                          return (
+                            <tr key={i}>
+                              <td className="px-4 py-3 text-sm text-[#EDEDEF]">{item.serviceName}</td>
+                              <td className="px-4 py-3 text-sm text-[#8A8F98] text-center">{qty}</td>
+                              <td className="px-4 py-3 text-sm text-[#8A8F98] text-right">Rs. {item.price.toLocaleString()}</td>
+                              <td className="px-4 py-3 text-sm text-[#EDEDEF] font-medium text-right">Rs. {rowTotal.toLocaleString()}</td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
                   </div>
