@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Calendar, CalendarDays, LogOut, Menu, User, X, Home, PlusCircle, Users, Contact, Receipt, Package } from "lucide-react"
+import { Calendar, CalendarDays, LogOut, Menu, User, X, Home, PlusCircle, Users, Contact, Receipt, Package, MessageCircle } from "lucide-react"
 import { getUpcomingAppointments, getAppointmentsNeedingConfirmation } from "@/lib/appointmentService"
 import {
   sendAppointmentNotification,
@@ -230,6 +230,16 @@ export default function DashboardLayout({
                     Manage Users
                   </Link>
                 )}
+                {(userData?.role === "admin" || userData?.role === "receptionist") && (
+                  <Link
+                    href="/dashboard/whatsapp"
+                    className={navLinkClass}
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    <MessageCircle className="mr-3 h-5 w-5" />
+                    Chat Bot
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="w-full group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
@@ -286,6 +296,12 @@ export default function DashboardLayout({
                     <Link href="/dashboard/users" className={navLinkClass}>
                       <Users className="mr-3 h-5 w-5" />
                       Manage Users
+                    </Link>
+                  )}
+                  {(userData?.role === "admin" || userData?.role === "receptionist") && (
+                    <Link href="/dashboard/whatsapp" className={navLinkClass}>
+                      <MessageCircle className="mr-3 h-5 w-5" />
+                      Chat Bot
                     </Link>
                   )}
                 </nav>

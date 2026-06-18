@@ -7,7 +7,9 @@
       "Bash(npm uninstall:*)",
       "Bash(npx next dev:*)",
       "Bash(npm ls:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(find \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Temp\\\\OpenWA\" -name \"*.json\" -o -name \"*.ts\" | head -20)",
+      "Bash(npm info *)"
     ]
   }
 }

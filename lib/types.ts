@@ -122,3 +122,32 @@ export interface LabCase {
   updatedAt?: string
 }
 
+// ── WhatsApp AI Agent ──
+
+export type ConversationPhase =
+  | "idle"
+  | "identifying_patient"
+  | "booking_appointment"
+  | "rescheduling_appointment"
+  | "cancelling_appointment"
+  | "checking_appointments"
+  | "checking_invoice"
+  | "awaiting_confirmation"
+
+export interface WhatsAppMessage {
+  role: "user" | "assistant"
+  content: string
+  timestamp: string
+}
+
+export interface WhatsAppSession {
+  phoneNumber: string
+  patientId: string | null
+  patientName: string | null
+  phase: ConversationPhase
+  messages: WhatsAppMessage[]
+  pendingAction: Record<string, unknown> | null
+  lastActiveAt: string
+  createdAt: string
+}
+
