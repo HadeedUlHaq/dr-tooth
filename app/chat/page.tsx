@@ -2,6 +2,36 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Send, Stethoscope } from "lucide-react"
+import ReactMarkdown, { type Components } from "react-markdown"
+import remarkGfm from "remark-gfm"
+
+// Theme-matched renderers so the assistant can reply with tables, bold text and
+// lists (e.g. invoice details as a table) instead of raw markdown.
+const markdownComponents: Components = {
+  p: ({ children }) => <p className="whitespace-pre-wrap mb-2 last:mb-0">{children}</p>,
+  strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+  ul: ({ children }) => <ul className="list-disc pl-4 my-2 space-y-0.5">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal pl-4 my-2 space-y-0.5">{children}</ol>,
+  a: ({ children, href }) => (
+    <a href={href} className="text-[#8AB4F8] underline" target="_blank" rel="noreferrer">
+      {children}
+    </a>
+  ),
+  table: ({ children }) => (
+    <div className="overflow-x-auto my-2 rounded-lg border border-white/10">
+      <table className="w-full border-collapse text-xs">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead className="bg-white/[0.06]">{children}</thead>,
+  th: ({ children }) => (
+    <th className="border-b border-white/10 px-3 py-2 text-left font-semibold text-[#EDEDEF]">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="border-b border-white/[0.06] px-3 py-2 align-top">{children}</td>
+  ),
+}
 
 interface ChatMessage {
   role: "user" | "assistant"
@@ -133,7 +163,13 @@ export default function ChatPage() {
                     : "bg-white/[0.06] text-[#EDEDEF] rounded-tl-sm"
                 }`}
               >
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+                {msg.role === "user" ? (
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                ) : (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                    {msg.content}
+                  </ReactMarkdown>
+                )}
               </div>
             </div>
           ))}

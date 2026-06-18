@@ -16,9 +16,11 @@ export async function getSession(phoneNumber: string): Promise<WhatsAppSession> 
     phoneNumber,
     patientId: null,
     patientName: null,
+    patientPhone: null,
     phase: "idle",
     messages: [],
     pendingAction: null,
+    invoiceAttempts: 0,
     lastActiveAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
   }
@@ -44,6 +46,40 @@ export async function appendMessages(
   const session = await getSession(phoneNumber)
   const updated = [...session.messages, ...newMessages].slice(-MAX_MESSAGES)
   await updateSession(phoneNumber, { messages: updated })
+}
+
+// ── Rate limiting ──
+// Per-session sliding-ish window stored in Firestore (serverless-safe — survives
+// across stateless invocations). Guards the public chat endpoint from a hammering
+// tab running up the OpenAI bill.
+const RATE_LIMIT_COLLECTION = "chat_rate_limits"
+const RATE_WINDOW_MS = 60_000
+const RATE_MAX_PER_WINDOW = 15
+
+// Returns true if the request is allowed, false if the caller is over the limit.
+export async function checkRateLimit(sessionId: string): Promise<boolean> {
+  const ref = getAdminDb().collection(RATE_LIMIT_COLLECTION).doc(sessionId)
+  try {
+    return await getAdminDb().runTransaction(async (tx) => {
+      const snap = await tx.get(ref)
+      const now = Date.now()
+      const data = snap.exists ? (snap.data() as { windowStart: number; count: number }) : null
+
+      if (!data || now - data.windowStart > RATE_WINDOW_MS) {
+        tx.set(ref, { windowStart: now, count: 1 })
+        return true
+      }
+      if (data.count >= RATE_MAX_PER_WINDOW) {
+        return false
+      }
+      tx.update(ref, { count: data.count + 1 })
+      return true
+    })
+  } catch (err) {
+    // Fail open — never block a genuine patient because the limiter errored.
+    console.error("[Rate limit check failed]", String(err))
+    return true
+  }
 }
 
 export async function getAllSessions(): Promise<WhatsAppSession[]> {

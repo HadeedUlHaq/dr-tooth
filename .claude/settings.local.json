@@ -9,7 +9,8 @@
       "Bash(npm ls:*)",
       "Bash(dir:*)",
       "Bash(find \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Temp\\\\OpenWA\" -name \"*.json\" -o -name \"*.ts\" | head -20)",
-      "Bash(npm info *)"
+      "Bash(npm info *)",
+      "PowerShell(npm run *)"
     ]
   }
 }

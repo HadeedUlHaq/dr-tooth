@@ -144,9 +144,16 @@ export interface WhatsAppSession {
   phoneNumber: string
   patientId: string | null
   patientName: string | null
+  // Phone the caller has identified with this session. For WhatsApp this is the
+  // verified JID; for the anonymous web chat it is locked to the first phone the
+  // caller supplies, so their identity can't silently drift mid-conversation.
+  patientPhone: string | null
   phase: ConversationPhase
   messages: WhatsAppMessage[]
   pendingAction: Record<string, unknown> | null
+  // Count of failed invoice-lookup attempts, used to throttle brute-forcing of
+  // short invoice ids within a session.
+  invoiceAttempts?: number
   lastActiveAt: string
   createdAt: string
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession, appendMessages } from "@/lib/whatsapp/sessionService"
+import { getSession, appendMessages, checkRateLimit } from "@/lib/whatsapp/sessionService"
 import { runAgent } from "@/lib/whatsapp/agent"
 
 export const runtime = "nodejs"
@@ -26,6 +26,14 @@ export async function POST(request: NextRequest) {
 
     if (!sessionId || typeof message !== "string" || !message.trim()) {
       return NextResponse.json({ error: "Missing sessionId or message" }, { status: 400 })
+    }
+
+    // Throttle before doing any expensive work (DB reads + OpenAI call).
+    const allowed = await checkRateLimit(sessionId)
+    if (!allowed) {
+      return NextResponse.json({
+        reply: "You're sending messages very quickly — please wait a moment and try again. 🙏",
+      })
     }
 
     const session = await getSession(sessionId)
