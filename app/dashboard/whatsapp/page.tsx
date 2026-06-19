@@ -51,7 +51,7 @@ export default function WhatsAppPortalPage() {
   const [sendResult, setSendResult] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!loading && userData?.role !== "admin" && userData?.role !== "receptionist") {
+    if (!loading && userData && userData.role !== "admin" && userData.role !== "receptionist") {
       router.push("/dashboard")
     }
   }, [loading, userData, router])

@@ -35,7 +35,7 @@ export default function WhatsAppConnectPage() {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (!loading && userData?.role !== "admin" && userData?.role !== "receptionist") {
+    if (!loading && userData && userData.role !== "admin" && userData.role !== "receptionist") {
       router.push("/dashboard")
     }
   }, [loading, userData, router])

@@ -20,7 +20,7 @@ export default function WhatsAppSessionPage() {
   const [togglingBot, setTogglingBot] = useState(false)
 
   useEffect(() => {
-    if (!loading && userData?.role !== "admin" && userData?.role !== "receptionist") {
+    if (!loading && userData && userData.role !== "admin" && userData.role !== "receptionist") {
       router.push("/dashboard")
     }
   }, [loading, userData, router])
