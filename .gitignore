@@ -25,3 +25,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# cloudflare / opennext build output
+/.open-next/
+/.wrangler/
+
+# stray build & deploy logs
+build-out*.txt
+deploy-out.txt
+dctail.txt

@@ -1,5 +1,4 @@
-import { getAdminDb } from "./firebaseAdmin"
-import { FieldValue, FieldPath } from "firebase-admin/firestore"
+import { getAdminDb, FieldValue, FieldPath, type Firestore, type DocumentSnapshot } from "./firebaseAdmin"
 import type { WhatsAppSession } from "../types"
 import { requireString, validateDate, validateTime, validateSlot } from "./validate"
 import { CLINIC_INFO, SERVICES } from "./clinicInfo"
@@ -88,7 +87,7 @@ function allSlots(): string[] {
 // Write an audit trail entry, matching the shape used by lib/activityService.ts.
 // Failures here must never break the patient-facing action.
 async function writeAudit(
-  db: FirebaseFirestore.Firestore,
+  db: Firestore,
   type: string,
   message: string
 ): Promise<void> {
@@ -611,7 +610,7 @@ export async function executeTool(
       // (invoice.id.slice(0, 8) — see the dashboard + print template). Resolve it:
       // try an exact full-id match first, then a doc-id prefix range for the short
       // number. Case-sensitive, matching how the id is displayed.
-      let candidates: FirebaseFirestore.DocumentSnapshot[]
+      let candidates: DocumentSnapshot[]
       const exact = await db.collection("invoices").doc(num).get()
       if (exact.exists) {
         candidates = [exact]
