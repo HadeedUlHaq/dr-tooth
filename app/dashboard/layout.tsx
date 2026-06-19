@@ -237,7 +237,7 @@ export default function DashboardLayout({
                     onClick={() => setIsSidebarOpen(false)}
                   >
                     <MessageCircle className="mr-3 h-5 w-5" />
-                    Chat Bot
+                    WhatsApp
                   </Link>
                 )}
                 <button

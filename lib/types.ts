@@ -138,6 +138,9 @@ export interface WhatsAppMessage {
   role: "user" | "assistant"
   content: string
   timestamp: string
+  // For assistant messages: was it the AI bot or a human staff member (manual
+  // take-over from the portal)? Absent on older messages.
+  via?: "bot" | "staff"
 }
 
 export interface WhatsAppSession {
@@ -154,6 +157,9 @@ export interface WhatsAppSession {
   // Count of failed invoice-lookup attempts, used to throttle brute-forcing of
   // short invoice ids within a session.
   invoiceAttempts?: number
+  // When true, the AI bot won't auto-reply to this conversation — a staff member
+  // has taken it over manually from the portal. Absent/false = bot active.
+  botPaused?: boolean
   lastActiveAt: string
   createdAt: string
 }
