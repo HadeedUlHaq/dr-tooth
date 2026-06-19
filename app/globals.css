@@ -1,9 +1,9 @@
+/* react-big-calendar base styles */
+@import 'react-big-calendar/lib/css/react-big-calendar.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* react-big-calendar base styles */
-@import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 @layer base {
   :root {

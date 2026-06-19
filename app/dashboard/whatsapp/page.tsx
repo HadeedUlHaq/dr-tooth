@@ -1,8 +1,6 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { useAuth } from "@/contexts/AuthContext"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   Smartphone,
@@ -35,8 +33,6 @@ interface Stats {
 const CONNECTED = new Set(["connected", "ready"])
 
 export default function WhatsAppPortalPage() {
-  const { userData, loading } = useAuth()
-  const router = useRouter()
   const [sessions, setSessions] = useState<WhatsAppSession[]>([])
   const [conn, setConn] = useState<Connection | null>(null)
   const [stats, setStats] = useState<Stats | null>(null)
@@ -49,12 +45,6 @@ export default function WhatsAppPortalPage() {
   const [msg, setMsg] = useState("")
   const [sending, setSending] = useState(false)
   const [sendResult, setSendResult] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!loading && userData && userData.role !== "admin" && userData.role !== "receptionist") {
-      router.push("/dashboard")
-    }
-  }, [loading, userData, router])
 
   const loadAll = useCallback(async () => {
     const [sRes, cRes, stRes] = await Promise.allSettled([

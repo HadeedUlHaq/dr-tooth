@@ -1,8 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useAuth } from "@/contexts/AuthContext"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, CheckCircle2, RefreshCw, Smartphone } from "lucide-react"
 
@@ -28,17 +26,9 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 export default function WhatsAppConnectPage() {
-  const { userData, loading } = useAuth()
-  const router = useRouter()
   const [conn, setConn] = useState<Connection | null>(null)
   const [fetching, setFetching] = useState(true)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    if (!loading && userData && userData.role !== "admin" && userData.role !== "receptionist") {
-      router.push("/dashboard")
-    }
-  }, [loading, userData, router])
 
   useEffect(() => {
     let cancelled = false

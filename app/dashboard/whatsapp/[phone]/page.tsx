@@ -1,15 +1,12 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/AuthContext"
+import { useParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Send, Pause, Power } from "lucide-react"
 import type { WhatsAppSession } from "@/lib/types"
 
 export default function WhatsAppSessionPage() {
-  const { userData, loading } = useAuth()
-  const router = useRouter()
   const params = useParams()
   const phone = decodeURIComponent(params.phone as string)
 
@@ -18,12 +15,6 @@ export default function WhatsAppSessionPage() {
   const [msg, setMsg] = useState("")
   const [sending, setSending] = useState(false)
   const [togglingBot, setTogglingBot] = useState(false)
-
-  useEffect(() => {
-    if (!loading && userData && userData.role !== "admin" && userData.role !== "receptionist") {
-      router.push("/dashboard")
-    }
-  }, [loading, userData, router])
 
   const load = useCallback(async () => {
     try {
