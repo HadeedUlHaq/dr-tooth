@@ -384,14 +384,15 @@ export default function WhatsAppPortalPage() {
           </div>
         ) : (
           <div className="rounded-xl border border-white/[0.06] bg-[#111113] overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06] bg-white/[0.02]">
                   <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Customer</th>
-                  <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Phase</th>
+                  <th className="text-left px-4 py-3 text-[#8A8F98] font-medium hidden md:table-cell">Phase</th>
                   <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Bot</th>
-                  <th className="text-center px-4 py-3 text-[#8A8F98] font-medium">Msgs</th>
-                  <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Last Active</th>
+                  <th className="text-center px-4 py-3 text-[#8A8F98] font-medium hidden sm:table-cell">Msgs</th>
+                  <th className="text-left px-4 py-3 text-[#8A8F98] font-medium hidden md:table-cell">Last Active</th>
                   <th className="px-4 py-3 w-px"></th>
                 </tr>
               </thead>
@@ -417,7 +418,7 @@ export default function WhatsAppPortalPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden md:table-cell">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-white/[0.06] text-[#8A8F98]">
                         {phaseLabel[s.phase] ?? s.phase}
                       </span>
@@ -429,8 +430,8 @@ export default function WhatsAppPortalPage() {
                         <span className="text-xs text-emerald-400">Auto</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-center text-[#8A8F98]">{s.messages.length}</td>
-                    <td className="px-4 py-3 text-[#8A8F98] whitespace-nowrap">{formatTime(s.lastActiveAt)}</td>
+                    <td className="px-4 py-3 text-center text-[#8A8F98] hidden sm:table-cell">{s.messages.length}</td>
+                    <td className="px-4 py-3 text-[#8A8F98] whitespace-nowrap hidden md:table-cell">{formatTime(s.lastActiveAt)}</td>
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => setConfirmDelete({ phone: s.phoneNumber, name: s.patientName ?? "Guest" })}
@@ -444,6 +445,7 @@ export default function WhatsAppPortalPage() {
                 ))}
               </tbody>
             </table>
+            </div>
             {pageCount > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06]">
                 <span className="text-xs text-[#8A8F98]">
