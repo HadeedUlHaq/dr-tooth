@@ -8,11 +8,13 @@ import { getAdminDb } from "./firebaseAdmin"
 // silently kills the bot — the caps are a safety net, not a hard gate.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Pick a SAFE reply address. Modern WhatsApp delivers senders as privacy ids
-// ("...@lid") which CANNOT be messaged back — doing so got the device logged
-// out. With RESOLVE_LID_TO_PHONE enabled on the gateway, OpenWA fills in
-// `senderPhone`; we reply to "<phone>@s.whatsapp.net" (Baileys JID). For normal
-// senders the inbound JID is already a phone and is safe to use as-is.
+// Pick the reply address. Modern WhatsApp delivers senders as privacy ids
+// ("...@lid"). If the gateway resolves the real phone (`senderPhone`), prefer
+// that — reply to "<phone>@s.whatsapp.net" (Baileys JID). Otherwise reply to the
+// EXACT JID the message arrived on, INCLUDING "@lid": the gateway delivers to it
+// directly (verified), whereas reconstructing "<digits>@c.us"/@s.whatsapp.net
+// from a lid sends into the void. For normal senders the inbound JID is already
+// a phone and is used as-is.
 export function resolveReplyJid(data: {
   from?: string
   chatId?: string
@@ -21,12 +23,14 @@ export function resolveReplyJid(data: {
 }): string | null {
   const chatId = data.chatId || data.from || ""
 
-  if (data.isLidSender) {
-    const phone = String(data.senderPhone ?? "").replace(/[^\d]/g, "")
-    return phone ? `${phone}@s.whatsapp.net` : null // unresolved → don't risk it
+  // Use a resolved real phone when the gateway provides one.
+  if (data.isLidSender && data.senderPhone) {
+    const phone = String(data.senderPhone).replace(/[^\d]/g, "")
+    if (phone) return `${phone}@s.whatsapp.net`
   }
 
-  if (!chatId || chatId.includes("@lid")) return null
+  // Otherwise echo back the exact incoming JID (a bare phone JID, or "@lid").
+  if (!chatId) return null
   return chatId
 }
 
@@ -51,7 +55,8 @@ export async function alreadyHandled(deliveryId: string): Promise<boolean> {
       tx.set(ref, { at: Date.now() })
       return false
     })
-  } catch {
+  } catch (err) {
+    console.error("[WA DEDUP] alreadyHandled failed (failing open):", String(err))
     return false // fail open
   }
 }

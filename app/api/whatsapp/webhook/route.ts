@@ -59,14 +59,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "ignored" })
     }
 
-    // Idempotency — never act on the same delivery twice (a retry = a double send,
-    // which is exactly the kind of behaviour that gets a number flagged).
-    const deliveryId: string = body?.deliveryId || body?.idempotencyKey || ""
-    if (await alreadyHandled(deliveryId)) {
+    const data = body?.data ?? {}
+
+    // Idempotency — never act on the same MESSAGE twice (duplicate processing = a
+    // double reply, exactly the behaviour that gets a number flagged).
+    // Dedupe on the gateway's `idempotencyKey` (stable per message: it is
+    // `msg_<sessionId>_<messageId>` and identical across every (re)delivery of one
+    // message), NOT `deliveryId` (freshly random per delivery). The gateway can
+    // fire the same message several times — each with a new deliveryId — so keying
+    // on deliveryId never dedupes them. Fall back to the message id, then deliveryId.
+    const dedupeKey: string = String(
+      body?.idempotencyKey || data?.id || body?.deliveryId || ""
+    ).replace(/\//g, "_")
+    if (await alreadyHandled(dedupeKey)) {
       return NextResponse.json({ status: "ignored", reason: "duplicate" })
     }
-
-    const data = body?.data ?? {}
 
     console.log(
       `[WhatsApp Webhook] from=${data?.from} chatId=${data?.chatId} lid=${data?.isLidSender} senderPhone=${data?.senderPhone} group=${data?.isGroup} type=${data?.type}`

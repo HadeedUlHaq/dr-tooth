@@ -96,15 +96,16 @@ export async function getConnection(): Promise<OpenWaConnection> {
     throw new Error(`OpenWA status error ${sres.status}: ${await sres.text()}`)
   }
   const session = await sres.json()
+  const rawStatus = session.status ?? "unknown"
   const result: OpenWaConnection = {
-    status: session.status ?? "unknown",
+    status: rawStatus === "ready" ? "connected" : rawStatus,
     phoneNumber: session.phone, // OpenWA returns `phone`, not `phoneNumber`
     pushName: session.pushName,
   }
 
   // While waiting to be linked, OpenWA reports status "qr_ready" and the QR is
   // available at /qr as { qrCode: "data:image/png;base64,..." }.
-  if (result.status === "qr_ready") {
+  if (rawStatus === "qr_ready") {
     const qres = await fetch(`${base}/api/sessions/${sessionId}/qr`, { headers })
     if (qres.ok) {
       const qr = await qres.json()
