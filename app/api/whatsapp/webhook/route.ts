@@ -18,8 +18,11 @@ import {
   isStaffElevated,
   isPinLockedOut,
 } from "@/lib/whatsapp/staffAuth"
+import { parseOptCommand } from "@/lib/whatsapp/messaging"
 
 export const runtime = "nodejs"
+// Allow longer runs: a staff broadcast sends to many patients in this handler.
+export const maxDuration = 60
 
 // OpenWA signs each webhook delivery with HMAC-SHA256 over the raw request body:
 //   X-OpenWA-Signature: sha256=<hex>
@@ -170,6 +173,25 @@ export async function POST(request: NextRequest) {
       await updateSession(sessionKey, { staffName: null, staffRole: null, staffAuthAt: null })
       await sendToChat(replyJid, "👋 Logged out.")
       return NextResponse.json({ status: "ok", reason: "staff_logout" })
+    }
+
+    // Opt-out / opt-in (STOP / START) — controls PROACTIVE messages only. A STOP
+    // reply is far better than a spam report (it even counts as a received message).
+    const opt = parseOptCommand(messageText)
+    if (opt === "stop") {
+      await updateSession(sessionKey, { optedOut: true, optedOutAt: new Date().toISOString() })
+      await recordInbound()
+      await sendToChat(
+        replyJid,
+        "You've been unsubscribed from appointment reminders. You can still book or ask us anything here anytime. Reply START to turn reminders back on."
+      )
+      return NextResponse.json({ status: "ok", reason: "opted_out" })
+    }
+    if (opt === "start" && session.optedOut) {
+      await updateSession(sessionKey, { optedOut: false, optedOutAt: null })
+      await recordInbound()
+      await sendToChat(replyJid, "✅ Reminders re-enabled. We'll keep you posted about your appointments.")
+      return NextResponse.json({ status: "ok", reason: "opted_in" })
     }
 
     const staff = isStaffElevated(session)

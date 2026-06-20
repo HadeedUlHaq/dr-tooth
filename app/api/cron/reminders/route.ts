@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { getAdminDb, FieldValue } from "@/lib/whatsapp/firebaseAdmin"
 import { sendToChat, toChatId } from "@/lib/whatsapp/openwaClient"
 import { getReminderConfig } from "@/lib/whatsapp/botControl"
+import { getAllSessions } from "@/lib/whatsapp/sessionService"
+import { spin, jitterMs } from "@/lib/whatsapp/messaging"
 
 export const runtime = "nodejs"
+// Bulk sends with human-like delays can run a while; allow up to 60s.
+export const maxDuration = 60
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Appointment reminders. A scheduler (cron on the gateway VM) POSTs here every
@@ -21,7 +25,6 @@ export const runtime = "nodejs"
 
 const PKT_OFFSET = "+05:00" // Asia/Karachi, no DST
 const MAX_PER_RUN = 100
-const SEND_DELAY_MS = 800
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const digits = (s: unknown) => String(s ?? "").replace(/\D/g, "")
@@ -89,16 +92,33 @@ export async function POST(request: NextRequest) {
     .where("status", "in", ["scheduled", "confirmed"])
     .get()
 
+  // Opted-out patients (replied STOP) — never send them proactive reminders.
+  const optedOut = new Set<string>()
+  try {
+    for (const s of await getAllSessions()) {
+      if (!s.optedOut) continue
+      for (const p of [s.realPhone, s.patientPhone, s.phoneNumber]) {
+        const d = digits(p)
+        if (d.length >= 9) optedOut.add(d.slice(-9))
+      }
+    }
+  } catch (err) {
+    console.error("[reminders optedOut load]", String(err))
+  }
+
   let sent = 0
   let dayCount = 0
   let hourCount = 0
   let skippedNoPhone = 0
   let skippedNotAllowed = 0
   let skippedDisabled = 0
+  let skippedOptedOut = 0
   const errors: string[] = []
+  const runStart = Date.now()
 
   for (const doc of snap.docs) {
     if (sent >= MAX_PER_RUN) break
+    if (Date.now() - runStart > 50_000) break // stay within maxDuration; rest retry next run
     const a = doc.data() as Record<string, unknown>
     const date = String(a.date || "")
     const time = String(a.time || "")
@@ -152,13 +172,23 @@ export async function POST(request: NextRequest) {
       skippedNotAllowed++
       continue
     }
+    if (optedOut.has(digits(phone).slice(-9))) {
+      skippedOptedOut++
+      continue
+    }
 
     const name = String(a.patientName || "there")
     const t = prettyTime(time)
+    // Spintax variation so reminders aren't byte-identical across recipients
+    // (anti-ban), still personalised with name + time, with a STOP opt-out.
     const text =
       kind === "hour"
-        ? `Hi ${name}! ⏰ Reminder: your appointment at Dr Tooth Dental Clinic is *today at ${t}*. See you soon! Reply here if you need to reschedule.`
-        : `Hi ${name}! 📅 Reminder: you have an appointment at Dr Tooth Dental Clinic *tomorrow (${date}) at ${t}*. Reply here if you need to reschedule or cancel.`
+        ? spin(
+            `{Hi|Hello} ${name}! ⏰ {Reminder|Friendly reminder}: your appointment at Dr Tooth Dental Clinic is *today at ${t}*. {See you soon!|We look forward to seeing you.} Reply here to reschedule — or STOP to opt out.`
+          )
+        : spin(
+            `{Hi|Hello} ${name}! 📅 {Reminder|Friendly reminder}: you have an appointment at Dr Tooth Dental Clinic *tomorrow (${date}) at ${t}*. Reply here to reschedule or cancel — or STOP to opt out.`
+          )
 
     try {
       await sendToChat(toChatId(phone), text)
@@ -169,7 +199,7 @@ export async function POST(request: NextRequest) {
       sent++
       if (kind === "day") dayCount++
       else hourCount++
-      await sleep(SEND_DELAY_MS)
+      await sleep(jitterMs(900, 2500)) // randomised gap (anti-clockwork)
     } catch (err) {
       errors.push(`${name} (${date} ${time}): ${String(err)}`)
     }
@@ -187,6 +217,7 @@ export async function POST(request: NextRequest) {
     skippedNoPhone,
     skippedNotAllowed,
     skippedDisabled,
+    skippedOptedOut,
     config: cfg,
     errors: errors.slice(0, 10),
     ...(debug ? { candidates } : {}),

@@ -184,6 +184,10 @@ export interface WhatsAppSession {
   // (so we call the gateway at most once, even when it returns nothing).
   realPhone?: string | null
   phoneResolved?: boolean
+  // The patient replied STOP — exclude them from PROACTIVE messages (reminders,
+  // broadcasts). The reactive bot can still answer if they message. Reply START to clear.
+  optedOut?: boolean
+  optedOutAt?: string | null
   // ── Staff/doctor elevation (set after a successful PIN; see lib/whatsapp/staffAuth.ts) ──
   // The authenticated staff member's display name, their role (audit/greeting only —
   // doctor and receptionist share the same powers), when they last authenticated

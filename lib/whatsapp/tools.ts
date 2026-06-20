@@ -6,6 +6,7 @@ import { isStaffElevated } from "./staffAuth"
 import { sendToChat } from "./openwaClient"
 import { getAllSessions, resetSessionMemory } from "./sessionService"
 import { normalizePhone, samePhone } from "./phone"
+import { spin, jitterMs } from "./messaging"
 
 type ToolDefinition = {
   name: string
@@ -26,7 +27,6 @@ const MAX_INVOICE_ATTEMPTS = 5
 
 // Staff broadcast safety: hard recipient cap + a pause between sends (anti-ban).
 const MAX_BROADCAST = 50
-const BROADCAST_DELAY_MS = 800
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 // Returned by any staff tool invoked without a valid staff session (defense in
@@ -1314,18 +1314,37 @@ export async function executeTool(
         .where("date", "==", date)
         .where("status", "in", ["scheduled", "confirmed"])
         .get()
-      // Map each patient phone to a messageable JID via their WhatsApp session.
+      // Map each patient phone to a messageable JID via their WhatsApp session, and
+      // collect opted-out patients (replied STOP) to exclude from the broadcast.
       const sessions = await getAllSessions()
       const phoneToJid = new Map<string, string>()
+      const optedOut = new Set<string>()
+      const last9 = (v: unknown) => {
+        const dd = String(v ?? "").replace(/\D/g, "")
+        return dd.length >= 9 ? dd.slice(-9) : dd
+      }
       for (const s of sessions) {
-        if (!s.chatId) continue
-        phoneToJid.set(normalizePhone(s.phoneNumber), s.chatId)
-        if (s.patientPhone) phoneToJid.set(normalizePhone(s.patientPhone), s.chatId)
+        if (s.chatId) {
+          phoneToJid.set(normalizePhone(s.phoneNumber), s.chatId)
+          if (s.patientPhone) phoneToJid.set(normalizePhone(s.patientPhone), s.chatId)
+          if (s.realPhone) phoneToJid.set(normalizePhone(s.realPhone), s.chatId)
+        }
+        if (s.optedOut) {
+          for (const p of [s.realPhone, s.patientPhone, s.phoneNumber]) {
+            const k = last9(p)
+            if (k) optedOut.add(k)
+          }
+        }
       }
       const recipients = new Map<string, { name: string; jid: string }>() // dedupe by jid
       let unreachable = 0
+      let optedOutCount = 0
       for (const d of apptSnap.docs) {
         const a = d.data()
+        if (optedOut.has(last9(a.patientPhone))) {
+          optedOutCount++
+          continue
+        }
         const jid = phoneToJid.get(normalizePhone(a.patientPhone))
         if (jid) recipients.set(jid, { name: a.patientName, jid })
         else unreachable++
@@ -1340,6 +1359,7 @@ export async function executeTool(
           date,
           recipientCount: list.length,
           unreachable,
+          optedOut: optedOutCount,
           cappedAt: MAX_BROADCAST,
           sampleNames: list.slice(0, 5).map((r) => r.name),
           messagePreview: String(input.message).slice(0, 200),
@@ -1348,11 +1368,15 @@ export async function executeTool(
       }
       const toSend = list.slice(0, MAX_BROADCAST)
       let sent = 0
+      const bcastStart = Date.now()
       for (const r of toSend) {
+        if (Date.now() - bcastStart > 50_000) break // stay within the function time limit
         try {
-          await sendToChat(r.jid, String(input.message))
+          // Spin the message + a varied opt-out footer so messages aren't byte-identical.
+          const text = `${spin(String(input.message))}\n\n${spin("{Reply STOP to opt out.|Reply STOP to unsubscribe.}")}`
+          await sendToChat(r.jid, text)
           sent++
-          await sleep(BROADCAST_DELAY_MS)
+          await sleep(jitterMs(700, 1800)) // randomised gap (anti-clockwork)
         } catch (e) {
           console.error("[broadcast send failed]", String(e))
         }
@@ -1366,7 +1390,7 @@ export async function executeTool(
         session.staffName || "Staff",
         "whatsapp_staff"
       )
-      return JSON.stringify({ success: true, sent, totalRecipients: list.length, cappedAt: MAX_BROADCAST, unreachable })
+      return JSON.stringify({ success: true, sent, totalRecipients: list.length, cappedAt: MAX_BROADCAST, unreachable, optedOut: optedOutCount })
     }
 
     default:
