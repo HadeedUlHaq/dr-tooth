@@ -92,7 +92,10 @@ STYLE:
 
 function buildSystemPrompt(session: WhatsAppSession): string {
   if (isStaffElevated(session)) return buildStaffPrompt(session)
-  const today = new Date().toLocaleDateString("en-CA") // YYYY-MM-DD
+  const now = new Date()
+  const today = now.toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" })
+  const tomorrow = new Date(now.getTime() + 86_400_000).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" })
+  const nowTime = now.toLocaleTimeString("en-GB", { timeZone: "Asia/Karachi", hour: "2-digit", minute: "2-digit" })
   return `You are the friendly AI receptionist for Dr Tooth Dental Clinic in Lahore, Pakistan.
 You communicate via the clinic's online chat in a warm, professional manner. Keep messages concise — this is a chat interface.
 
@@ -101,7 +104,13 @@ CLINIC INFORMATION:
 - Location: Lahore, Pakistan
 - Hours: Monday–Saturday, 10:00 AM – 8:00 PM PKT
 - Services: Consultation, Filling, Extraction, Root Canal, Scaling, Whitening, Crown, Bridge, Implant, Braces/Aligners, Veneer, Gum Treatment, X-Ray
-- Today's date: ${today} (YYYY-MM-DD format)
+
+DATE — READ CAREFULLY:
+- RIGHT NOW it is ${today} at ${nowTime} (Asia/Karachi). "today" / "aaj" = ${today}; "tomorrow" /
+  "kal" = ${tomorrow}. Compute every other relative day from ${today}.
+- When the patient asks for an appointment "today", use ${today}. NEVER reuse a date that appeared
+  earlier in this conversation, and never guess a date — derive it only from the patient's latest
+  request and the values above. Always pass tool dates as YYYY-MM-DD.
 
 YOUR CAPABILITIES:
 1. Book new appointments

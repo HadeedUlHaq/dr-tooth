@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAdminDb, FieldValue } from "@/lib/whatsapp/firebaseAdmin"
 import { sendToChat, toChatId } from "@/lib/whatsapp/openwaClient"
+import { getReminderConfig } from "@/lib/whatsapp/botControl"
 
 export const runtime = "nodejs"
 
@@ -68,10 +69,19 @@ export async function POST(request: NextRequest) {
     .filter(Boolean)
   const testMode = allowlist.length > 0
 
+  const debug = request.nextUrl.searchParams.get("debug") === "1"
+  const candidates: Record<string, unknown>[] = []
+
   const db = getAdminDb()
   const today = todayPlus(0)
   const tomorrow = todayPlus(1)
   const now = Date.now()
+  // TEST ONLY: force a send for allowlisted appointments ignoring the time window.
+  // Guarded by testMode so it can never mass-send in production.
+  const force = request.nextUrl.searchParams.get("force") === "1" && testMode
+
+  // Receptionist on/off toggles for each reminder type.
+  const cfg = await getReminderConfig()
 
   // Active appointments for today + tomorrow only.
   const snap = await db
@@ -84,6 +94,7 @@ export async function POST(request: NextRequest) {
   let hourCount = 0
   let skippedNoPhone = 0
   let skippedNotAllowed = 0
+  let skippedDisabled = 0
   const errors: string[] = []
 
   for (const doc of snap.docs) {
@@ -95,21 +106,49 @@ export async function POST(request: NextRequest) {
     if (!time || time === "on-call") continue
 
     const apptMs = Date.parse(`${date}T${time}:00${PKT_OFFSET}`)
-    if (Number.isNaN(apptMs)) continue
-    const minsUntil = (apptMs - now) / 60000
+    const minsUntil = Number.isNaN(apptMs) ? NaN : (apptMs - now) / 60000
+    const phone = String(a.patientPhone || "")
+    const allowed = !testMode || allowlist.some((p) => samePhone(p, phone))
+
+    if (debug && allowed) {
+      candidates.push({
+        name: a.patientName,
+        date,
+        time,
+        status: a.status,
+        minsUntil: Number.isNaN(minsUntil) ? "unparseable" : Math.round(minsUntil),
+        hourDone: !!a.reminderHourBeforeSentAt,
+        dayDone: !!a.reminderDayBeforeSentAt,
+      })
+    }
+    if (Number.isNaN(minsUntil)) continue
 
     // Which reminder, if any, is due now (and not already sent)?
     let kind: "day" | "hour" | null = null
-    if (minsUntil >= 1395 && minsUntil <= 1455 && !a.reminderDayBeforeSentAt) kind = "day"
-    else if (minsUntil >= 45 && minsUntil <= 75 && !a.reminderHourBeforeSentAt) kind = "hour"
+    if (force && allowed) {
+      kind = date === today ? "hour" : "day" // test: ignore window + dedup
+    } else if (minsUntil >= 1395 && minsUntil <= 1455 && !a.reminderDayBeforeSentAt) {
+      kind = "day"
+    } else if (minsUntil >= 45 && minsUntil <= 75 && !a.reminderHourBeforeSentAt) {
+      kind = "hour"
+    }
     if (!kind) continue
 
-    const phone = String(a.patientPhone || "")
+    // Respect the receptionist's on/off toggle for this reminder type.
+    if (kind === "day" && !cfg.dayBefore) {
+      skippedDisabled++
+      continue
+    }
+    if (kind === "hour" && !cfg.hourBefore) {
+      skippedDisabled++
+      continue
+    }
+
     if (!digits(phone)) {
       skippedNoPhone++
       continue
     }
-    if (testMode && !allowlist.some((p) => samePhone(p, phone))) {
+    if (testMode && !allowed) {
       skippedNotAllowed++
       continue
     }
@@ -147,7 +186,10 @@ export async function POST(request: NextRequest) {
     hourReminders: hourCount,
     skippedNoPhone,
     skippedNotAllowed,
+    skippedDisabled,
+    config: cfg,
     errors: errors.slice(0, 10),
+    ...(debug ? { candidates } : {}),
   })
 }
 

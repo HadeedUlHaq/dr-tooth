@@ -29,6 +29,38 @@ export async function setSessionBotPaused(phoneNumber: string, paused: boolean):
   await updateSession(phoneNumber, { botPaused: paused })
 }
 
+// ── Appointment-reminder toggles (receptionist controls these from the portal) ──
+const REMINDERS_DOC = "reminders"
+export interface ReminderConfig {
+  dayBefore: boolean
+  hourBefore: boolean
+}
+
+// Default ON when not configured. Fails OPEN (reminders are helpful, not harmful).
+export async function getReminderConfig(): Promise<ReminderConfig> {
+  try {
+    const snap = await getAdminDb().collection(CONFIG_COLLECTION).doc(REMINDERS_DOC).get()
+    if (!snap.exists) return { dayBefore: true, hourBefore: true }
+    const d = snap.data() as Partial<ReminderConfig>
+    return { dayBefore: d.dayBefore !== false, hourBefore: d.hourBefore !== false }
+  } catch {
+    return { dayBefore: true, hourBefore: true }
+  }
+}
+
+export async function setReminderConfig(cfg: Partial<ReminderConfig>): Promise<ReminderConfig> {
+  const current = await getReminderConfig()
+  const next: ReminderConfig = {
+    dayBefore: cfg.dayBefore ?? current.dayBefore,
+    hourBefore: cfg.hourBefore ?? current.hourBefore,
+  }
+  await getAdminDb()
+    .collection(CONFIG_COLLECTION)
+    .doc(REMINDERS_DOC)
+    .set({ ...next, updatedAt: new Date().toISOString() })
+  return next
+}
+
 export interface PortalStats {
   globalPaused: boolean
   activeConversations: number

@@ -16,34 +16,44 @@ interface PhoneInputProps {
 const COUNTRY_CODE = "+92"
 
 /**
- * Phone input with a fixed +92 prefix badge.
- * Stores the full number WITH the prefix (e.g. "+92 302 2726035").
- * If the incoming value already starts with +92, strips it for the inner input.
+ * Phone input with a default +92 prefix badge.
+ * Stores the full number WITH a prefix (e.g. "+92 302 2726035").
+ * Default country is Pakistan, BUT if the user types a full international number
+ * starting with "+" (e.g. "+44 7774 067432") it is stored verbatim — so non-PK
+ * numbers are supported too. The inner field shows the local part for +92, or the
+ * full "+.." number for any other country.
  */
 export function PhoneInput({
   value,
   onChange,
   id,
-  placeholder = "302 2726035",
+  placeholder = "302 2726035 (or +44… for intl)",
   required,
   disabled,
   className = "",
 }: PhoneInputProps) {
-  // Strip prefix for display in the text field
+  // Display: strip the +92 default; show any other "+.." number in full.
   const stripped = value.startsWith(COUNTRY_CODE)
     ? value.slice(COUNTRY_CODE.length).trimStart()
-    : value.startsWith("92")
-      ? value.slice(2).trimStart()
-      : value
+    : value.startsWith("+")
+      ? value
+      : value.startsWith("92")
+        ? value.slice(2).trimStart()
+        : value
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value
-    // Always store with prefix
-    if (raw.trim()) {
-      onChange(`${COUNTRY_CODE} ${raw.trimStart()}`)
-    } else {
+    if (!raw.trim()) {
       onChange("")
+      return
     }
+    // A leading "+" means the user is entering a full international number — keep it as-is.
+    if (raw.trimStart().startsWith("+")) {
+      onChange(raw.trimStart())
+      return
+    }
+    // Otherwise default to the Pakistan prefix.
+    onChange(`${COUNTRY_CODE} ${raw.trimStart()}`)
   }
 
   return (

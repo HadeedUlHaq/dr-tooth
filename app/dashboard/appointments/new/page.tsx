@@ -147,12 +147,12 @@ export default function NewAppointment() {
         patientPhone: isQuickAppointment ? "" : patientPhone,
         date,
         time: isOnCall ? "on-call" : time,
-        doctorId: doctorId || undefined,
-        doctorName: selectedDoctor ? selectedDoctor.name : undefined,
         notes,
         status: "scheduled" as const,
         isFollowUp: false,
         createdBy: user?.uid || "",
+        // Only include doctor fields when one is chosen — Firestore rejects `undefined`.
+        ...(selectedDoctor ? { doctorId: selectedDoctor.uid, doctorName: selectedDoctor.name } : {}),
       }
 
       await createAppointment(appointmentData)

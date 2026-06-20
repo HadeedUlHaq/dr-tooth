@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Pause,
   Activity,
+  Bell,
 } from "lucide-react"
 import type { WhatsAppSession } from "@/lib/types"
 import { authedFetch } from "@/lib/authedFetch"
@@ -40,6 +41,8 @@ export default function WhatsAppPortalPage() {
   const [fetching, setFetching] = useState(true)
   const [reconnecting, setReconnecting] = useState(false)
   const [togglingBot, setTogglingBot] = useState(false)
+  const [reminders, setReminders] = useState<{ dayBefore: boolean; hourBefore: boolean } | null>(null)
+  const [togglingReminder, setTogglingReminder] = useState<"" | "day" | "hour">("")
 
   // Manual send composer
   const [toPhone, setToPhone] = useState("")
@@ -48,16 +51,36 @@ export default function WhatsAppPortalPage() {
   const [sendResult, setSendResult] = useState<string | null>(null)
 
   const loadAll = useCallback(async () => {
-    const [sRes, cRes, stRes] = await Promise.allSettled([
+    const [sRes, cRes, stRes, rRes] = await Promise.allSettled([
       authedFetch("/api/whatsapp/sessions").then((r) => r.json()),
       authedFetch("/api/whatsapp/connect", { cache: "no-store" }).then((r) => r.json()),
       authedFetch("/api/whatsapp/stats").then((r) => r.json()),
+      authedFetch("/api/whatsapp/reminders").then((r) => r.json()),
     ])
     if (sRes.status === "fulfilled") setSessions(sRes.value.sessions ?? [])
     if (cRes.status === "fulfilled") setConn(cRes.value)
     if (stRes.status === "fulfilled") setStats(stRes.value)
+    if (rRes.status === "fulfilled")
+      setReminders({ dayBefore: rRes.value.dayBefore !== false, hourBefore: rRes.value.hourBefore !== false })
     setFetching(false)
   }, [])
+
+  async function toggleReminder(kind: "day" | "hour") {
+    if (!reminders) return
+    setTogglingReminder(kind)
+    try {
+      const key = kind === "day" ? "dayBefore" : "hourBefore"
+      const res = await authedFetch("/api/whatsapp/reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [key]: !reminders[key] }),
+      })
+      const data = await res.json()
+      if (res.ok) setReminders({ dayBefore: data.dayBefore !== false, hourBefore: data.hourBefore !== false })
+    } finally {
+      setTogglingReminder("")
+    }
+  }
 
   useEffect(() => {
     loadAll()
@@ -231,6 +254,52 @@ export default function WhatsAppPortalPage() {
             {stats?.globalPaused ? "Resume bot" : "Pause bot"}
           </button>
         </div>
+      </div>
+
+      {/* Appointment reminders */}
+      <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-[#8A8F98] uppercase tracking-wide">Appointment Reminders</span>
+          <Bell className="h-5 w-5 text-[#5E6AD2]" />
+        </div>
+        <p className="text-sm text-[#8A8F98] mt-2">
+          Patients automatically get a WhatsApp reminder before their appointment (Pakistan time). Turn each on or off below.
+        </p>
+        <div className="mt-4 space-y-2">
+          {([
+            { k: "day" as const, label: "1 day before", on: reminders?.dayBefore },
+            { k: "hour" as const, label: "1 hour before", on: reminders?.hourBefore },
+          ]).map((row) => (
+            <div
+              key={row.k}
+              className="flex items-center justify-between rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2.5"
+            >
+              <span className="text-sm text-[#EDEDEF]">{row.label}</span>
+              <button
+                onClick={() => toggleReminder(row.k)}
+                disabled={!reminders || togglingReminder === row.k}
+                className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
+                  row.on
+                    ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
+                    : "bg-white/[0.05] border border-white/[0.08] text-[#8A8F98] hover:bg-white/[0.08]"
+                }`}
+              >
+                {row.on ? "On" : "Off"}
+              </button>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-[#8A8F98] mt-3">
+          {!reminders
+            ? "Loading…"
+            : reminders.dayBefore && reminders.hourBefore
+              ? "✅ Reminders are ON — patients get one a day before and an hour before."
+              : !reminders.dayBefore && !reminders.hourBefore
+                ? "🔕 Reminders are OFF — no automatic messages are sent."
+                : reminders.dayBefore
+                  ? "Only the 1-day-before reminder is on."
+                  : "Only the 1-hour-before reminder is on."}
+        </p>
       </div>
 
       {/* Stats */}
