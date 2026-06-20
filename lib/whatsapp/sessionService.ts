@@ -82,6 +82,10 @@ export async function checkRateLimit(sessionId: string): Promise<boolean> {
   }
 }
 
+export async function deleteSession(phoneNumber: string): Promise<void> {
+  await getAdminDb().collection(COLLECTION).doc(phoneNumber).delete()
+}
+
 export async function getAllSessions(): Promise<WhatsAppSession[]> {
   const snap = await getAdminDb()
     .collection(COLLECTION)

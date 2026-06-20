@@ -13,6 +13,9 @@ import {
   Pause,
   Activity,
   Bell,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import type { WhatsAppSession } from "@/lib/types"
 import { authedFetch } from "@/lib/authedFetch"
@@ -43,6 +46,12 @@ export default function WhatsAppPortalPage() {
   const [togglingBot, setTogglingBot] = useState(false)
   const [reminders, setReminders] = useState<{ dayBefore: boolean; hourBefore: boolean } | null>(null)
   const [togglingReminder, setTogglingReminder] = useState<"" | "day" | "hour">("")
+
+  // Conversation table: pagination + delete
+  const PAGE_SIZE = 8
+  const [page, setPage] = useState(0)
+  const [confirmDelete, setConfirmDelete] = useState<{ phone: string; name: string } | null>(null)
+  const [deletingPhone, setDeletingPhone] = useState<string | null>(null)
 
   // Manual send composer
   const [toPhone, setToPhone] = useState("")
@@ -79,6 +88,21 @@ export default function WhatsAppPortalPage() {
       if (res.ok) setReminders({ dayBefore: data.dayBefore !== false, hourBefore: data.hourBefore !== false })
     } finally {
       setTogglingReminder("")
+    }
+  }
+
+  async function deleteConversation(phone: string) {
+    setDeletingPhone(phone)
+    try {
+      const res = await authedFetch(`/api/whatsapp/sessions/${encodeURIComponent(phone)}`, {
+        method: "DELETE",
+      })
+      if (res.ok) {
+        setSessions((prev) => prev.filter((s) => s.phoneNumber !== phone))
+        setConfirmDelete(null)
+      }
+    } finally {
+      setDeletingPhone(null)
     }
   }
 
@@ -161,6 +185,10 @@ export default function WhatsAppPortalPage() {
   const status = conn?.status ?? "unknown"
   const isConnected = CONNECTED.has(status)
   const isError = status === "ERROR"
+
+  const pageCount = Math.max(1, Math.ceil(sessions.length / PAGE_SIZE))
+  const safePage = Math.min(page, pageCount - 1)
+  const pageSessions = sessions.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
 
   if (fetching) {
     return (
@@ -358,25 +386,36 @@ export default function WhatsAppPortalPage() {
           <div className="rounded-xl border border-white/[0.06] bg-[#111113] overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/[0.06]">
+                <tr className="border-b border-white/[0.06] bg-white/[0.02]">
                   <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Customer</th>
                   <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Phase</th>
                   <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Bot</th>
-                  <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Messages</th>
+                  <th className="text-center px-4 py-3 text-[#8A8F98] font-medium">Msgs</th>
                   <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Last Active</th>
+                  <th className="px-4 py-3 w-px"></th>
                 </tr>
               </thead>
               <tbody>
-                {sessions.map((s) => (
-                  <tr key={s.phoneNumber} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                {pageSessions.map((s) => (
+                  <tr
+                    key={s.phoneNumber}
+                    className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors"
+                  >
                     <td className="px-4 py-3">
-                      <Link
-                        href={`/dashboard/whatsapp/${encodeURIComponent(s.phoneNumber)}`}
-                        className="text-[#5E6AD2] hover:underline"
-                      >
-                        {s.patientName ?? "Guest"}
-                      </Link>
-                      <div className="text-[10px] text-[#8A8F98]">+{s.phoneNumber}</div>
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#5E6AD2]/15 border border-[#5E6AD2]/20 flex items-center justify-center text-xs font-medium text-[#5E6AD2]">
+                          {(s.patientName ?? "G").charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/dashboard/whatsapp/${encodeURIComponent(s.phoneNumber)}`}
+                            className="text-[#EDEDEF] hover:text-[#5E6AD2] transition-colors font-medium"
+                          >
+                            {s.patientName ?? "Guest"}
+                          </Link>
+                          <div className="text-[10px] text-[#8A8F98]">+{s.phoneNumber}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-white/[0.06] text-[#8A8F98]">
@@ -390,15 +429,77 @@ export default function WhatsAppPortalPage() {
                         <span className="text-xs text-emerald-400">Auto</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-[#8A8F98]">{s.messages.length}</td>
-                    <td className="px-4 py-3 text-[#8A8F98]">{formatTime(s.lastActiveAt)}</td>
+                    <td className="px-4 py-3 text-center text-[#8A8F98]">{s.messages.length}</td>
+                    <td className="px-4 py-3 text-[#8A8F98] whitespace-nowrap">{formatTime(s.lastActiveAt)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => setConfirmDelete({ phone: s.phoneNumber, name: s.patientName ?? "Guest" })}
+                        className="inline-flex items-center justify-center p-1.5 rounded-md text-[#8A8F98] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        title="Delete conversation"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {pageCount > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06]">
+                <span className="text-xs text-[#8A8F98]">
+                  Page {safePage + 1} of {pageCount}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    disabled={safePage === 0}
+                    className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs bg-white/[0.04] border border-white/[0.08] text-[#EDEDEF] hover:bg-white/[0.08] disabled:opacity-40 transition-colors"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-0.5" /> Prev
+                  </button>
+                  <button
+                    onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                    disabled={safePage >= pageCount - 1}
+                    className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs bg-white/[0.04] border border-white/[0.08] text-[#EDEDEF] hover:bg-white/[0.08] disabled:opacity-40 transition-colors"
+                  >
+                    Next <ChevronRight className="h-4 w-4 ml-0.5" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Delete conversation confirm */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium text-[#EDEDEF]">Delete conversation</h3>
+            <p className="mt-2 text-sm text-[#8A8F98]">
+              Delete the conversation with <span className="text-[#EDEDEF]">{confirmDelete.name}</span> (+
+              {confirmDelete.phone})? This removes the stored chat history. If they message again, a new
+              conversation starts.
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                disabled={deletingPhone === confirmDelete.phone}
+                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteConversation(confirmDelete.phone)}
+                disabled={deletingPhone === confirmDelete.phone}
+                className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {deletingPhone === confirmDelete.phone ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
