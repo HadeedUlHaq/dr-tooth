@@ -344,8 +344,37 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-6 animate-pulse">
+        <div className="space-y-2">
+          <div className="h-7 w-40 rounded-lg bg-white/[0.06]" />
+          <div className="h-4 w-56 rounded bg-white/[0.04]" />
+        </div>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
+              <div className="flex items-center gap-3">
+                <div className="h-11 w-11 rounded-xl bg-white/[0.06]" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-16 rounded bg-white/[0.05]" />
+                  <div className="h-5 w-10 rounded bg-white/[0.06]" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+          <div className="px-5 py-4 border-b border-white/[0.06]">
+            <div className="h-4 w-40 rounded bg-white/[0.06]" />
+          </div>
+          <div className="divide-y divide-white/[0.06]">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="px-5 py-4 space-y-2">
+                <div className="h-4 w-48 rounded bg-white/[0.05]" />
+                <div className="h-3 w-32 rounded bg-white/[0.04]" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }

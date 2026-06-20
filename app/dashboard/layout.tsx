@@ -3,10 +3,11 @@
 import type React from "react"
 
 import { useAuth } from "@/contexts/AuthContext"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Calendar, CalendarDays, LogOut, Menu, User, X, Home, PlusCircle, Users, Contact, Receipt, Package, MessageCircle } from "lucide-react"
+import { Calendar, CalendarDays, LogOut, Menu, User, X, Home, PlusCircle, Users, Contact, Receipt, Package, MessageCircle, type LucideIcon } from "lucide-react"
+import { ToothLogo } from "@/components/ui-kit/ToothLogo"
 import { getUpcomingAppointments, getAppointmentsNeedingConfirmation } from "@/lib/appointmentService"
 import {
   sendAppointmentNotification,
@@ -16,6 +17,22 @@ import {
 import { NotificationBell } from "@/components/ui/notification-bell"
 import { ToastContainer } from "@/components/ui/toast-notification"
 
+type Role = "receptionist" | "doctor" | "admin"
+type NavItem = { href: string; label: string; icon: LucideIcon; roles: Role[] | null }
+
+// Single source of truth for navigation (used by both desktop + mobile).
+const NAV: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: Home, roles: null },
+  { href: "/dashboard/appointments", label: "Appointments", icon: Calendar, roles: null },
+  { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays, roles: null },
+  { href: "/dashboard/appointments/new", label: "New Appointment", icon: PlusCircle, roles: ["receptionist", "doctor", "admin"] },
+  { href: "/dashboard/patients", label: "Patients", icon: Contact, roles: ["receptionist", "doctor", "admin"] },
+  { href: "/dashboard/invoices", label: "Invoices", icon: Receipt, roles: ["admin", "receptionist"] },
+  { href: "/dashboard/lab-tracking", label: "Lab Tracking", icon: Package, roles: null },
+  { href: "/dashboard/users", label: "Manage Users", icon: Users, roles: ["admin"] },
+  { href: "/dashboard/whatsapp", label: "WhatsApp", icon: MessageCircle, roles: ["admin", "receptionist"] },
+]
+
 export default function DashboardLayout({
   children,
 }: {
@@ -23,6 +40,7 @@ export default function DashboardLayout({
 }) {
   const { user, userData, logout, loading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
 
@@ -93,8 +111,35 @@ export default function DashboardLayout({
     )
   }
 
-  const navLinkClass =
-    "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+  const role = userData?.role as Role | undefined
+  const navItems = NAV.filter((n) => !n.roles || (role !== undefined && n.roles.includes(role)))
+  // Longest matching href wins, so /appointments/new highlights "New Appointment"
+  // rather than also lighting up "Appointments".
+  const activeHref = navItems
+    .filter((n) => pathname === n.href || pathname.startsWith(n.href + "/"))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href
+
+  const renderNav = (onNavigate?: () => void) =>
+    navItems.map((n) => {
+      const active = n.href === activeHref
+      const Icon = n.icon
+      return (
+        <Link
+          key={n.href}
+          href={n.href}
+          onClick={onNavigate}
+          aria-current={active ? "page" : undefined}
+          className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50 ${
+            active
+              ? "bg-[#5E6AD2]/12 text-[#EDEDEF] border-[#5E6AD2]/25"
+              : "text-[#9aa0aa] border-transparent hover:text-[#EDEDEF] hover:bg-white/[0.05]"
+          }`}
+        >
+          <Icon className={`mr-3 h-5 w-5 ${active ? "text-[#818cf8]" : ""}`} />
+          {n.label}
+        </Link>
+      )
+    })
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -109,7 +154,8 @@ export default function DashboardLayout({
               >
                 <Menu className="h-5 w-5" />
               </button>
-              <div className="flex-shrink-0 flex items-center">
+              <div className="flex-shrink-0 flex items-center gap-2 ml-1">
+                <ToothLogo className="h-6 w-6 text-[#5E6AD2]" />
                 <h1 className="text-lg font-semibold text-[#EDEDEF] tracking-tight">Dr Tooth Dental Clinic</h1>
               </div>
             </div>
@@ -154,95 +200,15 @@ export default function DashboardLayout({
               </button>
             </div>
             <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-              <div className="flex-shrink-0 flex items-center px-4">
+              <div className="flex-shrink-0 flex items-center gap-2 px-4">
+                <ToothLogo className="h-6 w-6 text-[#5E6AD2]" />
                 <h1 className="text-lg font-semibold text-[#EDEDEF] tracking-tight">Dr Tooth</h1>
               </div>
               <nav className="mt-6 px-3 space-y-1">
-                <Link
-                  href="/dashboard"
-                  className={navLinkClass}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  <Home className="mr-3 h-5 w-5" />
-                  Dashboard
-                </Link>
-                <Link
-                  href="/dashboard/appointments"
-                  className={navLinkClass}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  <Calendar className="mr-3 h-5 w-5" />
-                  Appointments
-                </Link>
-                <Link
-                  href="/dashboard/calendar"
-                  className={navLinkClass}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  <CalendarDays className="mr-3 h-5 w-5" />
-                  Calendar
-                </Link>
-                {(userData?.role === "receptionist" || userData?.role === "doctor" || userData?.role === "admin") && (
-                  <Link
-                    href="/dashboard/appointments/new"
-                    className={navLinkClass}
-                    onClick={() => setIsSidebarOpen(false)}
-                  >
-                    <PlusCircle className="mr-3 h-5 w-5" />
-                    New Appointment
-                  </Link>
-                )}
-                {(userData?.role === "receptionist" || userData?.role === "doctor" || userData?.role === "admin") && (
-                  <Link
-                    href="/dashboard/patients"
-                    className={navLinkClass}
-                    onClick={() => setIsSidebarOpen(false)}
-                  >
-                    <Contact className="mr-3 h-5 w-5" />
-                    Patients
-                  </Link>
-                )}
-                {(userData?.role === "admin" || userData?.role === "receptionist") && (
-                  <Link
-                    href="/dashboard/invoices"
-                    className={navLinkClass}
-                    onClick={() => setIsSidebarOpen(false)}
-                  >
-                    <Receipt className="mr-3 h-5 w-5" />
-                    Invoices
-                  </Link>
-                )}
-                <Link
-                  href="/dashboard/lab-tracking"
-                  className={navLinkClass}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  <Package className="mr-3 h-5 w-5" />
-                  Lab Tracking
-                </Link>
-                {userData?.role === "admin" && (
-                  <Link
-                    href="/dashboard/users"
-                    className={navLinkClass}
-                    onClick={() => setIsSidebarOpen(false)}
-                  >
-                    <Users className="mr-3 h-5 w-5" />
-                    Manage Users
-                  </Link>
-                )}
-                {(userData?.role === "admin" || userData?.role === "receptionist") && (
-                  <Link
-                    href="/dashboard/whatsapp"
-                    className={navLinkClass}
-                    onClick={() => setIsSidebarOpen(false)}
-                  >
-                    <MessageCircle className="mr-3 h-5 w-5" />
-                    WhatsApp
-                  </Link>
-                )}
+                {renderNav(() => setIsSidebarOpen(false))}
                 <button
                   onClick={handleLogout}
-                  className="w-full group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                  className="w-full group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-[#9aa0aa] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50"
                 >
                   <LogOut className="mr-3 h-5 w-5" />
                   Logout
@@ -256,55 +222,12 @@ export default function DashboardLayout({
         <div className="hidden md:flex md:flex-shrink-0 print:!hidden">
           <div className="flex flex-col w-60">
             <div className="flex flex-col h-0 flex-1 border-r border-white/[0.06] bg-[#0a0a0c]">
-              <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-                <nav className="mt-2 flex-1 px-3 space-y-1">
-                  <Link href="/dashboard" className={navLinkClass}>
-                    <Home className="mr-3 h-5 w-5" />
-                    Dashboard
-                  </Link>
-                  <Link href="/dashboard/appointments" className={navLinkClass}>
-                    <Calendar className="mr-3 h-5 w-5" />
-                    Appointments
-                  </Link>
-                  <Link href="/dashboard/calendar" className={navLinkClass}>
-                    <CalendarDays className="mr-3 h-5 w-5" />
-                    Calendar
-                  </Link>
-                  {(userData?.role === "receptionist" || userData?.role === "doctor" || userData?.role === "admin") && (
-                    <Link href="/dashboard/appointments/new" className={navLinkClass}>
-                      <PlusCircle className="mr-3 h-5 w-5" />
-                      New Appointment
-                    </Link>
-                  )}
-                  {(userData?.role === "receptionist" || userData?.role === "doctor" || userData?.role === "admin") && (
-                    <Link href="/dashboard/patients" className={navLinkClass}>
-                      <Contact className="mr-3 h-5 w-5" />
-                      Patients
-                    </Link>
-                  )}
-                  {(userData?.role === "admin" || userData?.role === "receptionist") && (
-                    <Link href="/dashboard/invoices" className={navLinkClass}>
-                      <Receipt className="mr-3 h-5 w-5" />
-                      Invoices
-                    </Link>
-                  )}
-                  <Link href="/dashboard/lab-tracking" className={navLinkClass}>
-                    <Package className="mr-3 h-5 w-5" />
-                    Lab Tracking
-                  </Link>
-                  {userData?.role === "admin" && (
-                    <Link href="/dashboard/users" className={navLinkClass}>
-                      <Users className="mr-3 h-5 w-5" />
-                      Manage Users
-                    </Link>
-                  )}
-                  {(userData?.role === "admin" || userData?.role === "receptionist") && (
-                    <Link href="/dashboard/whatsapp" className={navLinkClass}>
-                      <MessageCircle className="mr-3 h-5 w-5" />
-                      Chat Bot
-                    </Link>
-                  )}
-                </nav>
+              <div className="flex items-center gap-2 px-5 h-14 border-b border-white/[0.06]">
+                <ToothLogo className="h-6 w-6 text-[#5E6AD2]" />
+                <span className="text-base font-semibold text-[#EDEDEF] tracking-tight">Dr Tooth</span>
+              </div>
+              <div className="flex-1 flex flex-col pt-4 pb-4 overflow-y-auto">
+                <nav className="flex-1 px-3 space-y-1">{renderNav()}</nav>
               </div>
               <div className="flex-shrink-0 flex border-t border-white/[0.06] p-4">
                 <div className="flex items-center">

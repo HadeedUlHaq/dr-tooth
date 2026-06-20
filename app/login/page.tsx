@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
+import { ToothLogo } from "@/components/ui-kit/ToothLogo"
 
 export default function Login() {
   const [email, setEmail] = useState("")
@@ -37,6 +37,9 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] p-8 rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] w-full max-w-md">
         <div className="text-center mb-8">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 shadow-[0_0_30px_rgba(94,106,210,0.18)]">
+            <ToothLogo className="h-8 w-8 text-[#5E6AD2]" />
+          </div>
           <h1 className="text-3xl font-semibold tracking-tight bg-gradient-to-b from-white via-white/95 to-white/70 bg-clip-text text-transparent">
             Dr Tooth Dental Clinic
           </h1>
