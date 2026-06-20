@@ -233,7 +233,9 @@ export async function POST(request: NextRequest) {
     // Verified-phone identity: once per contact, resolve the real number behind the
     // @lid and auto-link an existing patient (greet by name + load history). The
     // resolved number becomes the trusted identity (see resolveCallerPhone).
-    if (!staff && !session.phoneResolved) {
+    // Runs for ALL conversations (incl. staff-elevated numbers) so the portal can
+    // always show the patient's real name, not "Guest".
+    if (!session.phoneResolved) {
       const real = replyJid.endsWith("@lid") ? await resolveContactPhone(replyJid) : sessionKey || null
       const update: Partial<WhatsAppSession> = { phoneResolved: true, realPhone: real }
       if (real) {

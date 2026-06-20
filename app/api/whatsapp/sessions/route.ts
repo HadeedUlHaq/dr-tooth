@@ -1,13 +1,48 @@
 import { NextResponse } from "next/server"
-import { getAllSessions } from "@/lib/whatsapp/sessionService"
+import { getAllSessions, updateSession, findPatientByPhone } from "@/lib/whatsapp/sessionService"
 import { getAdminDb } from "@/lib/whatsapp/firebaseAdmin"
+import { resolveContactPhone } from "@/lib/whatsapp/openwaClient"
 import { normalizePhone } from "@/lib/whatsapp/phone"
+import type { WhatsAppSession } from "@/lib/types"
 
 export const runtime = "nodejs"
 
 export async function GET() {
   try {
     const sessions = await getAllSessions()
+
+    // One-time backfill: resolve the real number for dormant @lid chats that haven't
+    // been resolved yet (so old conversations get named without needing a new message).
+    // Bounded per request + persisted (phoneResolved) so it's cheap after the first
+    // couple of loads.
+    try {
+      let resolved = 0
+      for (const s of sessions) {
+        if (resolved >= 8) break
+        if (s.phoneResolved || s.realPhone) continue
+        if (!s.chatId || !s.chatId.endsWith("@lid")) continue
+        const real = await resolveContactPhone(s.chatId)
+        resolved++
+        const upd: Partial<WhatsAppSession> = { phoneResolved: true, realPhone: real }
+        if (real) {
+          if (!s.patientPhone) upd.patientPhone = real
+          if (!s.patientId) {
+            const m = await findPatientByPhone(real)
+            if (m) {
+              upd.patientId = m.id
+              upd.patientName = m.name
+            }
+          }
+        }
+        await updateSession(s.phoneNumber, upd)
+        s.phoneResolved = true
+        s.realPhone = real
+        if (real && !s.patientPhone) s.patientPhone = real
+        if (upd.patientName) s.patientName = upd.patientName
+      }
+    } catch (resolveErr) {
+      console.error("[WhatsApp Sessions backfill]", String(resolveErr))
+    }
 
     // Display enrichment: for any conversation without a name, look it up in the
     // patients directory by (normalised) phone and show the patient's name instead

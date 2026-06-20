@@ -83,7 +83,7 @@ export async function resolveContactPhone(chatId: string): Promise<string | null
     const { base, sessionId, apiKey } = config()
     const res = await fetch(
       `${base}/api/sessions/${sessionId}/contacts/${encodeURIComponent(chatId)}/phone`,
-      { headers: { "X-API-Key": apiKey } }
+      { headers: { "X-API-Key": apiKey }, signal: AbortSignal.timeout(8000) }
     )
     if (!res.ok) return null
     const data = (await res.json()) as { phone?: string }
