@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { sendToChat, phoneToJid } from "@/lib/whatsapp/openwaClient"
-import { appendMessages } from "@/lib/whatsapp/sessionService"
+import { sendToChat, toChatId } from "@/lib/whatsapp/openwaClient"
+import { appendMessages, getSession } from "@/lib/whatsapp/sessionService"
 import { withinSendBudget } from "@/lib/whatsapp/antiBan"
 
 export const runtime = "nodejs"
@@ -23,7 +23,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "throttled", reason: budget.reason }, { status: 429 })
     }
 
-    await sendToChat(phoneToJid(digits), message)
+    // Reply to the EXACT JID the conversation arrived on (incl. "@lid"); fall back to
+    // "<digits>@c.us" for numbers we only have as digits. Using @s.whatsapp.net (the
+    // old default) sends into the void on the whatsapp-web.js engine.
+    const session = await getSession(digits)
+    const chatId = session.chatId || toChatId(digits)
+    await sendToChat(chatId, message)
     await appendMessages(digits, [
       { role: "assistant", content: message, timestamp: new Date().toISOString(), via: "staff" },
     ])
