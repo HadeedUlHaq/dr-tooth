@@ -90,13 +90,6 @@ export default function Login() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-
-        <p className="mt-4 text-center text-sm text-[#8A8F98]">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-[#5E6AD2] hover:text-[#6872D9] transition-colors">
-            Register
-          </Link>
-        </p>
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession, appendMessages } from "@/lib/whatsapp/sessionService"
+import { getSession, appendMessages, updateSession } from "@/lib/whatsapp/sessionService"
 import { runAgent } from "@/lib/whatsapp/agent"
 import { sendToChat } from "@/lib/whatsapp/openwaClient"
 import {
@@ -9,17 +9,23 @@ import {
   withinSendBudget,
 } from "@/lib/whatsapp/antiBan"
 import { getGlobalBotPaused } from "@/lib/whatsapp/botControl"
+import {
+  parseStaffCommand,
+  verifyStaffPin,
+  isStaffElevated,
+  isPinLockedOut,
+} from "@/lib/whatsapp/staffAuth"
 
 export const runtime = "nodejs"
 
 // OpenWA signs each webhook delivery with HMAC-SHA256 over the raw request body:
 //   X-OpenWA-Signature: sha256=<hex>
-// We only enforce it when OPENWA_WEBHOOK_SECRET is set, so setup isn't blocked
-// before the secret is configured. Uses Web Crypto so it runs on workerd too.
-async function verifySignature(rawBody: string, header: string | null): Promise<boolean> {
+// Returns whether the body carries a VALID signature for OPENWA_WEBHOOK_SECRET.
+// Only meaningful once that secret is configured on BOTH the gateway and here.
+// Uses Web Crypto so it runs on any runtime.
+async function signatureValid(rawBody: string, header: string | null): Promise<boolean> {
   const secret = process.env.OPENWA_WEBHOOK_SECRET
-  if (!secret) return true // verification disabled
-  if (!header) return false
+  if (!secret || !header) return false
 
   const provided = header.startsWith("sha256=") ? header.slice(7) : header
   const key = await crypto.subtle.importKey(
@@ -48,9 +54,16 @@ export async function POST(request: NextRequest) {
     // Read the raw body once — needed for signature verification, then parsed.
     const rawBody = await request.text()
 
-    if (!(await verifySignature(rawBody, request.headers.get("x-openwa-signature")))) {
-      console.warn("[WhatsApp Webhook] invalid signature")
-      return NextResponse.json({ status: "unauthorized" }, { status: 401 })
+    // Webhook authenticity (C2). Roll-out is two-phase so we never silently drop
+    // patient messages: once OPENWA_WEBHOOK_SECRET is set we LOG validity but only
+    // REJECT unsigned/invalid deliveries when WEBHOOK_REJECT_UNSIGNED === "true".
+    if (process.env.OPENWA_WEBHOOK_SECRET) {
+      const sigHeader = request.headers.get("x-openwa-signature")
+      const valid = await signatureValid(rawBody, sigHeader)
+      console.warn(`[WA SIG] present=${!!sigHeader} valid=${valid}`)
+      if (process.env.WEBHOOK_REJECT_UNSIGNED === "true" && !valid) {
+        return NextResponse.json({ status: "unauthorized" }, { status: 401 })
+      }
     }
 
     const body = JSON.parse(rawBody)
@@ -101,24 +114,72 @@ export async function POST(request: NextRequest) {
 
     const sessionKey = replyJid.replace(/[^\d]/g, "")
     const session = await getSession(sessionKey)
+    // Keep the exact inbound JID so staff broadcasts can message this contact back.
+    if (session.chatId !== replyJid) session.chatId = replyJid
+
+    // ── Staff auth (deterministic, BEFORE the LLM) ──
+    // The PIN is verified here and never routed to the model or stored verbatim.
+    const cmd = parseStaffCommand(messageText)
+    if (cmd.kind === "login") {
+      if (isPinLockedOut(session)) {
+        await sendToChat(replyJid, "🔒 Too many failed attempts. Please try again later.")
+        return NextResponse.json({ status: "ok", reason: "pin_locked" })
+      }
+      const ident = verifyStaffPin(cmd.pin)
+      if (ident) {
+        await updateSession(sessionKey, {
+          chatId: replyJid,
+          staffName: ident.name,
+          staffRole: ident.role,
+          staffAuthAt: new Date().toISOString(),
+          staffPinAttempts: 0,
+        })
+        // Store a REDACTED note (never the PIN) so the conversation stays coherent.
+        await appendMessages(sessionKey, [
+          { role: "user", content: "[staff login]", timestamp: new Date().toISOString() },
+        ])
+        await sendToChat(
+          replyJid,
+          `✅ Logged in as ${ident.name} (${ident.role}). I'll remember this device for 8 hours. Send "logout" to end.`
+        )
+        return NextResponse.json({ status: "ok", reason: "staff_login" })
+      }
+      await updateSession(sessionKey, {
+        chatId: replyJid,
+        staffPinAttempts: (session.staffPinAttempts ?? 0) + 1,
+      })
+      await sendToChat(replyJid, "❌ Invalid code.")
+      return NextResponse.json({ status: "ok", reason: "staff_login_failed" })
+    }
+    if (cmd.kind === "logout") {
+      await updateSession(sessionKey, { staffName: null, staffRole: null, staffAuthAt: null })
+      await sendToChat(replyJid, "👋 Logged out.")
+      return NextResponse.json({ status: "ok", reason: "staff_logout" })
+    }
+
+    const staff = isStaffElevated(session)
 
     // Bot paused — globally or for this conversation (staff took it over). Record
-    // the inbound message so it shows in the portal, but don't auto-reply.
-    if (session.botPaused || (await getGlobalBotPaused())) {
+    // the inbound message so it shows in the portal, but don't auto-reply. Staff
+    // sessions bypass the pause: the doctor still needs the assistant to respond.
+    if (!staff && (session.botPaused || (await getGlobalBotPaused()))) {
       await appendMessages(sessionKey, [
         { role: "user", content: messageText, timestamp: new Date().toISOString() },
       ])
       return NextResponse.json({ status: "ignored", reason: "bot_paused" })
     }
 
-    // Rate limits: per-contact burst + global daily cap.
-    const budget = await withinSendBudget(sessionKey)
-    if (!budget.ok) {
-      console.warn(`[WhatsApp Webhook] send throttled: ${budget.reason}`)
-      await appendMessages(sessionKey, [
-        { role: "user", content: messageText, timestamp: new Date().toISOString() },
-      ])
-      return NextResponse.json({ status: "ignored", reason: budget.reason })
+    // Rate limits: per-contact burst + global daily cap. Staff bypass these (low
+    // volume, and broadcasts enforce their own cap).
+    if (!staff) {
+      const budget = await withinSendBudget(sessionKey)
+      if (!budget.ok) {
+        console.warn(`[WhatsApp Webhook] send throttled: ${budget.reason}`)
+        await appendMessages(sessionKey, [
+          { role: "user", content: messageText, timestamp: new Date().toISOString() },
+        ])
+        return NextResponse.json({ status: "ignored", reason: budget.reason })
+      }
     }
 
     const replyText = await runAgent(session, messageText)

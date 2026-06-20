@@ -160,6 +160,18 @@ export interface WhatsAppSession {
   // When true, the AI bot won't auto-reply to this conversation — a staff member
   // has taken it over manually from the portal. Absent/false = bot active.
   botPaused?: boolean
+  // The exact JID the patient messages arrive on (e.g. "<lid>@lid" or a phone
+  // JID). Stored so staff broadcasts can message this contact back on the exact
+  // address the gateway delivers to. Absent on older sessions.
+  chatId?: string
+  // ── Staff/doctor elevation (set after a successful PIN; see lib/whatsapp/staffAuth.ts) ──
+  // The authenticated staff member's display name, their role (audit/greeting only —
+  // doctor and receptionist share the same powers), when they last authenticated
+  // (drives the 8h TTL), and a failed-PIN counter for lockout. All absent = patient.
+  staffName?: string | null
+  staffRole?: "doctor" | "receptionist" | null
+  staffAuthAt?: string | null
+  staffPinAttempts?: number
   lastActiveAt: string
   createdAt: string
 }

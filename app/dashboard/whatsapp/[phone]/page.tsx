@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Send, Pause, Power } from "lucide-react"
 import type { WhatsAppSession } from "@/lib/types"
+import { authedFetch } from "@/lib/authedFetch"
 
 export default function WhatsAppSessionPage() {
   const params = useParams()
@@ -18,7 +19,7 @@ export default function WhatsAppSessionPage() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch(`/api/whatsapp/sessions/${encodeURIComponent(phone)}`)
+      const res = await authedFetch(`/api/whatsapp/sessions/${encodeURIComponent(phone)}`)
       if (res.ok) {
         const data = await res.json()
         setSession(data.session ?? null)
@@ -36,7 +37,7 @@ export default function WhatsAppSessionPage() {
     if (!session) return
     setTogglingBot(true)
     try {
-      await fetch("/api/whatsapp/bot", {
+      await authedFetch("/api/whatsapp/bot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scope: "session", phone, paused: !session.botPaused }),
@@ -52,7 +53,7 @@ export default function WhatsAppSessionPage() {
     if (!msg.trim()) return
     setSending(true)
     try {
-      const res = await fetch("/api/whatsapp/send", {
+      const res = await authedFetch("/api/whatsapp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, text: msg }),

@@ -90,23 +90,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  const register = async (email: string, password: string, name: string, role: UserRole) => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-      const user = userCredential.user
-
-      // Create user document in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        email,
-        name,
-        role,
-        createdAt: new Date().toISOString(),
-      })
-    } catch (error) {
-      console.error("Registration error:", error)
-      throw error
-    }
+  // Public self-registration is DISABLED (security): it let anyone create an
+  // account and pick their own role (incl. admin). Staff are now provisioned by an
+  // admin out-of-band. Kept in the type for compatibility; always rejects.
+  const register = async (_email: string, _password: string, _name: string, _role: UserRole) => {
+    void createUserWithEmailAndPassword
+    void setDoc
+    void doc
+    throw new Error("Registration is disabled. Ask an administrator to create your account.")
   }
 
   const logout = async () => {

@@ -14,6 +14,7 @@ import {
   Activity,
 } from "lucide-react"
 import type { WhatsAppSession } from "@/lib/types"
+import { authedFetch } from "@/lib/authedFetch"
 
 interface Connection {
   status: string
@@ -48,9 +49,9 @@ export default function WhatsAppPortalPage() {
 
   const loadAll = useCallback(async () => {
     const [sRes, cRes, stRes] = await Promise.allSettled([
-      fetch("/api/whatsapp/sessions").then((r) => r.json()),
-      fetch("/api/whatsapp/connect", { cache: "no-store" }).then((r) => r.json()),
-      fetch("/api/whatsapp/stats").then((r) => r.json()),
+      authedFetch("/api/whatsapp/sessions").then((r) => r.json()),
+      authedFetch("/api/whatsapp/connect", { cache: "no-store" }).then((r) => r.json()),
+      authedFetch("/api/whatsapp/stats").then((r) => r.json()),
     ])
     if (sRes.status === "fulfilled") setSessions(sRes.value.sessions ?? [])
     if (cRes.status === "fulfilled") setConn(cRes.value)
@@ -67,7 +68,7 @@ export default function WhatsAppPortalPage() {
   async function reconnect() {
     setReconnecting(true)
     try {
-      await fetch("/api/whatsapp/connect", { method: "POST" })
+      await authedFetch("/api/whatsapp/connect", { method: "POST" })
       await new Promise((r) => setTimeout(r, 2000))
       await loadAll()
     } finally {
@@ -79,7 +80,7 @@ export default function WhatsAppPortalPage() {
     if (!stats) return
     setTogglingBot(true)
     try {
-      await fetch("/api/whatsapp/bot", {
+      await authedFetch("/api/whatsapp/bot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scope: "global", paused: !stats.globalPaused }),
@@ -95,7 +96,7 @@ export default function WhatsAppPortalPage() {
     setSending(true)
     setSendResult(null)
     try {
-      const res = await fetch("/api/whatsapp/send", {
+      const res = await authedFetch("/api/whatsapp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: toPhone, text: msg }),

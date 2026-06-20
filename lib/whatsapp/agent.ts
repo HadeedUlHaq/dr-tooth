@@ -1,6 +1,7 @@
 import OpenAI from "openai"
-import { AGENT_TOOLS, executeTool } from "./tools"
+import { AGENT_TOOLS, STAFF_TOOLS, executeTool } from "./tools"
 import { updateSession } from "./sessionService"
+import { isStaffElevated } from "./staffAuth"
 import type { WhatsAppSession } from "../types"
 
 // OpenAI Chat Completions API.
@@ -16,7 +17,74 @@ function getClient(): OpenAI {
 // Override in .env.local with another model if desired.
 const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini"
 
-function buildSystemPrompt(): string {
+// Staff/doctor assistant prompt — used only for an authenticated staff session.
+// It is allowed to surface clinic-wide and patient data because the caller has
+// proven they are staff (PIN). The staff tools themselves also re-check elevation.
+function buildStaffPrompt(session: WhatsAppSession): string {
+  const now = new Date()
+  const today = now.toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" })
+  const nowTime = now.toLocaleTimeString("en-GB", {
+    timeZone: "Asia/Karachi",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+  const who = session.staffName || "a staff member"
+  return `You are the internal assistant for Dr Tooth Dental Clinic, Lahore. You are
+talking to ${who} (clinic staff, role: ${session.staffRole || "staff"}) over the clinic's
+own WhatsApp. They are authenticated, so you MAY share clinic-wide operational data and
+patient details with them. Be concise and professional; this is a chat.
+
+CURRENT TIME: it is ${today} at ${nowTime} (Asia/Karachi). "Today" = ${today}. Compute
+relative dates ("tomorrow" = the next day, "kal", "Friday", etc.) from this. Always pass
+tool dates as YYYY-MM-DD and times as HH:MM 24-hour.
+
+GROUNDING — this is critical:
+- NEVER invent or guess a date, time, patient name, phone, count, balance, or availability.
+  Every such fact MUST come from a tool result in THIS conversation.
+- If you are not 100% sure of a detail (e.g. which date an appointment is on), call a tool to
+  get it — do NOT rely on memory or earlier unrelated context.
+- The staff_* tool results include the appointment's DATE and TIME. Use those exact values.
+
+FOLLOWING UP / REFERENCES ("this", "that", "yeh", "us ka"):
+- When the staff member refers to "this/that appointment" or a patient you just listed, use the
+  EXACT date+time+name from the most recent tool result — never a date from earlier in the chat.
+- Example: after staff_day_overview lists "Tim — 2026-06-20 17:00", if they say "cancel this"
+  or "Tim ki appointment cancel kardo", call staff_cancel_appointment with patientName:"Tim"
+  (you may also pass date:"2026-06-20"). Do not invent a different date.
+
+CANCEL / RESCHEDULE:
+- Identify the appointment by the patient's NAME (or phone). The date is OPTIONAL — the tool
+  finds the patient's upcoming appointment(s). Only pass a date/time to disambiguate when the
+  patient has more than one and the tool asks you to.
+- For a reschedule, if the staff member gives only a new time, omit newDate (it defaults to the
+  appointment's existing date).
+- If a tool returns needsClarification with a list, show that list (with dates+times) and ask
+  which one — do not pick for them.
+
+STAFF CAPABILITIES: schedule & counts for any day (staff_day_overview); full patient lookup
+incl. phone, history, balance (staff_find_patient); cancel/reschedule ANY patient
+(staff_cancel_appointment / staff_reschedule_appointment); revenue & outstanding
+(staff_revenue_summary); block/unblock time off so the patient bot won't book it
+(staff_block_time / staff_list_blocks / staff_unblock); message a day's patients
+(staff_broadcast). For "who's my next patient", read staff_day_overview and pick the earliest
+appointment whose time is after the current time above.
+
+CONFIRMATION: cancel, reschedule, block and broadcast are TWO-STEP — call once WITHOUT
+confirmed to stage, read the returned details/preview back to the staff member, get an explicit
+"yes", THEN call again with confirmed:true. Never set confirmed:true on your own. Handle one
+appointment at a time.
+
+STYLE:
+- Answer the EXACT question first (e.g. "how many today?" → lead with the number), then offer
+  detail. Use Markdown tables for schedules/patient lists/money; format money as "Rs." with
+  thousands separators.
+- Mirror the staff member's language (English, Urdu, Roman Urdu, Arabic, Roman Arabic).
+- If a tool reports not_authorized, tell them their staff session expired — send the PIN again
+  ("staff <PIN>").`
+}
+
+function buildSystemPrompt(session: WhatsAppSession): string {
+  if (isStaffElevated(session)) return buildStaffPrompt(session)
   const today = new Date().toLocaleDateString("en-CA") // YYYY-MM-DD
   return `You are the friendly AI receptionist for Dr Tooth Dental Clinic in Lahore, Pakistan.
 You communicate via the clinic's online chat in a warm, professional manner. Keep messages concise — this is a chat interface.
@@ -101,9 +169,11 @@ FORMATTING (the chat renders Markdown, including GFM tables):
 - Keep other replies concise; use bold and short bullet lists where they aid clarity.`
 }
 
-// Convert Anthropic-style tool schemas to OpenAI format
-function toOpenAITools(): OpenAI.Chat.ChatCompletionTool[] {
-  return AGENT_TOOLS.map((t) => ({
+// Convert Anthropic-style tool schemas to OpenAI format. Staff sessions also get
+// the staff_* tools; patient sessions never see them.
+function toOpenAITools(session: WhatsAppSession): OpenAI.Chat.ChatCompletionTool[] {
+  const defs = isStaffElevated(session) ? [...AGENT_TOOLS, ...STAFF_TOOLS] : AGENT_TOOLS
+  return defs.map((t) => ({
     type: "function" as const,
     function: {
       name: t.name,
@@ -117,7 +187,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 // Call the model, retrying on transient rate-limit (429) errors with backoff.
 async function createCompletion(
-  messages: OpenAI.Chat.ChatCompletionMessageParam[]
+  messages: OpenAI.Chat.ChatCompletionMessageParam[],
+  tools: OpenAI.Chat.ChatCompletionTool[]
 ): Promise<OpenAI.Chat.ChatCompletion> {
   const MAX_RETRIES = 3
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -125,7 +196,7 @@ async function createCompletion(
       return await getClient().chat.completions.create({
         model: MODEL,
         messages,
-        tools: toOpenAITools(),
+        tools,
         tool_choice: "auto",
       })
     } catch (err) {
@@ -151,6 +222,7 @@ async function persistSessionState(session: WhatsAppSession): Promise<void> {
       phase: session.phase,
       pendingAction: session.pendingAction ?? null,
       invoiceAttempts: session.invoiceAttempts ?? 0,
+      chatId: session.chatId,
     })
   } catch (err) {
     console.error("[Session persist failed]", String(err))
@@ -159,13 +231,16 @@ async function persistSessionState(session: WhatsAppSession): Promise<void> {
 
 export async function runAgent(session: WhatsAppSession, incomingMessage: string): Promise<string> {
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-    { role: "system", content: buildSystemPrompt() },
+    { role: "system", content: buildSystemPrompt(session) },
     ...session.messages.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     })),
     { role: "user", content: incomingMessage },
   ]
+
+  // Tool set is fixed for the turn based on the caller's (staff/patient) role.
+  const tools = toOpenAITools(session)
 
   // Tools read/write identity and confirmation state through this context.
   const ctx = { session }
@@ -175,7 +250,7 @@ export async function runAgent(session: WhatsAppSession, incomingMessage: string
     "I'm sorry, I had trouble processing your request. Please try again or call us directly."
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
-    const response = await createCompletion(messages)
+    const response = await createCompletion(messages, tools)
 
     const choice = response.choices[0]
     const message = choice.message

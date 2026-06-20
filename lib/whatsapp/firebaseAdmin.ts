@@ -265,6 +265,15 @@ export class DocumentReference {
       body: JSON.stringify({ fields: encodeFields(data) }),
     })
   }
+
+  // Delete the document. A 404 (already gone) is treated as success, matching
+  // firebase-admin's idempotent delete().
+  async delete(): Promise<void> {
+    const res = await fsFetch(this.path, { method: "DELETE" })
+    if (!res.ok && res.status !== 404) {
+      throw new Error(`Firestore DELETE ${this.path} failed: ${res.status} ${await res.text()}`)
+    }
+  }
 }
 
 export class QuerySnapshot {

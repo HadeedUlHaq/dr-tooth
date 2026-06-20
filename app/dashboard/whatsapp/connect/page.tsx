@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, CheckCircle2, RefreshCw, Smartphone } from "lucide-react"
+import { authedFetch } from "@/lib/authedFetch"
 
 interface Connection {
   status: string
@@ -36,7 +37,7 @@ export default function WhatsAppConnectPage() {
     async function poll() {
       let current = "unknown"
       try {
-        const res = await fetch("/api/whatsapp/connect", { cache: "no-store" })
+        const res = await authedFetch("/api/whatsapp/connect", { cache: "no-store" })
         const data = (await res.json()) as Connection
         current = data.status
         if (!cancelled) setConn(data)
