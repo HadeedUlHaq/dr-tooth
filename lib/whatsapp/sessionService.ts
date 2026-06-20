@@ -1,4 +1,5 @@
 import { getAdminDb } from "./firebaseAdmin"
+import { normalizePhone } from "./phone"
 import type { WhatsAppSession, WhatsAppMessage } from "../types"
 
 const COLLECTION = "whatsapp_sessions"
@@ -99,6 +100,30 @@ export async function resetSessionMemory(phoneNumber: string): Promise<void> {
     invoiceAttempts: 0,
     messages: [],
   })
+}
+
+// Find a patient by phone, tolerant of stored format ("+92 300 …", "0300…", bare
+// digits). Cheap exact tries first, then a bounded normalised scan. Used once per
+// new WhatsApp contact to auto-recognise a returning patient.
+export async function findPatientByPhone(phone: string): Promise<{ id: string; name: string } | null> {
+  const db = getAdminDb()
+  const target = normalizePhone(phone)
+  if (!target) return null
+  try {
+    for (const cand of [phone, `+${phone}`]) {
+      const snap = await db.collection("patients").where("phone", "==", cand).limit(1).get()
+      if (!snap.empty) return { id: snap.docs[0].id, name: snap.docs[0].data().name as string }
+    }
+    const all = await db.collection("patients").limit(2000).get()
+    for (const d of all.docs) {
+      if (normalizePhone(d.data().phone) === target) {
+        return { id: d.id, name: d.data().name as string }
+      }
+    }
+  } catch (err) {
+    console.error("[findPatientByPhone] failed:", String(err))
+  }
+  return null
 }
 
 export async function getAllSessions(): Promise<WhatsAppSession[]> {

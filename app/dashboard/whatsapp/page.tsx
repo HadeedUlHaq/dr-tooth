@@ -452,7 +452,7 @@ export default function WhatsAppPortalPage() {
                           >
                             {s.patientName ?? "Guest"}
                           </Link>
-                          <div className="text-[10px] text-[#8A8F98]">+{s.phoneNumber}</div>
+                          <div className="text-[10px] text-[#8A8F98]">+{s.realPhone || s.phoneNumber}</div>
                         </div>
                       </div>
                     </td>

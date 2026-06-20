@@ -178,6 +178,12 @@ export interface WhatsAppSession {
   // JID). Stored so staff broadcasts can message this contact back on the exact
   // address the gateway delivers to. Absent on older sessions.
   chatId?: string
+  // The patient's REAL, verified phone number resolved from their @lid via the
+  // gateway (digits, e.g. "447774067432"). This is the trusted identity for a
+  // WhatsApp chat. `phoneResolved` marks that we've already attempted resolution
+  // (so we call the gateway at most once, even when it returns nothing).
+  realPhone?: string | null
+  phoneResolved?: boolean
   // ── Staff/doctor elevation (set after a successful PIN; see lib/whatsapp/staffAuth.ts) ──
   // The authenticated staff member's display name, their role (audit/greeting only —
   // doctor and receptionist share the same powers), when they last authenticated

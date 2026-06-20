@@ -5,6 +5,7 @@ import { CLINIC_INFO, SERVICES } from "./clinicInfo"
 import { isStaffElevated } from "./staffAuth"
 import { sendToChat } from "./openwaClient"
 import { getAllSessions, resetSessionMemory } from "./sessionService"
+import { normalizePhone } from "./phone"
 
 type ToolDefinition = {
   name: string
@@ -39,16 +40,7 @@ const NOT_AUTH = JSON.stringify({
 // Sundays, which validateDate rejects).
 const DATE_FMT = /^\d{4}-\d{2}-\d{2}$/
 
-// Reduce any Pakistani phone format to its canonical 10-digit local form so
-// lookups match regardless of how the number was typed/stored:
-//   "+92 324 0010884", "0092-324-0010884", "03240010884" -> "3240010884"
-function normalizePhone(raw: unknown): string {
-  let d = String(raw ?? "").replace(/\D/g, "")
-  if (d.startsWith("0092")) d = d.slice(4)
-  else if (d.startsWith("92")) d = d.slice(2)
-  else if (d.startsWith("0")) d = d.slice(1)
-  return d
-}
+// (normalizePhone lives in ./phone — shared with sessionService to avoid a cycle.)
 
 // Strip a leading "#" and surrounding whitespace from an invoice number so both
 // "kyVSrAbw" and "#kyVSrAbw" resolve to the same Firestore document id.
@@ -75,13 +67,19 @@ function nameMatches(a: unknown, b: unknown): boolean {
   return short.every((t) => long.includes(t))
 }
 
-// Resolve the caller's phone for this session. Once a caller has identified
-// themselves, the phone is locked for the rest of the conversation; otherwise we
-// seed it from the first phone they supply. Returns null if no identity yet.
+// Resolve the caller's phone for this session.
+// SECURITY: if we have a VERIFIED WhatsApp number (resolved from their @lid), that
+// always wins — a number the user TYPES can never override it, so a WhatsApp patient
+// can only ever act on their own records (closes the impersonation/IDOR hole).
+// Otherwise (e.g. web chat, no verified number) we lock to the first phone supplied.
 function resolveCallerPhone(
   session: WhatsAppSession,
   input: Record<string, unknown>
 ): string | null {
+  if (session.realPhone) {
+    session.patientPhone = session.realPhone
+    return session.realPhone
+  }
   if (session.patientPhone) return session.patientPhone
   const provided = String(input.patientPhone ?? "").trim()
   if (!provided) return null
@@ -576,9 +574,11 @@ export async function executeTool(
       const phoneGuard = requireString(input, "phone")
       if (!phoneGuard.ok) return JSON.stringify({ error: "validation", message: phoneGuard.message })
 
+      // Prefer the VERIFIED WhatsApp number over whatever the model passed.
+      const newPhone = session.realPhone || String(input.phone).trim()
       const ref = await db.collection("patients").add({
         name: input.name,
-        phone: input.phone,
+        phone: newPhone,
         treatmentRequired: (input.treatmentRequired as string) || "Consultation",
         address: (input.address as string) || null,
         notes: (input.notes as string) || null,
@@ -588,7 +588,7 @@ export async function executeTool(
       // New patient becomes the caller's locked identity for this session.
       session.patientId = ref.id
       session.patientName = String(input.name)
-      session.patientPhone = String(input.phone).trim()
+      session.patientPhone = newPhone
       await writeAudit(db, "patient_added", `New patient registered via chatbot: ${input.name}`)
       return JSON.stringify({ success: true })
     }
@@ -609,18 +609,19 @@ export async function executeTool(
       const statuses = input.includeCompleted
         ? ["scheduled", "confirmed", "completed"]
         : ["scheduled", "confirmed"]
-      const snap = await db
-        .collection("appointments")
-        .where("patientPhone", "==", phone)
-        .where("status", "in", statuses)
-        .get()
-      const appointments = snap.docs.map((d) => ({
-        date: d.data().date,
-        time: d.data().time,
-        doctorName: d.data().doctorName,
-        status: d.data().status,
-        notes: d.data().notes,
-      }))
+      // Match by NORMALISED phone so the caller's (verified) number matches records
+      // saved in any format ("+92 300 …", "0300…", bare digits).
+      const want = normalizePhone(phone)
+      const snap = await db.collection("appointments").where("status", "in", statuses).get()
+      const appointments = snap.docs
+        .filter((d) => normalizePhone(d.data().patientPhone) === want)
+        .map((d) => ({
+          date: d.data().date,
+          time: d.data().time,
+          doctorName: d.data().doctorName,
+          status: d.data().status,
+          notes: d.data().notes,
+        }))
       return JSON.stringify({ appointments })
     }
 
@@ -704,12 +705,12 @@ export async function executeTool(
       if (!phone) {
         return JSON.stringify({ success: false, error: "needs_identification", message: "Ask the patient for their phone number first." })
       }
+      const wantC = normalizePhone(phone)
       const snap = await db
         .collection("appointments")
-        .where("patientPhone", "==", phone)
         .where("status", "in", ["scheduled", "confirmed"])
         .get()
-      let docs = snap.docs
+      let docs = snap.docs.filter((d) => normalizePhone(d.data().patientPhone) === wantC)
       if (input.date) docs = docs.filter((d) => d.data().date === input.date)
 
       if (docs.length === 0) {
@@ -766,12 +767,12 @@ export async function executeTool(
       const slot = validateSlot(input.newDate, input.newTime)
       if (!slot.ok) return JSON.stringify({ success: false, error: "validation", message: slot.message })
 
+      const wantR = normalizePhone(phone)
       const snap = await db
         .collection("appointments")
-        .where("patientPhone", "==", phone)
         .where("status", "in", ["scheduled", "confirmed"])
         .get()
-      let docs = snap.docs
+      let docs = snap.docs.filter((d) => normalizePhone(d.data().patientPhone) === wantR)
       if (input.currentDate) docs = docs.filter((d) => d.data().date === input.currentDate)
 
       if (docs.length === 0) {

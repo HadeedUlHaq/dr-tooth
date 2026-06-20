@@ -96,8 +96,13 @@ function buildSystemPrompt(session: WhatsAppSession): string {
   const today = now.toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" })
   const tomorrow = new Date(now.getTime() + 86_400_000).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" })
   const nowTime = now.toLocaleTimeString("en-GB", { timeZone: "Asia/Karachi", hour: "2-digit", minute: "2-digit" })
+  const known = session.patientName
+    ? `\n\nKNOWN PATIENT: this person is already identified as **${session.patientName}** — their phone is on file and verified. Greet them by name and do NOT ask for their phone number; use it directly for lookups/bookings. If they say they are NOT ${session.patientName} or are a new patient, call reset_conversation.`
+    : session.realPhone
+      ? `\n\nKNOWN CONTACT: their phone number is already on file and verified — do NOT ask for it; use it directly.`
+      : ""
   return `You are the friendly AI receptionist for Dr Tooth Dental Clinic in Lahore, Pakistan.
-You communicate via the clinic's online chat in a warm, professional manner. Keep messages concise — this is a chat interface.
+You communicate via the clinic's online chat in a warm, professional manner. Keep messages concise — this is a chat interface.${known}
 
 CLINIC INFORMATION:
 - Name: Dr Tooth Dental Clinic

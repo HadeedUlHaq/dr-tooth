@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import type { WhatsAppSession } from "@/lib/types"
-import { getSession, appendMessages, updateSession } from "@/lib/whatsapp/sessionService"
+import { getSession, appendMessages, updateSession, findPatientByPhone } from "@/lib/whatsapp/sessionService"
 import { runAgent } from "@/lib/whatsapp/agent"
-import { sendToChat } from "@/lib/whatsapp/openwaClient"
+import { sendToChat, resolveContactPhone } from "@/lib/whatsapp/openwaClient"
 import {
   resolveReplyJid,
   humanDelay,
@@ -228,6 +228,33 @@ export async function POST(request: NextRequest) {
       console.warn("[WhatsApp Webhook] global AI budget exhausted")
       await recordInbound()
       return NextResponse.json({ status: "ignored", reason: "ai_budget" })
+    }
+
+    // Verified-phone identity: once per contact, resolve the real number behind the
+    // @lid and auto-link an existing patient (greet by name + load history). The
+    // resolved number becomes the trusted identity (see resolveCallerPhone).
+    if (!staff && !session.phoneResolved) {
+      const real = replyJid.endsWith("@lid") ? await resolveContactPhone(replyJid) : sessionKey || null
+      const update: Partial<WhatsAppSession> = { phoneResolved: true, realPhone: real }
+      if (real) {
+        update.patientPhone = real
+        if (!session.patientId) {
+          const match = await findPatientByPhone(real)
+          if (match) {
+            update.patientId = match.id
+            update.patientName = match.name
+          }
+        }
+      }
+      await updateSession(sessionKey, update)
+      // Reflect on the in-memory session so THIS turn's agent uses it immediately.
+      session.phoneResolved = true
+      session.realPhone = real
+      if (real) session.patientPhone = real
+      if (update.patientId) {
+        session.patientId = update.patientId
+        session.patientName = update.patientName ?? session.patientName
+      }
     }
 
     const replyText = await runAgent(session, messageText)

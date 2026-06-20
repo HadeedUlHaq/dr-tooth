@@ -75,6 +75,26 @@ export async function sendWhatsAppMessage(phoneNumber: string, text: string): Pr
   return sendToChat(toChatId(phoneNumber), text)
 }
 
+// Resolve the REAL phone number behind a contact JID (e.g. a privacy "<lid>@lid").
+//   GET {base}/api/sessions/{sessionId}/contacts/{chatId}/phone -> { phone: "digits" }
+// Best-effort: returns the digits, or null when the gateway can't reveal it.
+export async function resolveContactPhone(chatId: string): Promise<string | null> {
+  try {
+    const { base, sessionId, apiKey } = config()
+    const res = await fetch(
+      `${base}/api/sessions/${sessionId}/contacts/${encodeURIComponent(chatId)}/phone`,
+      { headers: { "X-API-Key": apiKey } }
+    )
+    if (!res.ok) return null
+    const data = (await res.json()) as { phone?: string }
+    const digits = String(data?.phone ?? "").replace(/\D/g, "")
+    return digits || null
+  } catch (err) {
+    console.error("[resolveContactPhone] failed:", String(err))
+    return null
+  }
+}
+
 // ── Connection state + QR (for the in-app pairing screen) ──
 //   GET {base}/api/sessions/{sessionId}          → { status, phone, pushName, ... }
 //   GET {base}/api/sessions/{sessionId}/qr       → { qrCode: "data:image/png;base64,...", status }
