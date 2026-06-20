@@ -446,12 +446,22 @@ export default function WhatsAppPortalPage() {
                           {(s.patientName ?? "G").charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <Link
-                            href={`/dashboard/whatsapp/${encodeURIComponent(s.phoneNumber)}`}
-                            className="text-[#EDEDEF] hover:text-[#5E6AD2] transition-colors font-medium"
-                          >
-                            {s.patientName ?? "Guest"}
-                          </Link>
+                          <span className="inline-flex items-center gap-1.5">
+                            <Link
+                              href={`/dashboard/whatsapp/${encodeURIComponent(s.phoneNumber)}`}
+                              className="text-[#EDEDEF] hover:text-[#5E6AD2] transition-colors font-medium"
+                            >
+                              {s.patientName ?? "Guest"}
+                            </Link>
+                            {s.optedOut && (
+                              <span
+                                title="Unsubscribed from reminders (replied STOP)"
+                                className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                              >
+                                🔕 opted out
+                              </span>
+                            )}
+                          </span>
                           <div className="text-[10px] text-[#8A8F98]">+{s.realPhone || s.phoneNumber}</div>
                         </div>
                       </div>
