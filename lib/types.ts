@@ -164,6 +164,16 @@ export interface WhatsAppSession {
   // When true, the AI bot won't auto-reply to this conversation — a staff member
   // has taken it over manually from the portal. Absent/false = bot active.
   botPaused?: boolean
+  // When true, the conversation is blocked: inbound messages are recorded but the
+  // bot never runs the LLM or replies. Set/cleared by staff from the portal.
+  blocked?: boolean
+  // Heuristic conversation health for the portal: "green" normal, "yellow" fast/
+  // repetitive, "red" flooded/abusive (auto-pauses the bot). Plus the abuse strike
+  // count and why it was last flagged. (See lib/whatsapp/antiBan.ts assessInbound.)
+  health?: "green" | "yellow" | "red"
+  abuseStrikes?: number
+  flaggedReason?: string | null
+  flaggedAt?: string | null
   // The exact JID the patient messages arrive on (e.g. "<lid>@lid" or a phone
   // JID). Stored so staff broadcasts can message this contact back on the exact
   // address the gateway delivers to. Absent on older sessions.

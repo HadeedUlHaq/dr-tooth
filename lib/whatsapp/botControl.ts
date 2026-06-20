@@ -29,6 +29,17 @@ export async function setSessionBotPaused(phoneNumber: string, paused: boolean):
   await updateSession(phoneNumber, { botPaused: paused })
 }
 
+// Block (or unblock) a conversation. Unblocking also clears the health flag so the
+// chat returns to a clean slate.
+export async function setSessionBlocked(phoneNumber: string, blocked: boolean): Promise<void> {
+  await updateSession(
+    phoneNumber,
+    blocked
+      ? { blocked: true, health: "red", flaggedReason: "blocked by staff", flaggedAt: new Date().toISOString() }
+      : { blocked: false, health: "green", flaggedReason: null }
+  )
+}
+
 // ── Appointment-reminder toggles (receptionist controls these from the portal) ──
 const REMINDERS_DOC = "reminders"
 export interface ReminderConfig {

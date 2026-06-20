@@ -4,7 +4,7 @@ import { requireString, validateDate, validateTime, validateSlot, clinicToday } 
 import { CLINIC_INFO, SERVICES } from "./clinicInfo"
 import { isStaffElevated } from "./staffAuth"
 import { sendToChat } from "./openwaClient"
-import { getAllSessions } from "./sessionService"
+import { getAllSessions, resetSessionMemory } from "./sessionService"
 
 type ToolDefinition = {
   name: string
@@ -367,6 +367,12 @@ export const AGENT_TOOLS: ToolDefinition[] = [
       },
       required: ["patientPhone"],
     },
+  },
+  {
+    name: "reset_conversation",
+    description:
+      "Forget the previous patient's identity and chat history and start a completely fresh conversation. Call this ONLY when the person indicates they are a NEW or different patient, that they are not the previous person, or they explicitly ask to start over.",
+    input_schema: { type: "object", properties: {} },
   },
   {
     name: "request_callback",
@@ -940,6 +946,21 @@ export async function executeTool(
         }
       })
       return JSON.stringify({ hasBalance: true, totalBalance, invoices })
+    }
+
+    case "reset_conversation": {
+      await resetSessionMemory(session.phoneNumber)
+      // Clear the in-memory session too so this turn doesn't re-persist the old identity.
+      session.patientId = null
+      session.patientName = null
+      session.patientPhone = null
+      session.phase = "idle"
+      session.pendingAction = null
+      session.invoiceAttempts = 0
+      return JSON.stringify({
+        success: true,
+        message: "Fresh start — previous identity and history cleared. Greet them as a new patient and collect their name/phone again when needed.",
+      })
     }
 
     case "request_callback": {

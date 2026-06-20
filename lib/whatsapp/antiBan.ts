@@ -102,3 +102,98 @@ export async function withinSendBudget(
     return { ok: true } // fail open
   }
 }
+
+// ── Inbound abuse guard + conversation health (heuristic, no AI cost) ──
+// Tracked per conversation in its own doc so it never races the session writes.
+const ABUSE_COLLECTION = "whatsapp_abuse"
+const ABUSE_WINDOW_MS = 60_000 // 1 minute
+const ABUSE_HARD_MAX = 12 // > this many inbound/min ⇒ skip the LLM (runaway-cost stop)
+const ABUSE_SOFT_MAX = 6 // > this ⇒ "fast" (yellow)
+const ABUSE_DECAY_MS = 10 * 60_000 // strikes reset after 10 min of calm
+const ABUSE_RED_STRIKES = 3
+
+export type Health = "green" | "yellow" | "red"
+export interface InboundAssessment {
+  allow: boolean // false ⇒ hard rate-limited; caller must NOT run the LLM
+  health: Health
+  strikes: number
+  reason: string | null
+}
+
+function norm(s: string): string {
+  return s.trim().toLowerCase().replace(/\s+/g, " ")
+}
+
+// Record an inbound message and assess it. Fails OPEN (treats as green/allowed) on
+// any infra error so a Firestore blip never blocks a real patient.
+export async function assessInbound(sessionKey: string, text: string): Promise<InboundAssessment> {
+  const db = getAdminDb()
+  const ref = db.collection(ABUSE_COLLECTION).doc(sessionKey)
+  const now = Date.now()
+  const body = norm(text)
+  try {
+    return await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref)
+      const d = snap.exists
+        ? (snap.data() as { windowStart: number; count: number; strikes: number; lastText?: string; lastAt?: number })
+        : null
+
+      let windowStart = now
+      let count = 1
+      let strikes = d?.strikes ?? 0
+      // Decay strikes after a calm period.
+      if (d?.lastAt && now - d.lastAt > ABUSE_DECAY_MS) strikes = 0
+
+      if (d && now - d.windowStart < ABUSE_WINDOW_MS) {
+        windowStart = d.windowStart
+        count = d.count + 1
+      }
+
+      const repeated = !!d?.lastText && d.lastText === body && body.length > 0
+      let reason: string | null = null
+
+      if (count > ABUSE_HARD_MAX) {
+        strikes += 1
+        reason = `flooding (${count} msgs/min)`
+      } else if (repeated) {
+        strikes += 1
+        reason = "repeated identical messages"
+      }
+
+      let health: Health = "green"
+      if (strikes >= ABUSE_RED_STRIKES || count > ABUSE_HARD_MAX) health = "red"
+      else if (count > ABUSE_SOFT_MAX || strikes >= 1 || repeated) {
+        health = "yellow"
+        if (!reason) reason = count > ABUSE_SOFT_MAX ? "rapid messages" : "flagged"
+      }
+
+      tx.set(ref, { windowStart, count, strikes, lastText: body, lastAt: now })
+      return { allow: count <= ABUSE_HARD_MAX, health, strikes, reason }
+    })
+  } catch (err) {
+    console.error("[assessInbound] failed (fail-open):", String(err))
+    return { allow: true, health: "green", strikes: 0, reason: null }
+  }
+}
+
+// ── Global daily cap on LLM invocations (protects the OpenAI bill from distributed
+//    abuse across many numbers). Fails OPEN. ──
+const AI_BUDGET_COLLECTION = "whatsapp_ai_budget"
+const AI_DAILY_MAX = 2000
+
+export async function withinAiBudget(): Promise<boolean> {
+  const db = getAdminDb()
+  const day = new Date().toISOString().slice(0, 10)
+  const ref = db.collection(AI_BUDGET_COLLECTION).doc(`global_${day}`)
+  try {
+    return await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref)
+      const count = snap.exists ? (snap.data()!.count as number) : 0
+      if (count >= AI_DAILY_MAX) return false
+      tx.set(ref, { count: count + 1, day })
+      return true
+    })
+  } catch {
+    return true // fail open
+  }
+}

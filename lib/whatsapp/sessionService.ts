@@ -86,6 +86,21 @@ export async function deleteSession(phoneNumber: string): Promise<void> {
   await getAdminDb().collection(COLLECTION).doc(phoneNumber).delete()
 }
 
+// Clear identity + history so a returning chat starts fresh ("I'm a new patient").
+// Keeps the session doc (and its block/health state) but wipes who-they-are + the
+// message history the agent sees.
+export async function resetSessionMemory(phoneNumber: string): Promise<void> {
+  await updateSession(phoneNumber, {
+    patientId: null,
+    patientName: null,
+    patientPhone: null,
+    phase: "idle",
+    pendingAction: null,
+    invoiceAttempts: 0,
+    messages: [],
+  })
+}
+
 export async function getAllSessions(): Promise<WhatsAppSession[]> {
   const snap = await getAdminDb()
     .collection(COLLECTION)

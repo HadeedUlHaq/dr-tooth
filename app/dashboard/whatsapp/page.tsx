@@ -16,6 +16,7 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Ban,
 } from "lucide-react"
 import type { WhatsAppSession } from "@/lib/types"
 import { authedFetch } from "@/lib/authedFetch"
@@ -52,6 +53,7 @@ export default function WhatsAppPortalPage() {
   const [page, setPage] = useState(0)
   const [confirmDelete, setConfirmDelete] = useState<{ phone: string; name: string } | null>(null)
   const [deletingPhone, setDeletingPhone] = useState<string | null>(null)
+  const [blockingPhone, setBlockingPhone] = useState<string | null>(null)
 
   // Manual send composer
   const [toPhone, setToPhone] = useState("")
@@ -88,6 +90,26 @@ export default function WhatsAppPortalPage() {
       if (res.ok) setReminders({ dayBefore: data.dayBefore !== false, hourBefore: data.hourBefore !== false })
     } finally {
       setTogglingReminder("")
+    }
+  }
+
+  async function toggleBlock(phone: string, blocked: boolean) {
+    setBlockingPhone(phone)
+    try {
+      const res = await authedFetch("/api/whatsapp/block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, blocked }),
+      })
+      if (res.ok) {
+        setSessions((prev) =>
+          prev.map((s) =>
+            s.phoneNumber === phone ? { ...s, blocked, health: blocked ? "red" : "green" } : s
+          )
+        )
+      }
+    } finally {
+      setBlockingPhone(null)
     }
   }
 
@@ -404,6 +426,22 @@ export default function WhatsAppPortalPage() {
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
+                        <span
+                          title={
+                            s.blocked
+                              ? "Blocked"
+                              : s.flaggedReason
+                                ? `Flagged: ${s.flaggedReason}`
+                                : `Health: ${s.health ?? "green"}`
+                          }
+                          className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                            s.blocked || s.health === "red"
+                              ? "bg-red-400"
+                              : s.health === "yellow"
+                                ? "bg-amber-400"
+                                : "bg-emerald-400"
+                          }`}
+                        />
                         <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#5E6AD2]/15 border border-[#5E6AD2]/20 flex items-center justify-center text-xs font-medium text-[#5E6AD2]">
                           {(s.patientName ?? "G").charAt(0).toUpperCase()}
                         </div>
@@ -433,13 +471,27 @@ export default function WhatsAppPortalPage() {
                     <td className="px-4 py-3 text-center text-[#8A8F98] hidden sm:table-cell">{s.messages.length}</td>
                     <td className="px-4 py-3 text-[#8A8F98] whitespace-nowrap hidden md:table-cell">{formatTime(s.lastActiveAt)}</td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setConfirmDelete({ phone: s.phoneNumber, name: s.patientName ?? "Guest" })}
-                        className="inline-flex items-center justify-center p-1.5 rounded-md text-[#8A8F98] hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                        title="Delete conversation"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => toggleBlock(s.phoneNumber, !s.blocked)}
+                          disabled={blockingPhone === s.phoneNumber}
+                          title={s.blocked ? "Unblock" : "Block"}
+                          className={`inline-flex items-center justify-center p-1.5 rounded-md transition-colors disabled:opacity-50 ${
+                            s.blocked
+                              ? "text-red-400 bg-red-500/10 hover:bg-red-500/20"
+                              : "text-[#8A8F98] hover:text-amber-400 hover:bg-amber-500/10"
+                          }`}
+                        >
+                          <Ban className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete({ phone: s.phoneNumber, name: s.patientName ?? "Guest" })}
+                          className="inline-flex items-center justify-center p-1.5 rounded-md text-[#8A8F98] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          title="Delete conversation"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import type { WhatsAppSession } from "@/lib/types"
 import { getSession, appendMessages, updateSession } from "@/lib/whatsapp/sessionService"
 import { runAgent } from "@/lib/whatsapp/agent"
 import { sendToChat } from "@/lib/whatsapp/openwaClient"
@@ -7,6 +8,8 @@ import {
   humanDelay,
   alreadyHandled,
   withinSendBudget,
+  assessInbound,
+  withinAiBudget,
 } from "@/lib/whatsapp/antiBan"
 import { getGlobalBotPaused } from "@/lib/whatsapp/botControl"
 import {
@@ -158,28 +161,65 @@ export async function POST(request: NextRequest) {
     }
 
     const staff = isStaffElevated(session)
+    const recordInbound = () =>
+      appendMessages(sessionKey, [
+        { role: "user", content: messageText, timestamp: new Date().toISOString() },
+      ])
+
+    // Blocked conversation — record the message but never run the bot or reply.
+    if (!staff && session.blocked) {
+      await recordInbound()
+      return NextResponse.json({ status: "ignored", reason: "blocked" })
+    }
 
     // Bot paused — globally or for this conversation (staff took it over). Record
     // the inbound message so it shows in the portal, but don't auto-reply. Staff
     // sessions bypass the pause: the doctor still needs the assistant to respond.
     if (!staff && (session.botPaused || (await getGlobalBotPaused()))) {
-      await appendMessages(sessionKey, [
-        { role: "user", content: messageText, timestamp: new Date().toISOString() },
-      ])
+      await recordInbound()
       return NextResponse.json({ status: "ignored", reason: "bot_paused" })
     }
 
-    // Rate limits: per-contact burst + global daily cap. Staff bypass these (low
-    // volume, and broadcasts enforce their own cap).
+    // Abuse guard: per-conversation inbound rate + heuristic health (no AI cost).
+    // Staff bypass. Persists health for the portal; auto-pauses a "red" chat.
+    if (!staff) {
+      const a = await assessInbound(sessionKey, messageText)
+      const update: Partial<WhatsAppSession> = { health: a.health, abuseStrikes: a.strikes }
+      if (a.health === "red") {
+        update.botPaused = true
+        update.flaggedReason = a.reason ?? "abusive activity"
+        update.flaggedAt = new Date().toISOString()
+      }
+      await updateSession(sessionKey, update)
+
+      if (!a.allow) {
+        // Hard rate-limit: skip the LLM entirely (runaway-cost stop). Silent drop.
+        console.warn(`[WhatsApp Webhook] rate-limited ${sessionKey}: ${a.reason}`)
+        await recordInbound()
+        return NextResponse.json({ status: "ignored", reason: "rate_limited" })
+      }
+      if (a.health === "red") {
+        console.warn(`[WhatsApp Webhook] auto-paused ${sessionKey}: ${a.reason}`)
+        await recordInbound()
+        return NextResponse.json({ status: "ignored", reason: "auto_paused" })
+      }
+    }
+
+    // Rate limits: per-contact burst + global daily cap. Staff bypass these.
     if (!staff) {
       const budget = await withinSendBudget(sessionKey)
       if (!budget.ok) {
         console.warn(`[WhatsApp Webhook] send throttled: ${budget.reason}`)
-        await appendMessages(sessionKey, [
-          { role: "user", content: messageText, timestamp: new Date().toISOString() },
-        ])
+        await recordInbound()
         return NextResponse.json({ status: "ignored", reason: budget.reason })
       }
+    }
+
+    // Global daily LLM-call ceiling — protects the OpenAI bill from distributed abuse.
+    if (!staff && !(await withinAiBudget())) {
+      console.warn("[WhatsApp Webhook] global AI budget exhausted")
+      await recordInbound()
+      return NextResponse.json({ status: "ignored", reason: "ai_budget" })
     }
 
     const replyText = await runAgent(session, messageText)
