@@ -249,6 +249,40 @@ async function persistSessionState(session: WhatsAppSession): Promise<void> {
   }
 }
 
+// Grounded final-answer step. The tool loop figures out WHAT to do (it may use the
+// chat history to resolve references like "yes" or "the 3pm one"); this step then
+// WRITES the reply using ONLY this turn's tool results — NOT the chat history — so
+// stale facts from earlier in the conversation can't leak into the answer. This is
+// what stops "your appointment is 22 June" hallucinations even on a small model.
+async function composeGroundedReply(
+  session: WhatsAppSession,
+  incomingMessage: string,
+  toolTrace: { name: string; result: string }[]
+): Promise<string> {
+  const staff = isStaffElevated(session)
+  const system = `You write the final WhatsApp reply for Dr Tooth Dental Clinic${
+    staff ? " to a logged-in staff member" : ""
+  }. Compose the reply using ONLY the data below (results of actions taken THIS turn) and the user's latest message.
+RULES:
+- State NOTHING that is not present in the data — no appointment, date, time, amount, name, balance, or status the data does not contain. If the data shows none/empty, say there are none. NEVER take a date or fact from earlier in the conversation.
+- If the data indicates a confirmation is needed, ask the user to confirm the EXACT details shown.
+- If the data indicates success, confirm it clearly; if it shows an error/validation issue, explain it plainly.
+- Mirror the user's language (English, Urdu, Roman Urdu, Arabic, Roman Arabic).
+- Be concise and warm. Use Markdown tables for invoices/lists; format money as "Rs." with thousands separators. Do not mention tools, JSON, or internal IDs.`
+
+  const dataBlock = toolTrace.map((t) => `• ${t.name} → ${t.result}`).join("\n")
+  const userContent = `User's latest message:\n"${incomingMessage}"\n\nData from this turn (the ONLY source of facts):\n${dataBlock}`
+
+  const res = await getClient().chat.completions.create({
+    model: MODEL,
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: userContent },
+    ],
+  })
+  return res.choices[0]?.message?.content?.trim() || ""
+}
+
 export async function runAgent(session: WhatsAppSession, incomingMessage: string): Promise<string> {
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
     { role: "system", content: buildSystemPrompt(session) },
@@ -265,6 +299,10 @@ export async function runAgent(session: WhatsAppSession, incomingMessage: string
   // Tools read/write identity and confirmation state through this context.
   const ctx = { session }
   const MAX_ITERATIONS = 8
+
+  // Tool results gathered this turn — fed to the grounded responder so the final
+  // reply is composed from fresh data, not the (possibly stale) chat history.
+  const toolTrace: { name: string; result: string }[] = []
 
   let reply =
     "I'm sorry, I had trouble processing your request. Please try again or call us directly."
@@ -302,11 +340,24 @@ export async function runAgent(session: WhatsAppSession, incomingMessage: string
           tool_call_id: toolCall.id,
           content: result,
         })
+        toolTrace.push({ name: toolCall.function.name, result })
       }
       continue
     }
 
     break
+  }
+
+  // Grounded final answer: if any tool ran this turn, re-compose the reply from ONLY
+  // those results (not the chat history) so stale facts can't leak in. Greetings and
+  // pure chit-chat (no tools) keep the loop's reply.
+  if (toolTrace.length > 0) {
+    try {
+      const grounded = await composeGroundedReply(session, incomingMessage, toolTrace)
+      if (grounded) reply = grounded
+    } catch (err) {
+      console.error("[grounded compose failed, using loop reply]", String(err))
+    }
   }
 
   await persistSessionState(session)
