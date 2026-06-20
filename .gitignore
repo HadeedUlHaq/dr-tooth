@@ -35,3 +35,6 @@ build-out*.txt
 deploy-out.txt
 dctail.txt
 .vercel
+
+# private operator context — infra topology + secret locations; never push (public repo)
+AI_CONTEXT.md

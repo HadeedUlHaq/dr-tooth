@@ -29,6 +29,10 @@ export interface Appointment {
   isLate?: boolean
   originalTime?: string
   delayReason?: string
+  // WhatsApp appointment reminders — set once each reminder has been sent so the
+  // scheduled job never double-sends. (See app/api/cron/reminders/route.ts.)
+  reminderDayBeforeSentAt?: string
+  reminderHourBeforeSentAt?: string
 }
 
 export interface Patient {

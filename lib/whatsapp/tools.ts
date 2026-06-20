@@ -399,6 +399,17 @@ export const STAFF_TOOLS: ToolDefinition[] = [
     },
   },
   {
+    name: "staff_upcoming_appointments",
+    description:
+      "Staff: the NEXT upcoming appointments across all dates (today onward, future times only), soonest first. Use for 'who is my next patient', 'next appointment', 'what's coming up'. Always call this fresh — never answer from memory.",
+    input_schema: {
+      type: "object",
+      properties: {
+        limit: { type: "number", description: "How many to return (default 5, max 20)" },
+      },
+    },
+  },
+  {
     name: "staff_find_patient",
     description:
       "Staff: look up a patient's FULL details (name, phone, address, treatment, notes) plus their upcoming appointments and outstanding balance. Staff-only — reveals PII.",
@@ -955,20 +966,59 @@ export async function executeTool(
       const date = (input.date as string) || clinicToday()
       const snap = await db.collection("appointments").where("date", "==", date).get()
       const counts: Record<string, number> = {}
-      const appointments = snap.docs.map((d) => {
-        const a = d.data()
-        counts[a.status] = (counts[a.status] || 0) + 1
-        return {
-          date: a.date,
-          time: a.time,
-          patientName: a.patientName,
-          patientPhone: a.patientPhone ?? null,
-          status: a.status,
-          treatment: a.notes ?? null,
-        }
-      })
+      // The list shows ACTIVE appointments (scheduled/confirmed/completed); cancelled &
+      // missed are reflected in `counts` only, so "how many patients" isn't inflated.
+      const appointments = snap.docs
+        .map((d) => {
+          const a = d.data()
+          counts[a.status] = (counts[a.status] || 0) + 1
+          return {
+            date: a.date,
+            time: a.time,
+            patientName: a.patientName,
+            patientPhone: a.patientPhone ?? null,
+            status: a.status,
+            treatment: a.notes ?? null,
+          }
+        })
+        .filter((a) => a.status !== "cancelled" && a.status !== "missed")
       appointments.sort((x, y) => String(x.time).localeCompare(String(y.time)))
-      return JSON.stringify({ date, total: snap.size, counts, appointments })
+      return JSON.stringify({ date, activeCount: appointments.length, counts, appointments })
+    }
+
+    case "staff_upcoming_appointments": {
+      if (!isStaffElevated(session)) return NOT_AUTH
+      const limit = Math.min(Math.max(Number(input.limit) || 5, 1), 20)
+      const today = clinicToday()
+      const nowHM = new Date().toLocaleTimeString("en-GB", {
+        timeZone: "Asia/Karachi",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+      const snap = await db
+        .collection("appointments")
+        .where("status", "in", ["scheduled", "confirmed"])
+        .get()
+      const upcoming = snap.docs
+        .filter((d) => {
+          const dt = String(d.data().date)
+          const tm = String(d.data().time)
+          if (dt < today) return false
+          if (dt === today && tm !== "on-call" && tm < nowHM) return false // already passed today
+          return true
+        })
+        .sort((a, b) =>
+          `${a.data().date} ${a.data().time}`.localeCompare(`${b.data().date} ${b.data().time}`)
+        )
+      const appointments = upcoming.slice(0, limit).map((d) => ({
+        date: d.data().date,
+        time: d.data().time,
+        patientName: d.data().patientName,
+        patientPhone: d.data().patientPhone ?? null,
+        status: d.data().status,
+        treatment: d.data().notes ?? null,
+      }))
+      return JSON.stringify({ now: `${today} ${nowHM}`, totalUpcoming: upcoming.length, appointments })
     }
 
     case "staff_find_patient": {
