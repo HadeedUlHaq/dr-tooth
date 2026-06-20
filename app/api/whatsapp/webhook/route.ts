@@ -120,6 +120,18 @@ export async function POST(request: NextRequest) {
     // Keep the exact inbound JID so staff broadcasts can message this contact back.
     if (session.chatId !== replyJid) session.chatId = replyJid
 
+    const recordInbound = () =>
+      appendMessages(sessionKey, [
+        { role: "user", content: messageText, timestamp: new Date().toISOString() },
+      ])
+
+    // Blocked conversation — a HARD stop: no staff login, no AI, no reply; just record.
+    // Applies even to staff-elevated numbers; unblock from the portal.
+    if (session.blocked) {
+      await recordInbound()
+      return NextResponse.json({ status: "ignored", reason: "blocked" })
+    }
+
     // ── Staff auth (deterministic, BEFORE the LLM) ──
     // The PIN is verified here and never routed to the model or stored verbatim.
     const cmd = parseStaffCommand(messageText)
@@ -161,23 +173,19 @@ export async function POST(request: NextRequest) {
     }
 
     const staff = isStaffElevated(session)
-    const recordInbound = () =>
-      appendMessages(sessionKey, [
-        { role: "user", content: messageText, timestamp: new Date().toISOString() },
-      ])
 
-    // Blocked conversation — record the message but never run the bot or reply.
-    if (!staff && session.blocked) {
-      await recordInbound()
-      return NextResponse.json({ status: "ignored", reason: "blocked" })
-    }
-
-    // Bot paused — globally or for this conversation (staff took it over). Record
-    // the inbound message so it shows in the portal, but don't auto-reply. Staff
-    // sessions bypass the pause: the doctor still needs the assistant to respond.
-    if (!staff && (session.botPaused || (await getGlobalBotPaused()))) {
+    // Per-conversation pause ("Manual" takeover) stops the bot for THIS chat — always,
+    // even on a staff-elevated number, since it was paused on purpose.
+    if (session.botPaused) {
       await recordInbound()
       return NextResponse.json({ status: "ignored", reason: "bot_paused" })
+    }
+
+    // Global pause stops patient auto-replies; staff (logged in) bypass it so the
+    // doctor's assistant still works while patients are globally paused.
+    if (!staff && (await getGlobalBotPaused())) {
+      await recordInbound()
+      return NextResponse.json({ status: "ignored", reason: "global_paused" })
     }
 
     // Abuse guard: per-conversation inbound rate + heuristic health (no AI cost).
