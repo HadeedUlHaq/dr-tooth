@@ -1,5 +1,5 @@
 import { getAdminDb } from "./firebaseAdmin"
-import { normalizePhone } from "./phone"
+import { normalizePhone, samePhone } from "./phone"
 import type { WhatsAppSession, WhatsAppMessage } from "../types"
 
 const COLLECTION = "whatsapp_sessions"
@@ -116,7 +116,9 @@ export async function findPatientByPhone(phone: string): Promise<{ id: string; n
     }
     const all = await db.collection("patients").limit(2000).get()
     for (const d of all.docs) {
-      if (normalizePhone(d.data().phone) === target) {
+      // Tolerant match (handles stray trunk-0 / country-code quirks like
+      // "+4407774067432" vs "447774067432" by comparing the last 9 digits).
+      if (samePhone(d.data().phone, phone)) {
         return { id: d.id, name: d.data().name as string }
       }
     }

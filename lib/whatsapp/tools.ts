@@ -5,7 +5,7 @@ import { CLINIC_INFO, SERVICES } from "./clinicInfo"
 import { isStaffElevated } from "./staffAuth"
 import { sendToChat } from "./openwaClient"
 import { getAllSessions, resetSessionMemory } from "./sessionService"
-import { normalizePhone } from "./phone"
+import { normalizePhone, samePhone } from "./phone"
 
 type ToolDefinition = {
   name: string
@@ -169,8 +169,7 @@ async function findStaffAppointments(
     .get()
   let docs: DocumentSnapshot[] = snap.docs
   if (input.patientPhone) {
-    const want = normalizePhone(input.patientPhone)
-    docs = docs.filter((d) => normalizePhone(d.data().patientPhone) === want)
+    docs = docs.filter((d) => samePhone(d.data().patientPhone, input.patientPhone))
   } else if (input.patientName) {
     docs = docs.filter((d) => nameMatches(input.patientName, d.data().patientName))
   }
@@ -609,12 +608,10 @@ export async function executeTool(
       const statuses = input.includeCompleted
         ? ["scheduled", "confirmed", "completed"]
         : ["scheduled", "confirmed"]
-      // Match by NORMALISED phone so the caller's (verified) number matches records
-      // saved in any format ("+92 300 …", "0300…", bare digits).
-      const want = normalizePhone(phone)
+      // Match by phone tolerant of format ("+92 300 …", "0300…", stray trunk-0).
       const snap = await db.collection("appointments").where("status", "in", statuses).get()
       const appointments = snap.docs
-        .filter((d) => normalizePhone(d.data().patientPhone) === want)
+        .filter((d) => samePhone(d.data().patientPhone, phone))
         .map((d) => ({
           date: d.data().date,
           time: d.data().time,
@@ -705,12 +702,11 @@ export async function executeTool(
       if (!phone) {
         return JSON.stringify({ success: false, error: "needs_identification", message: "Ask the patient for their phone number first." })
       }
-      const wantC = normalizePhone(phone)
       const snap = await db
         .collection("appointments")
         .where("status", "in", ["scheduled", "confirmed"])
         .get()
-      let docs = snap.docs.filter((d) => normalizePhone(d.data().patientPhone) === wantC)
+      let docs = snap.docs.filter((d) => samePhone(d.data().patientPhone, phone))
       if (input.date) docs = docs.filter((d) => d.data().date === input.date)
 
       if (docs.length === 0) {
@@ -767,12 +763,11 @@ export async function executeTool(
       const slot = validateSlot(input.newDate, input.newTime)
       if (!slot.ok) return JSON.stringify({ success: false, error: "validation", message: slot.message })
 
-      const wantR = normalizePhone(phone)
       const snap = await db
         .collection("appointments")
         .where("status", "in", ["scheduled", "confirmed"])
         .get()
-      let docs = snap.docs.filter((d) => normalizePhone(d.data().patientPhone) === wantR)
+      let docs = snap.docs.filter((d) => samePhone(d.data().patientPhone, phone))
       if (input.currentDate) docs = docs.filter((d) => d.data().date === input.currentDate)
 
       if (docs.length === 0) {
@@ -925,12 +920,11 @@ export async function executeTool(
       if (!phone) {
         return JSON.stringify({ error: "needs_identification", message: "Ask the patient for their phone number first." })
       }
-      const wanted = normalizePhone(phone)
       const snap = await db
         .collection("invoices")
         .where("status", "in", ["unpaid", "partial"])
         .get()
-      const matched = snap.docs.filter((d) => normalizePhone(d.data().patientPhone) === wanted)
+      const matched = snap.docs.filter((d) => samePhone(d.data().patientPhone, phone))
       if (matched.length === 0) {
         return JSON.stringify({ hasBalance: false, totalBalance: 0 })
       }
@@ -1068,18 +1062,17 @@ export async function executeTool(
       for (const doc of docs) {
         const p = doc.data() as Record<string, unknown>
         const phone = String(p.phone ?? "")
-        // Upcoming appointments for this patient.
+        // Upcoming appointments for this patient (phone match tolerant of format).
         const apptSnap = await db
           .collection("appointments")
-          .where("patientPhone", "==", phone)
           .where("status", "in", ["scheduled", "confirmed"])
           .get()
+        const apptDocs = apptSnap.docs.filter((d) => samePhone(d.data().patientPhone, phone))
         // Outstanding balance across their unpaid/partial invoices.
-        const wanted = normalizePhone(phone)
         const invSnap = await db.collection("invoices").where("status", "in", ["unpaid", "partial"]).get()
         let outstanding = 0
         for (const inv of invSnap.docs) {
-          if (normalizePhone(inv.data().patientPhone) === wanted) outstanding += Number(inv.data().balanceDue || 0)
+          if (samePhone(inv.data().patientPhone, phone)) outstanding += Number(inv.data().balanceDue || 0)
         }
         patients.push({
           name: p.name,
@@ -1087,7 +1080,7 @@ export async function executeTool(
           address: p.address ?? null,
           treatmentRequired: p.treatmentRequired ?? null,
           notes: p.notes ?? null,
-          upcomingAppointments: apptSnap.docs.map((d) => ({ date: d.data().date, time: d.data().time, status: d.data().status })),
+          upcomingAppointments: apptDocs.map((d) => ({ date: d.data().date, time: d.data().time, status: d.data().status })),
           outstandingBalance: outstanding,
         })
       }

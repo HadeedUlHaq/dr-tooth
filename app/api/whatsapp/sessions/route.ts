@@ -49,15 +49,21 @@ export async function GET() {
     // of "Guest". One patients read + in-memory match; does not modify stored data.
     try {
       const snap = await getAdminDb().collection("patients").limit(5000).get()
+      // Key by the last 9 digits so stray trunk-0s / country-code quirks still match
+      // (e.g. a record saved "+4407774067432" matches the resolved "447774067432").
+      const last9 = (v: unknown): string => {
+        const n = normalizePhone(v)
+        return n.length >= 9 ? n.slice(-9) : n
+      }
       const byPhone = new Map<string, string>()
       for (const d of snap.docs) {
-        const ph = normalizePhone(d.data().phone)
-        if (ph) byPhone.set(ph, d.data().name as string)
+        const k = last9(d.data().phone)
+        if (k) byPhone.set(k, d.data().name as string)
       }
       for (const s of sessions) {
         if (s.patientName) continue
         const cand = s.realPhone || s.patientPhone
-        const name = cand ? byPhone.get(normalizePhone(cand)) : undefined
+        const name = cand ? byPhone.get(last9(cand)) : undefined
         if (name) s.patientName = name
       }
     } catch (enrichErr) {
