@@ -9,6 +9,7 @@ import { searchPatients } from "@/lib/patientService"
 import type { LineItem, DiscountType, Patient } from "@/lib/types"
 import { Plus, Trash, Receipt, ChevronLeft, Search } from "lucide-react"
 import Link from "next/link"
+import { Button, ButtonLink } from "@/components/ui-kit"
 
 const DENTAL_SERVICES: { name: string; price: number }[] = [
   { name: "Consultation", price: 1000 },
@@ -111,7 +112,8 @@ export default function NewInvoicePage() {
     } else if (field === "quantity") {
       updated[index] = { ...updated[index], quantity: Math.max(1, Number(value) || 1) }
     } else {
-      updated[index] = { ...updated[index], [field]: value }
+      // Only the serviceName (string) field reaches here.
+      updated[index] = { ...updated[index], serviceName: String(value) }
     }
     setLineItems(updated)
   }
@@ -425,19 +427,12 @@ export default function NewInvoicePage() {
 
           {/* Actions */}
           <div className="px-4 py-4 sm:px-6 bg-white/[0.02] border-t border-white/[0.06] flex flex-col sm:flex-row justify-end gap-3">
-            <Link
-              href="/dashboard/invoices"
-              className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors text-center min-h-[44px] inline-flex items-center justify-center"
-            >
+            <ButtonLink href="/dashboard/invoices" variant="secondary">
               Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex items-center justify-center py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] disabled:opacity-50 min-h-[44px] transition-colors"
-            >
+            </ButtonLink>
+            <Button type="submit" disabled={saving}>
               {saving ? "Creating..." : "Create Invoice"}
-            </button>
+            </Button>
           </div>
         </div>
       </form>

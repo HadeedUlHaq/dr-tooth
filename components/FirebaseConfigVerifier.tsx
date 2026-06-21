@@ -9,7 +9,7 @@ export default function FirebaseConfigVerifier() {
   useEffect(() => {
     const configVerification = verifyFirebaseConfig()
     if (!configVerification.isValid) {
-      setConfigError(configVerification.message)
+      setConfigError(configVerification.message ?? "Firebase configuration is invalid.")
       console.error(configVerification.message)
     }
   }, [])

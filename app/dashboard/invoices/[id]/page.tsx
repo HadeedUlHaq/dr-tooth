@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import InvoicePrintTemplate from "@/components/ui/invoice-print-template"
+import { Button, ButtonLink, StatusBadge, EmptyState, SkeletonList, Modal, Field, Input } from "@/components/ui-kit"
 
 const DENTAL_SERVICES: { name: string; price: number }[] = [
   { name: "Consultation", price: 1000 },
@@ -205,15 +206,6 @@ export default function InvoiceDetailPage() {
     window.print()
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "unpaid": return "bg-red-500/15 text-red-400"
-      case "partial": return "bg-amber-500/15 text-amber-400"
-      case "paid": return "bg-emerald-500/15 text-emerald-400"
-      default: return "bg-white/[0.05] text-[#8A8F98]"
-    }
-  }
-
   const formatDate = (dateStr: string) => {
     try {
       const d = dateStr.includes("T") ? new Date(dateStr) : new Date(dateStr + "T00:00:00")
@@ -237,20 +229,22 @@ export default function InvoiceDetailPage() {
   if (userData?.role === "doctor") return null
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
+    return <SkeletonList rows={5} />
   }
 
   if (!invoice) {
     return (
-      <div className="text-center py-8">
-        <h2 className="text-2xl font-semibold text-[#EDEDEF]">Invoice Not Found</h2>
-        <Link href="/dashboard/invoices" className="mt-4 inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg text-sm font-medium transition-colors">
-          Back to Invoices
-        </Link>
+      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)]">
+        <EmptyState
+          icon={Receipt}
+          title="Invoice not found"
+          message="This invoice doesn't exist or has been deleted."
+          action={
+            <ButtonLink href="/dashboard/invoices" size="sm">
+              Back to Invoices
+            </ButtonLink>
+          }
+        />
       </div>
     )
   }
@@ -272,9 +266,7 @@ export default function InvoiceDetailPage() {
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-semibold text-[#EDEDEF] tracking-tight">Invoice</h1>
-                <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full capitalize ${getStatusBadge(invoice.status)}`}>
-                  {invoice.status}
-                </span>
+                <StatusBadge status={invoice.status} kind="invoice" />
               </div>
               <p className="mt-1 text-sm text-[#8A8F98]">#{invoice.id.slice(0, 8)} · {formatDate(invoice.date)}</p>
             </div>
@@ -596,75 +588,78 @@ export default function InvoiceDetailPage() {
       </div>
 
       {/* Payment Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 print:hidden">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-sm w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[#EDEDEF]">Record Payment</h3>
-              <button onClick={() => setShowPaymentModal(false)} className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors">
-                <X className="h-5 w-5" />
-              </button>
+      <Modal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        title="Record Payment"
+        className="max-w-sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowPaymentModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRecordPayment}
+              disabled={recordingPayment}
+              className="bg-emerald-600 hover:bg-emerald-500 shadow-none focus-visible:ring-emerald-500/50"
+            >
+              {recordingPayment ? "Recording..." : "Confirm Payment"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Field label="Amount (Rs.) *">
+            <Input
+              type="number"
+              min="1"
+              max={invoice?.balanceDue}
+              value={paymentAmount}
+              onChange={(e) => setPaymentAmount(e.target.value)}
+              autoFocus
+            />
+          </Field>
+          <Field label="Payment Method">
+            <div className="flex gap-2">
+              {(["Cash", "Card", "Transfer"] as PaymentMethod[]).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setPaymentMethod(m)}
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50 ${
+                    paymentMethod === m
+                      ? "bg-[#5E6AD2] text-white"
+                      : "bg-white/[0.05] text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.08] border border-white/[0.06]"
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#8A8F98] mb-1">Amount (Rs.) *</label>
-                <input
-                  type="number"
-                  min="1"
-                  max={invoice?.balanceDue}
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
-                  autoFocus
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#8A8F98] mb-1">Payment Method</label>
-                <div className="flex gap-2">
-                  {(["Cash", "Card", "Transfer"] as PaymentMethod[]).map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => setPaymentMethod(m)}
-                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] ${
-                        paymentMethod === m
-                          ? "bg-[#5E6AD2] text-white"
-                          : "bg-white/[0.05] text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.08] border border-white/[0.06]"
-                      }`}
-                    >
-                      {m}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setShowPaymentModal(false)}
-                className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">
-                Cancel
-              </button>
-              <button onClick={handleRecordPayment} disabled={recordingPayment}
-                className="inline-flex items-center justify-center py-2.5 px-4 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg disabled:opacity-50 min-h-[44px] transition-colors">
-                {recordingPayment ? "Recording..." : "Confirm Payment"}
-              </button>
-            </div>
-          </div>
+          </Field>
         </div>
-      )}
+      </Modal>
 
       {/* Delete Confirm */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 print:hidden">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold text-[#EDEDEF]">Delete Invoice</h3>
-            <p className="mt-2 text-sm text-[#8A8F98]">Are you sure? This action cannot be undone.</p>
-            <div className="mt-4 flex justify-end gap-3">
-              <button onClick={() => setShowDeleteConfirm(false)} className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">Cancel</button>
-              <button onClick={handleDelete} className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="Delete Invoice"
+        description="Are you sure? This action cannot be undone."
+        className="max-w-sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDelete}>
+              Delete
+            </Button>
+          </>
+        }
+      >
+        {null}
+      </Modal>
     </>
   )
 }
