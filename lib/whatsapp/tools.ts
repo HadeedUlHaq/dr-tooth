@@ -1479,6 +1479,16 @@ export async function executeTool(
 
     case "staff_message_patient": {
       if (!isStaffElevated(session)) return NOT_AUTH
+      const pending =
+        session.pendingAction?.type === "staff_message_patient" ? session.pendingAction : null
+      if (input.confirmed === true && pending) {
+        if (!input.patientName && !input.patientPhone && pending.phone) {
+          input.patientPhone = pending.phone
+        }
+        if (!input.message && pending.message) {
+          input.message = pending.message
+        }
+      }
       const guard = requireString(input, "message")
       if (!guard.ok) return JSON.stringify({ error: "validation", message: "Provide the message to send." })
       if (!input.patientName && !input.patientPhone) {
@@ -1534,7 +1544,12 @@ export async function executeTool(
       // Two-step: stage + preview first, only send after explicit confirmation.
       if (input.confirmed !== true) {
         session.phase = "awaiting_confirmation"
-        session.pendingAction = { type: "staff_message_patient", phone: recipient.phone }
+        session.pendingAction = {
+          type: "staff_message_patient",
+          phone: recipient.phone,
+          name: recipient.name,
+          message: text,
+        }
         return JSON.stringify({
           needsConfirmation: true,
           action: "message_patient",

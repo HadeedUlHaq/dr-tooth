@@ -305,7 +305,65 @@ RULES:
   return res.choices[0]?.message?.content?.trim() || ""
 }
 
+function isConfirmationReply(text: string): boolean {
+  const normalized = String(text ?? "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+  if (!normalized || normalized.length > 120) return false
+  return /^(yes|y|confirm|confirmed|correct|this is correct|ok|okay|proceed|please proceed|go ahead|send it|do it|approve|approved|haan|han|ji|theek|sahi)(\s.*)?$/.test(normalized)
+}
+
+function formatDirectToolReply(result: string): string {
+  try {
+    const data = JSON.parse(result) as Record<string, unknown>
+    if (data.success === true) {
+      const sentTo = (data.sentTo ?? {}) as Record<string, unknown>
+      const name = String(sentTo.name ?? "the patient")
+      const phone = sentTo.phone ? ` (${sentTo.phone})` : ""
+      return `Message sent to ${name}${phone}.`
+    }
+    if (data.optedOut === true) {
+      return "That patient has opted out, so I did not send the message."
+    }
+    if (data.throttled === true) {
+      return `I did not send it because the WhatsApp send budget is currently throttled${data.reason ? `: ${data.reason}` : "."}`
+    }
+    if (data.error || data.reason || data.message) {
+      return String(data.message || data.reason || data.error)
+    }
+  } catch {
+    /* fall through */
+  }
+  return "I couldn't complete that action. Please try again."
+}
+
+async function runPendingConfirmation(
+  session: WhatsAppSession,
+  incomingMessage: string
+): Promise<string | null> {
+  if (!isStaffElevated(session) || !isConfirmationReply(incomingMessage)) return null
+  const pending = session.pendingAction
+  if (pending?.type !== "staff_message_patient") return null
+
+  const phone = typeof pending.phone === "string" ? pending.phone : ""
+  const message = typeof pending.message === "string" ? pending.message : ""
+  if (!phone || !message) return null
+
+  const result = await executeTool(
+    "staff_message_patient",
+    { patientPhone: phone, message, confirmed: true },
+    { session }
+  )
+  await persistSessionState(session)
+  return formatDirectToolReply(result)
+}
+
 export async function runAgent(session: WhatsAppSession, incomingMessage: string): Promise<string> {
+  const confirmedPending = await runPendingConfirmation(session, incomingMessage)
+  if (confirmedPending) return confirmedPending
+
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
     { role: "system", content: buildSystemPrompt(session) },
     ...session.messages.map((m) => ({
