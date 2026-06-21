@@ -8,8 +8,9 @@ import { getAppointment, updateAppointment, deleteAppointment, createAppointment
 import { collection, getDocs, query, where } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import type { Appointment, AppointmentStatus, User } from "@/lib/types"
-import { Edit, Trash, Calendar, Clock, UserIcon, Phone, FileText, CheckCircle, XCircle, UserPlus, BadgeCheck, Receipt } from "lucide-react"
+import { Edit, Trash, Calendar, Clock, UserIcon, Phone, FileText, CheckCircle, XCircle, UserPlus, BadgeCheck, Receipt, CalendarX } from "lucide-react"
 import Link from "next/link"
+import { PageHeader, Button, ButtonLink, StatusBadge, EmptyState, SkeletonList, Modal } from "@/components/ui-kit"
 import { useParams } from "next/navigation"
 import { DatePicker } from "@/components/ui/date-picker"
 import { TimePicker } from "@/components/ui/time-picker"
@@ -228,23 +229,6 @@ export default function AppointmentDetailClient() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "scheduled":
-        return "bg-blue-500/15 text-blue-400"
-      case "confirmed":
-        return "bg-green-500/15 text-green-400"
-      case "completed":
-        return "bg-purple-500/15 text-purple-400"
-      case "missed":
-        return "bg-red-500/15 text-red-400"
-      case "cancelled":
-        return "bg-white/[0.05] text-[#8A8F98]"
-      default:
-        return "bg-white/[0.05] text-[#8A8F98]"
-    }
-  }
-
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -394,58 +378,53 @@ export default function AppointmentDetailClient() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-6">
+        <PageHeader title="Appointment Details" subtitle="View and manage appointment information" />
+        <SkeletonList rows={4} />
       </div>
     )
   }
 
   if (!appointment) {
     return (
-      <div className="text-center py-8">
-        <h2 className="text-2xl font-semibold text-[#EDEDEF]">Appointment Not Found</h2>
-        <p className="mt-2 text-[#8A8F98]">The appointment you&apos;re looking for doesn&apos;t exist or has been deleted.</p>
-        <Link
-          href="/dashboard/appointments"
-          className="mt-4 inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
-        >
-          Back to Appointments
-        </Link>
+      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)]">
+        <EmptyState
+          icon={CalendarX}
+          title="Appointment not found"
+          message="The appointment you're looking for doesn't exist or has been deleted."
+          action={
+            <ButtonLink href="/dashboard/appointments" size="sm">
+              Back to Appointments
+            </ButtonLink>
+          }
+        />
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#EDEDEF]">Appointment Details</h1>
-          <p className="mt-1 text-sm text-[#8A8F98]">View and manage appointment information</p>
-        </div>
-        <div className="mt-4 sm:mt-0 flex space-x-3">
-          {!isEditing &&
-            (userData?.role === "receptionist" || userData?.role === "doctor" || userData?.role === "admin") && (
-              <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </button>
-                {(userData?.role === "receptionist" || userData?.role === "admin") && (
-                  <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="inline-flex items-center px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <Trash className="h-4 w-4 mr-2" />
-                    Delete
-                  </button>
-                )}
-              </>
-            )}
-        </div>
-      </div>
+      <PageHeader
+        title="Appointment Details"
+        subtitle="View and manage appointment information"
+        actions={
+          !isEditing &&
+          (userData?.role === "receptionist" || userData?.role === "doctor" || userData?.role === "admin") ? (
+            <div className="flex gap-3">
+              <Button size="sm" onClick={() => setIsEditing(true)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+              {(userData?.role === "receptionist" || userData?.role === "admin") && (
+                <Button variant="danger" size="sm" onClick={() => setShowDeleteConfirm(true)}>
+                  <Trash className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              )}
+            </div>
+          ) : undefined
+        }
+      />
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg">
@@ -453,31 +432,24 @@ export default function AppointmentDetailClient() {
         </div>
       )}
 
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium text-[#EDEDEF]">Delete Appointment</h3>
-            <p className="mt-2 text-sm text-[#8A8F98]">
-              Are you sure you want to delete this appointment? This action cannot be undone.
-            </p>
-            <div className="mt-4 flex justify-end space-x-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={updating}
-                className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-              >
-                {updating ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="Delete Appointment"
+        description="Are you sure you want to delete this appointment? This action cannot be undone."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={updating}>
+              {updating ? "Deleting..." : "Delete"}
+            </Button>
+          </>
+        }
+      >
+        {null}
+      </Modal>
 
       <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
         {isEditing ? (
@@ -736,13 +708,7 @@ export default function AppointmentDetailClient() {
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
                       <dt className="text-sm font-medium text-[#8A8F98]">Status</dt>
                       <dd className="mt-1 sm:mt-0 sm:col-span-2">
-                        <span
-                          className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                            appointment.status,
-                          )}`}
-                        >
-                          {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                        </span>
+                        <StatusBadge status={appointment.status} />
                       </dd>
                     </div>
                     {appointment.doctorName && (
