@@ -349,7 +349,12 @@ async function runPendingConfirmation(
 
   const phone = typeof pending.phone === "string" ? pending.phone : ""
   const message = typeof pending.message === "string" ? pending.message : ""
-  if (!phone || !message) return null
+  if (!phone || !message) {
+    session.phase = "idle"
+    session.pendingAction = null
+    await persistSessionState(session)
+    return "I don't have the exact message saved from the old pending confirmation. Please send the patient message again, and I'll ask for one fresh confirmation before sending it."
+  }
 
   const result = await executeTool(
     "staff_message_patient",
