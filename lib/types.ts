@@ -200,3 +200,18 @@ export interface WhatsAppSession {
   createdAt: string
 }
 
+// A registered staff member allowed to elevate over WhatsApp (double-verified:
+// their number must match AND their code). Managed in the dashboard. The code is
+// stored hashed (codeHash/codeSalt) and NEVER sent to the client — this client
+// type omits those fields.
+export interface StaffMember {
+  id: string
+  name: string
+  role: "doctor" | "receptionist"
+  phone: string
+  active: boolean
+  createdAt?: string
+  updatedAt?: string
+  createdBy?: string
+}
+

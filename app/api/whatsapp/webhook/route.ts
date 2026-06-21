@@ -14,7 +14,7 @@ import {
 import { getGlobalBotPaused } from "@/lib/whatsapp/botControl"
 import {
   parseStaffCommand,
-  verifyStaffPin,
+  verifyStaffMember,
   isStaffElevated,
   isPinLockedOut,
 } from "@/lib/whatsapp/staffAuth"
@@ -143,16 +143,31 @@ export async function POST(request: NextRequest) {
         await sendToChat(replyJid, "🔒 Too many failed attempts. Please try again later.")
         return NextResponse.json({ status: "ok", reason: "pin_locked" })
       }
-      const ident = verifyStaffPin(cmd.pin)
+      // DOUBLE verification needs the sender's REAL number (login runs before the
+      // phone-resolution step below, and an @lid sessionKey is NOT the real phone).
+      const senderPhone =
+        session.realPhone || (replyJid.endsWith("@lid") ? await resolveContactPhone(replyJid) : sessionKey)
+      if (!senderPhone) {
+        await updateSession(sessionKey, {
+          chatId: replyJid,
+          staffPinAttempts: (session.staffPinAttempts ?? 0) + 1,
+        })
+        await sendToChat(replyJid, "❌ Couldn't verify your number. Please try again.")
+        return NextResponse.json({ status: "ok", reason: "staff_login_no_phone" })
+      }
+      const ident = await verifyStaffMember(senderPhone, cmd.pin)
       if (ident) {
         await updateSession(sessionKey, {
           chatId: replyJid,
+          // Persist the resolved number so the later phone-resolution step is skipped.
+          realPhone: senderPhone,
+          phoneResolved: true,
           staffName: ident.name,
           staffRole: ident.role,
           staffAuthAt: new Date().toISOString(),
           staffPinAttempts: 0,
         })
-        // Store a REDACTED note (never the PIN) so the conversation stays coherent.
+        // Store a REDACTED note (never the code) so the conversation stays coherent.
         await appendMessages(sessionKey, [
           { role: "user", content: "[staff login]", timestamp: new Date().toISOString() },
         ])
@@ -166,7 +181,11 @@ export async function POST(request: NextRequest) {
         chatId: replyJid,
         staffPinAttempts: (session.staffPinAttempts ?? 0) + 1,
       })
-      await sendToChat(replyJid, "❌ Invalid code.")
+      // Generic message — don't reveal whether the number or the code was the problem.
+      await sendToChat(
+        replyJid,
+        "❌ Couldn't verify you. Message from your registered number and use your current code."
+      )
       return NextResponse.json({ status: "ok", reason: "staff_login_failed" })
     }
     if (cmd.kind === "logout") {

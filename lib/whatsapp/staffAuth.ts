@@ -1,14 +1,20 @@
-import { timingSafeEqual } from "crypto"
+import { timingSafeEqual, createHash, randomBytes } from "crypto"
 import type { WhatsAppSession } from "../types"
+import { getAdminDb } from "./firebaseAdmin"
+import { samePhone } from "./phone"
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Staff/doctor elevation for the WhatsApp bot.
+// Staff/doctor elevation for the WhatsApp bot — DOUBLE verified.
 //
-// Inbound senders arrive as `@lid` privacy ids, so we can't recognise staff by
-// phone number. Instead a staff member sends a secret PIN ("staff <pin>"); on a
-// match we mark THIS session (their stable WhatsApp device) as elevated for a
-// time-boxed window. The PIN is verified deterministically in the webhook and is
-// NEVER routed through the LLM or stored in chat history.
+// A staff member must be registered in the dashboard first (the `whatsapp_staff`
+// collection: name, role, phone, hashed code). Login then requires BOTH:
+//   (a) the sender's REAL number matches an active registered record, AND
+//   (b) the code they send matches THAT record's code.
+// So a leaked code is useless from an unregistered number, and a registered
+// number is useless without that person's code. The code is verified
+// deterministically in the webhook and is NEVER routed through the LLM or stored
+// in chat history. On success we mark the session (their stable WhatsApp device)
+// elevated for a time-boxed window.
 //
 // Doctor and receptionist share the same powers — the role is kept only for the
 // greeting and the audit trail.
@@ -23,25 +29,17 @@ export interface StaffIdentity {
   role: StaffRole
 }
 
-// Registry from env STAFF_PINS: comma-separated `Name:role:pin` entries, e.g.
-//   "Dr Ali:doctor:4821,Reception:receptionist:1107"
-// Role defaults to "doctor" if omitted/unrecognised.
-function loadStaffRegistry(): { identity: StaffIdentity; pin: string }[] {
-  const raw = process.env.STAFF_PINS || ""
-  const out: { identity: StaffIdentity; pin: string }[] = []
-  for (const entry of raw.split(",")) {
-    const parts = entry.split(":").map((p) => p.trim())
-    if (parts.length < 2) continue
-    const name = parts[0]
-    // Support both "Name:pin" and "Name:role:pin".
-    const role: StaffRole = parts.length >= 3 && parts[1].toLowerCase() === "receptionist"
-      ? "receptionist"
-      : "doctor"
-    const pin = parts.length >= 3 ? parts[2] : parts[1]
-    if (!name || !pin) continue
-    out.push({ identity: { name, role }, pin })
-  }
-  return out
+// ── Code hashing (codes are stored salted-hashed, never in plaintext) ──
+export const STAFF_COLLECTION = "whatsapp_staff"
+
+// A fresh random salt (hex) for a newly set code.
+export function newSalt(): string {
+  return randomBytes(16).toString("hex")
+}
+
+// Salted SHA-256 of a code → hex. Deterministic for a given (code, salt).
+export function hashCode(code: string, salt: string): string {
+  return createHash("sha256").update(`${salt}:${String(code ?? "")}`).digest("hex")
 }
 
 // Constant-time string compare that doesn't leak length via early return.
@@ -56,16 +54,39 @@ function safeEqual(a: string, b: string): boolean {
   return timingSafeEqual(ba, bb)
 }
 
-// Verify a submitted PIN against the registry. Returns the staff identity or null.
-export function verifyStaffPin(pin: string): StaffIdentity | null {
-  const candidate = String(pin ?? "").trim()
-  if (!candidate) return null
-  let match: StaffIdentity | null = null
-  // Check every entry (don't short-circuit) so timing doesn't reveal which matched.
-  for (const { identity, pin: known } of loadStaffRegistry()) {
-    if (safeEqual(candidate, known)) match = identity
+// DOUBLE verification: the sender's real phone must match an ACTIVE registered
+// staff record AND the submitted code must match that record's hashed code.
+// Returns the registered identity (name/role) or null. Fails CLOSED on error.
+export async function verifyStaffMember(
+  phone: string,
+  code: string
+): Promise<StaffIdentity | null> {
+  const candidate = String(code ?? "").trim()
+  const ph = String(phone ?? "").trim()
+  if (!candidate || !ph) return null
+  try {
+    // Tiny collection — fetch all and match in code (tolerant phone compare).
+    const snap = await getAdminDb().collection(STAFF_COLLECTION).get()
+    let match: StaffIdentity | null = null
+    // Don't short-circuit, so timing doesn't reveal which record matched.
+    for (const d of snap.docs) {
+      const data = d.data() as Record<string, unknown>
+      if (data.active !== true) continue
+      if (!samePhone(data.phone, ph)) continue
+      const expected = String(data.codeHash ?? "")
+      const got = hashCode(candidate, String(data.codeSalt ?? ""))
+      if (expected.length === got.length && safeEqual(got, expected)) {
+        match = {
+          name: String(data.name ?? "Staff"),
+          role: data.role === "receptionist" ? "receptionist" : "doctor",
+        }
+      }
+    }
+    return match
+  } catch (err) {
+    console.error("[verifyStaffMember] error", String(err))
+    return null
   }
-  return match
 }
 
 export type StaffCommand =

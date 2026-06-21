@@ -17,9 +17,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Ban,
+  ShieldCheck,
+  UserPlus,
+  KeyRound,
 } from "lucide-react"
-import type { WhatsAppSession } from "@/lib/types"
+import type { WhatsAppSession, StaffMember } from "@/lib/types"
 import { authedFetch } from "@/lib/authedFetch"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface Connection {
   status: string
@@ -39,6 +43,9 @@ interface Stats {
 const CONNECTED = new Set(["connected", "ready"])
 
 export default function WhatsAppPortalPage() {
+  const { userData } = useAuth()
+  const isAdmin = userData?.role === "admin"
+
   const [sessions, setSessions] = useState<WhatsAppSession[]>([])
   const [conn, setConn] = useState<Connection | null>(null)
   const [stats, setStats] = useState<Stats | null>(null)
@@ -60,6 +67,96 @@ export default function WhatsAppPortalPage() {
   const [msg, setMsg] = useState("")
   const [sending, setSending] = useState(false)
   const [sendResult, setSendResult] = useState<string | null>(null)
+
+  // Staff WhatsApp access (admin only): registered numbers + per-doctor codes.
+  const [staff, setStaff] = useState<StaffMember[]>([])
+  const [showAddStaff, setShowAddStaff] = useState(false)
+  const [staffForm, setStaffForm] = useState({ name: "", role: "doctor", phone: "", code: "" })
+  const [savingStaff, setSavingStaff] = useState(false)
+  const [staffError, setStaffError] = useState<string | null>(null)
+  const [busyStaffId, setBusyStaffId] = useState<string | null>(null)
+  const [resetCodeFor, setResetCodeFor] = useState<StaffMember | null>(null)
+  const [newCode, setNewCode] = useState("")
+  const [removeStaffMember, setRemoveStaffMember] = useState<StaffMember | null>(null)
+
+  const loadStaff = useCallback(async () => {
+    if (!isAdmin) return
+    try {
+      const res = await authedFetch("/api/whatsapp/staff")
+      if (res.ok) {
+        const d = await res.json()
+        setStaff(d.staff ?? [])
+      }
+    } catch {
+      /* non-fatal */
+    }
+  }, [isAdmin])
+
+  useEffect(() => {
+    loadStaff()
+  }, [loadStaff])
+
+  async function addStaff(e: React.FormEvent) {
+    e.preventDefault()
+    setSavingStaff(true)
+    setStaffError(null)
+    try {
+      const res = await authedFetch("/api/whatsapp/staff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(staffForm),
+      })
+      const d = await res.json()
+      if (res.ok) {
+        setShowAddStaff(false)
+        setStaffForm({ name: "", role: "doctor", phone: "", code: "" })
+        await loadStaff()
+      } else {
+        setStaffError(d.error || "Failed to add staff")
+      }
+    } catch (err) {
+      setStaffError(String(err))
+    } finally {
+      setSavingStaff(false)
+    }
+  }
+
+  async function patchStaff(id: string, body: Record<string, unknown>) {
+    setBusyStaffId(id)
+    try {
+      const res = await authedFetch(`/api/whatsapp/staff/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      if (res.ok) await loadStaff()
+      return res.ok
+    } finally {
+      setBusyStaffId(null)
+    }
+  }
+
+  async function deleteStaff(id: string) {
+    setBusyStaffId(id)
+    try {
+      const res = await authedFetch(`/api/whatsapp/staff/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        setRemoveStaffMember(null)
+        await loadStaff()
+      }
+    } finally {
+      setBusyStaffId(null)
+    }
+  }
+
+  async function submitResetCode() {
+    if (!resetCodeFor || newCode.trim().length < 4) return
+    const ok = await patchStaff(resetCodeFor.id, { code: newCode.trim() })
+    if (ok) {
+      setResetCodeFor(null)
+      setNewCode("")
+    }
+  }
 
   const loadAll = useCallback(async () => {
     const [sRes, cRes, stRes, rRes] = await Promise.allSettled([
@@ -352,6 +449,92 @@ export default function WhatsAppPortalPage() {
         </p>
       </div>
 
+      {/* Staff WhatsApp access (admin only) — double-verified login */}
+      {isAdmin && (
+        <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-[#8A8F98] uppercase tracking-wide">Staff WhatsApp Access</span>
+            <ShieldCheck className="h-5 w-5 text-[#5E6AD2]" />
+          </div>
+          <p className="text-sm text-[#8A8F98] mt-2">
+            Doctors/staff can run the clinic over WhatsApp only when their number is registered here{" "}
+            <span className="text-[#EDEDEF]">and</span> they send their own code from that number (double-verified).
+          </p>
+
+          <div className="mt-4 space-y-2">
+            {staff.length === 0 ? (
+              <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-4 text-center text-sm text-[#8A8F98]">
+                No staff registered yet. Add a doctor or receptionist to let them log in over WhatsApp.
+              </div>
+            ) : (
+              staff.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2.5"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-[#EDEDEF] truncate">{m.name}</span>
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#5E6AD2]/10 text-[#5E6AD2] border border-[#5E6AD2]/20 capitalize">
+                        {m.role}
+                      </span>
+                      <span
+                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${
+                          m.active
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : "bg-white/[0.05] text-[#8A8F98] border-white/[0.08]"
+                        }`}
+                      >
+                        {m.active ? "Active" : "Disabled"}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-[#8A8F98] mt-0.5">+{String(m.phone).replace(/^\+/, "")} · code set 🔒</div>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button
+                      onClick={() => { setResetCodeFor(m); setNewCode("") }}
+                      disabled={busyStaffId === m.id}
+                      title="Reset code"
+                      className="inline-flex items-center justify-center p-1.5 rounded-md text-[#8A8F98] hover:text-[#5E6AD2] hover:bg-[#5E6AD2]/10 transition-colors disabled:opacity-50"
+                    >
+                      <KeyRound className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => patchStaff(m.id, { active: !m.active })}
+                      disabled={busyStaffId === m.id}
+                      title={m.active ? "Deactivate" : "Activate"}
+                      className={`inline-flex items-center justify-center p-1.5 rounded-md transition-colors disabled:opacity-50 ${
+                        m.active
+                          ? "text-[#8A8F98] hover:text-amber-400 hover:bg-amber-500/10"
+                          : "text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20"
+                      }`}
+                    >
+                      <Power className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setRemoveStaffMember(m)}
+                      disabled={busyStaffId === m.id}
+                      title="Remove"
+                      className="inline-flex items-center justify-center p-1.5 rounded-md text-[#8A8F98] hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <button
+            onClick={() => { setShowAddStaff(true); setStaffError(null); setStaffForm({ name: "", role: "doctor", phone: "", code: "" }) }}
+            className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm mt-4 bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 text-[#5E6AD2] hover:bg-[#5E6AD2]/20 transition-colors"
+          >
+            <UserPlus className="h-4 w-4 mr-1.5" />
+            Add staff
+          </button>
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<MessageSquare className="h-4 w-4" />} label="Conversations" value={stats?.activeConversations ?? 0} />
@@ -559,6 +742,153 @@ export default function WhatsAppPortalPage() {
                 className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
                 {deletingPhone === confirmDelete.phone ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add staff modal */}
+      {showAddStaff && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <form onSubmit={addStaff} className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium text-[#EDEDEF] flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-[#5E6AD2]" />
+              Add staff WhatsApp access
+            </h3>
+            <p className="mt-1 text-sm text-[#8A8F98]">
+              They log in by sending <span className="text-[#EDEDEF]">staff &lt;code&gt;</span> from this exact number.
+            </p>
+            {staffError && (
+              <div className="mt-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg px-3 py-2 text-sm">
+                {staffError}
+              </div>
+            )}
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-[#8A8F98] mb-1">Name</label>
+                <input
+                  value={staffForm.name}
+                  onChange={(e) => setStaffForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Dr Ali"
+                  required
+                  className="w-full px-3 py-2.5 rounded-lg bg-[#0F0F12] border border-white/10 text-sm text-[#EDEDEF] placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#8A8F98] mb-1">Role</label>
+                <select
+                  value={staffForm.role}
+                  onChange={(e) => setStaffForm((f) => ({ ...f, role: e.target.value }))}
+                  className="w-full px-3 py-2.5 rounded-lg bg-[#0F0F12] border border-white/10 text-sm text-[#EDEDEF] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                >
+                  <option value="doctor">Doctor</option>
+                  <option value="receptionist">Receptionist</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#8A8F98] mb-1">WhatsApp number</label>
+                <input
+                  value={staffForm.phone}
+                  onChange={(e) => setStaffForm((f) => ({ ...f, phone: e.target.value }))}
+                  placeholder="+92 300 1234567"
+                  required
+                  className="w-full px-3 py-2.5 rounded-lg bg-[#0F0F12] border border-white/10 text-sm text-[#EDEDEF] placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                />
+                <p className="mt-1 text-[11px] text-[#8A8F98]">Include the country code. This must be the number they message from.</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#8A8F98] mb-1">Login code</label>
+                <input
+                  value={staffForm.code}
+                  onChange={(e) => setStaffForm((f) => ({ ...f, code: e.target.value }))}
+                  placeholder="4–8 characters"
+                  required
+                  minLength={4}
+                  className="w-full px-3 py-2.5 rounded-lg bg-[#0F0F12] border border-white/10 text-sm text-[#EDEDEF] placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                />
+                <p className="mt-1 text-[11px] text-[#8A8F98]">Stored encrypted. Share it with them privately.</p>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowAddStaff(false)}
+                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={savingStaff}
+                className="px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#5058C8] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {savingStaff ? "Adding…" : "Add staff"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Reset code modal */}
+      {resetCodeFor && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-medium text-[#EDEDEF] flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-[#5E6AD2]" />
+              Reset code
+            </h3>
+            <p className="mt-2 text-sm text-[#8A8F98]">
+              Set a new login code for <span className="text-[#EDEDEF]">{resetCodeFor.name}</span>. Their old code stops working.
+            </p>
+            <input
+              value={newCode}
+              onChange={(e) => setNewCode(e.target.value)}
+              placeholder="New code (4–8 chars)"
+              autoFocus
+              className="mt-4 w-full px-3 py-2.5 rounded-lg bg-[#0F0F12] border border-white/10 text-sm text-[#EDEDEF] placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+            />
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                onClick={() => { setResetCodeFor(null); setNewCode("") }}
+                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitResetCode}
+                disabled={newCode.trim().length < 4 || busyStaffId === resetCodeFor.id}
+                className="px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#5058C8] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {busyStaffId === resetCodeFor.id ? "Saving…" : "Save code"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Remove staff confirm */}
+      {removeStaffMember && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-medium text-[#EDEDEF]">Remove staff access</h3>
+            <p className="mt-2 text-sm text-[#8A8F98]">
+              Remove <span className="text-[#EDEDEF]">{removeStaffMember.name}</span>? They will no longer be able to log in
+              over WhatsApp.
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                onClick={() => setRemoveStaffMember(null)}
+                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteStaff(removeStaffMember.id)}
+                disabled={busyStaffId === removeStaffMember.id}
+                className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {busyStaffId === removeStaffMember.id ? "Removing…" : "Remove"}
               </button>
             </div>
           </div>
