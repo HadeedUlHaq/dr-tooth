@@ -13,8 +13,9 @@ import {
 } from "@/lib/appointmentService"
 import { subscribeToCollection, logActivity } from "@/lib/activityService"
 import type { Appointment } from "@/lib/types"
-import { Calendar, Clock, User, Layers, MoreHorizontal, AlertTriangle, X, Undo2 } from "lucide-react"
+import { Calendar, Clock, User, Layers, MoreHorizontal, AlertTriangle, Undo2 } from "lucide-react"
 import Link from "next/link"
+import { StatusBadge, Field, Select, Input, Textarea, Button, Modal } from "@/components/ui-kit"
 
 type FilterType = "today" | "week" | "month" | "all"
 
@@ -220,21 +221,11 @@ export default function Dashboard() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "scheduled":
-        return "bg-blue-500/15 text-blue-400"
-      case "confirmed":
-        return "bg-green-500/15 text-green-400"
-      case "completed":
-        return "bg-purple-500/15 text-purple-400"
-      case "missed":
-        return "bg-red-500/15 text-red-400"
-      case "cancelled":
-        return "bg-white/[0.05] text-[#8A8F98]"
-      default:
-        return "bg-white/[0.05] text-[#8A8F98]"
-    }
+  const closeMarkLate = () => {
+    setMarkLateAppointment(null)
+    setDelayAmount("15")
+    setCustomDelay("")
+    setDelayReason("")
   }
 
   const handleMarkLate = async () => {
@@ -463,11 +454,7 @@ export default function Dashboard() {
                                   {calculateDelayMinutes(appointment)}m Late
                                 </span>
                               )}
-                              <span
-                                className={`px-2.5 py-0.5 inline-flex text-xs font-medium rounded-full ${getStatusColor(appointment.status)}`}
-                              >
-                                {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                              </span>
+                              <StatusBadge status={appointment.status} />
                             </div>
                           </div>
                           <div className="mt-2 sm:flex sm:justify-between">
@@ -520,7 +507,8 @@ export default function Dashboard() {
                                 setOpenDropdownId(appointment.id)
                               }
                             }}
-                            className="text-[#8A8F98] hover:text-[#EDEDEF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors"
+                            aria-label={`Actions for ${appointment.patientName}`}
+                            className="text-[#8A8F98] hover:text-[#EDEDEF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
@@ -576,115 +564,85 @@ export default function Dashboard() {
       </div>
 
       {/* Mark Late Modal */}
-      {markLateAppointment && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-md w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-[#EDEDEF] flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-orange-400" />
-                  Mark Patient Late
-                </h3>
-                <p className="mt-1 text-sm text-[#8A8F98]">
-                  {markLateAppointment.patientName} — currently at {formatTime(markLateAppointment.time)}
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setMarkLateAppointment(null)
-                  setDelayAmount("15")
-                  setCustomDelay("")
-                  setDelayReason("")
-                }}
-                className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+      <Modal
+        open={!!markLateAppointment}
+        onClose={closeMarkLate}
+        icon={<AlertTriangle className="h-5 w-5 text-orange-400" />}
+        title="Mark Patient Late"
+        description={
+          markLateAppointment
+            ? `${markLateAppointment.patientName} — currently at ${formatTime(markLateAppointment.time)}`
+            : undefined
+        }
+        footer={
+          <>
+            <Button variant="secondary" onClick={closeMarkLate}>
+              Cancel
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleMarkLate}
+              disabled={markingLate || (delayAmount === "custom" && (!customDelay || parseInt(customDelay) <= 0))}
+              className="text-orange-400 bg-orange-500/20 border border-orange-500/30 hover:bg-orange-500/30 hover:text-orange-400"
+            >
+              {markingLate ? "Updating..." : "Confirm Late"}
+            </Button>
+          </>
+        }
+      >
+        {markLateAppointment && (
+          <div className="space-y-4">
+            <Field label="Delay Amount">
+              <Select value={delayAmount} onChange={(e) => setDelayAmount(e.target.value)}>
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="custom">Custom</option>
+              </Select>
+            </Field>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#8A8F98] mb-1">Delay Amount</label>
-                <select
-                  value={delayAmount}
-                  onChange={(e) => setDelayAmount(e.target.value)}
-                  className="block w-full px-3 py-2.5 min-h-[44px] bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
-                >
-                  <option value="15">15 minutes</option>
-                  <option value="30">30 minutes</option>
-                  <option value="45">45 minutes</option>
-                  <option value="60">1 hour</option>
-                  <option value="custom">Custom</option>
-                </select>
-              </div>
-
-              {delayAmount === "custom" && (
-                <div>
-                  <label className="block text-sm font-medium text-[#8A8F98] mb-1">Custom Delay (minutes)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="480"
-                    value={customDelay}
-                    onChange={(e) => setCustomDelay(e.target.value)}
-                    className="block w-full px-3 py-2.5 min-h-[44px] bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
-                    placeholder="Enter minutes..."
-                    autoFocus
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-[#8A8F98] mb-1">Reason</label>
-                <textarea
-                  rows={2}
-                  value={delayReason}
-                  onChange={(e) => setDelayReason(e.target.value)}
-                  className="block w-full px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors resize-none"
-                  placeholder="e.g., Stuck in traffic"
+            {delayAmount === "custom" && (
+              <Field label="Custom Delay (minutes)">
+                <Input
+                  type="number"
+                  min="1"
+                  max="480"
+                  value={customDelay}
+                  onChange={(e) => setCustomDelay(e.target.value)}
+                  placeholder="Enter minutes..."
+                  autoFocus
                 />
-              </div>
+              </Field>
+            )}
 
-              {/* Preview */}
-              <div className="bg-orange-500/5 border border-orange-500/20 rounded-lg p-3">
-                <p className="text-xs text-orange-400">
-                  New time will be:{" "}
-                  <span className="font-semibold">
-                    {formatTime(
-                      addMinutesToTime(
-                        markLateAppointment.time as string,
-                        delayAmount === "custom" ? parseInt(customDelay) || 0 : parseInt(delayAmount)
-                      )
-                    )}
-                  </span>
-                  {" "}(moved from {formatTime(markLateAppointment.time)})
-                </p>
-              </div>
-            </div>
+            <Field label="Reason">
+              <Textarea
+                rows={2}
+                value={delayReason}
+                onChange={(e) => setDelayReason(e.target.value)}
+                placeholder="e.g., Stuck in traffic"
+              />
+            </Field>
 
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setMarkLateAppointment(null)
-                  setDelayAmount("15")
-                  setCustomDelay("")
-                  setDelayReason("")
-                }}
-                className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleMarkLate}
-                disabled={markingLate || (delayAmount === "custom" && (!customDelay || parseInt(customDelay) <= 0))}
-                className="inline-flex items-center justify-center py-2.5 px-4 text-sm font-medium text-orange-400 bg-orange-500/20 border border-orange-500/30 hover:bg-orange-500/30 rounded-lg disabled:opacity-50 min-h-[44px] transition-colors"
-              >
-                {markingLate ? "Updating..." : "Confirm Late"}
-              </button>
+            {/* Preview */}
+            <div className="bg-orange-500/5 border border-orange-500/20 rounded-lg p-3">
+              <p className="text-xs text-orange-400">
+                New time will be:{" "}
+                <span className="font-semibold">
+                  {formatTime(
+                    addMinutesToTime(
+                      markLateAppointment.time as string,
+                      delayAmount === "custom" ? parseInt(customDelay) || 0 : parseInt(delayAmount)
+                    )
+                  )}
+                </span>{" "}
+                (moved from {formatTime(markLateAppointment.time)})
+              </p>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   )
 }

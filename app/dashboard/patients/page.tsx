@@ -35,11 +35,12 @@ import {
   MoreHorizontal,
 } from "lucide-react"
 import Link from "next/link"
+import { PhoneInput } from "@/components/ui/phone-input"
+import { CallButton } from "@/components/ui/call-button"
+import { PageHeader, Button, EmptyState, SkeletonList, Modal } from "@/components/ui-kit"
 
 const IMPORT_PASSCODE = "Systems@@123456789"
 const PATIENTS_PER_PAGE = 20
-import { PhoneInput } from "@/components/ui/phone-input"
-import { CallButton } from "@/components/ui/call-button"
 
 export default function PatientsPage() {
   const { user, userData } = useAuth()
@@ -412,8 +413,9 @@ export default function PatientsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-6">
+        <PageHeader title="Patient Directory" subtitle="Register and manage patients" />
+        <SkeletonList rows={8} withHeader={false} />
       </div>
     )
   }
@@ -421,41 +423,31 @@ export default function PatientsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#EDEDEF] tracking-tight">
-            Patient Directory
-          </h1>
-          <p className="mt-1 text-sm text-[#8A8F98]">
-            Register and manage patients
-          </p>
-        </div>
-        <div className="mt-4 sm:mt-0 flex gap-2">
-          <button
-            onClick={() => setShowImportModal(true)}
-            className="inline-flex items-center px-4 py-2.5 rounded-lg text-sm font-medium text-[#EDEDEF] bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.06] transition-colors"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            Import
-          </button>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="inline-flex items-center px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/50 focus:ring-offset-2 focus:ring-offset-[#050506] transition-colors shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)]"
-          >
-            {showForm ? (
-              <>
-                <ChevronUp className="h-4 w-4 mr-2" />
-                Hide Form
-              </>
-            ) : (
-              <>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Patient
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Patient Directory"
+        subtitle="Register and manage patients"
+        actions={
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setShowImportModal(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              Import
+            </Button>
+            <Button size="sm" onClick={() => setShowForm(!showForm)}>
+              {showForm ? (
+                <>
+                  <ChevronUp className="h-4 w-4 mr-2" />
+                  Hide Form
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Patient
+                </>
+              )}
+            </Button>
+          </div>
+        }
+      />
 
       {/* Quick Add Form */}
       {showForm && (
@@ -594,13 +586,16 @@ export default function PatientsPage() {
             <tbody className="divide-y divide-white/[0.06] relative">
               {paginatedPatients.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-10 text-center text-sm text-[#8A8F98]"
-                  >
-                    {searchTerm
-                      ? "No patients match your search."
-                      : "No patients registered yet. Click \"Add Patient\" to get started."}
+                  <td colSpan={5} className="p-0">
+                    <EmptyState
+                      icon={User}
+                      title={searchTerm ? "No matches" : "No patients yet"}
+                      message={
+                        searchTerm
+                          ? "No patients match your search."
+                          : 'Register your first patient with the "Add Patient" button above.'
+                      }
+                    />
                   </td>
                 </tr>
               ) : (
@@ -693,7 +688,8 @@ export default function PatientsPage() {
                         <div className="relative" ref={openDropdownId === patient.id ? dropdownRef : undefined}>
                           <button
                             onClick={() => setOpenDropdownId(openDropdownId === patient.id ? null : patient.id)}
-                            className="text-[#8A8F98] hover:text-[#EDEDEF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors"
+                            aria-label={`Actions for ${patient.name}`}
+                            className="text-[#8A8F98] hover:text-[#EDEDEF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
@@ -745,11 +741,15 @@ export default function PatientsPage() {
         {/* Mobile Cards (hidden on desktop) */}
         <div className="sm:hidden divide-y divide-white/[0.06]">
           {paginatedPatients.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-[#8A8F98]">
-              {searchTerm
-                ? "No patients match your search."
-                : "No patients registered yet. Tap \"Add Patient\" to get started."}
-            </div>
+            <EmptyState
+              icon={User}
+              title={searchTerm ? "No matches" : "No patients yet"}
+              message={
+                searchTerm
+                  ? "No patients match your search."
+                  : 'Tap "Add Patient" above to register your first patient.'
+              }
+            />
           ) : (
             paginatedPatients.map((patient) => (
               <div
@@ -832,7 +832,8 @@ export default function PatientsPage() {
                       <div className="relative ml-2 flex-shrink-0" ref={openDropdownId === `mobile-${patient.id}` ? dropdownRef : undefined}>
                         <button
                           onClick={() => setOpenDropdownId(openDropdownId === `mobile-${patient.id}` ? null : `mobile-${patient.id}`)}
-                          className="text-[#8A8F98] hover:text-[#EDEDEF] p-2 rounded-lg hover:bg-white/[0.05] transition-colors"
+                          aria-label={`Actions for ${patient.name}`}
+                          className="text-[#8A8F98] hover:text-[#EDEDEF] p-2 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50"
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </button>
@@ -960,33 +961,25 @@ export default function PatientsPage() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold text-[#EDEDEF]">
-              Delete Patient
-            </h3>
-            <p className="mt-2 text-sm text-[#8A8F98]">
-              Are you sure you want to remove this patient from the directory?
-              This action cannot be undone.
-            </p>
-            <div className="mt-4 flex flex-col sm:flex-row justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(showDeleteConfirm)}
-                className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={!!showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(null)}
+        title="Delete Patient"
+        description="Are you sure you want to remove this patient from the directory? This action cannot be undone."
+        className="max-w-sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowDeleteConfirm(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={() => showDeleteConfirm && handleDelete(showDeleteConfirm)}>
+              Delete
+            </Button>
+          </>
+        }
+      >
+        {null}
+      </Modal>
 
       {/* Import Modal */}
       {showImportModal && (
