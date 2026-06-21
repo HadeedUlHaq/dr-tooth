@@ -3,10 +3,11 @@ import type { WhatsAppSession } from "../types"
 import { requireString, validateDate, validateTime, validateSlot, clinicToday } from "./validate"
 import { CLINIC_INFO, SERVICES } from "./clinicInfo"
 import { isStaffElevated } from "./staffAuth"
-import { sendToChat } from "./openwaClient"
-import { getAllSessions, resetSessionMemory } from "./sessionService"
+import { sendToChat, toChatId } from "./openwaClient"
+import { getAllSessions, resetSessionMemory, appendMessages } from "./sessionService"
 import { normalizePhone, samePhone } from "./phone"
 import { spin, jitterMs } from "./messaging"
+import { withinSendBudget } from "./antiBan"
 
 type ToolDefinition = {
   name: string
@@ -184,6 +185,74 @@ async function findStaffAppointments(
     `${a.data().date} ${a.data().time}`.localeCompare(`${b.data().date} ${b.data().time}`)
   )
   return docs
+}
+
+// Last-9 digit key for tolerant phone de-duplication / opt-out matching.
+function last9Key(v: unknown): string {
+  const d = String(v ?? "").replace(/\D/g, "")
+  return d.length >= 9 ? d.slice(-9) : d
+}
+
+// Resolve a message recipient (staff_message_patient) to a list of distinct
+// {name, phone}. By phone: one entry (with a best-effort name). By name: the
+// patients directory (name prefix) PLUS upcoming appointments (token match, to
+// catch bot-booked walk-ins not in the directory). De-duped by last-9 phone.
+async function resolveRecipient(
+  db: Firestore,
+  input: Record<string, unknown>
+): Promise<{ name: string; phone: string }[]> {
+  const out = new Map<string, { name: string; phone: string }>()
+
+  if (input.patientPhone) {
+    const phone = String(input.patientPhone).trim()
+    if (!phone.replace(/\D/g, "")) return []
+    let name = ""
+    const pSnap = await db.collection("patients").where("phone", "==", phone).limit(1).get()
+    if (!pSnap.empty) name = String(pSnap.docs[0].data().name ?? "")
+    if (!name) {
+      const aSnap = await db
+        .collection("appointments")
+        .where("status", "in", ["scheduled", "confirmed"])
+        .get()
+      const m = aSnap.docs.find((d) => samePhone(d.data().patientPhone, phone))
+      if (m) name = String(m.data().patientName ?? "")
+    }
+    out.set(last9Key(phone), { name: name || "patient", phone })
+    return [...out.values()]
+  }
+
+  if (input.patientName) {
+    const raw = String(input.patientName).trim()
+    const high = String.fromCharCode(0xf8ff)
+    const pSnap = await db
+      .collection("patients")
+      .orderBy("name")
+      .startAt(raw)
+      .endAt(raw + high)
+      .limit(10)
+      .get()
+    for (const d of pSnap.docs) {
+      const data = d.data()
+      const phone = String(data.phone ?? "")
+      if (phone.replace(/\D/g, "")) out.set(last9Key(phone), { name: String(data.name ?? raw), phone })
+    }
+    // Also match against upcoming appointments (covers walk-ins not in the directory).
+    const aSnap = await db
+      .collection("appointments")
+      .where("status", "in", ["scheduled", "confirmed"])
+      .get()
+    for (const d of aSnap.docs) {
+      const data = d.data()
+      if (!nameMatches(raw, data.patientName)) continue
+      const phone = String(data.patientPhone ?? "")
+      if (!phone.replace(/\D/g, "")) continue
+      const k = last9Key(phone)
+      if (!out.has(k)) out.set(k, { name: String(data.patientName ?? raw), phone })
+    }
+    return [...out.values()]
+  }
+
+  return []
 }
 
 export const AGENT_TOOLS: ToolDefinition[] = [
@@ -519,6 +588,21 @@ export const STAFF_TOOLS: ToolDefinition[] = [
       properties: {
         message: { type: "string", description: "The message to send to patients" },
         date: { type: "string", description: "Whose patients (by appointment date) YYYY-MM-DD. Defaults to today." },
+        confirmed: { type: "boolean", description: "Set true ONLY after the staff member explicitly confirms sending" },
+      },
+      required: ["message"],
+    },
+  },
+  {
+    name: "staff_message_patient",
+    description:
+      "Staff: send a WhatsApp message to ONE specific patient through the clinic bot — relay a note, a reminder, or a 'running late' notice. Identify the patient by name OR phone. Compose the full message text yourself; for a reminder or late notice, FIRST look up the patient's appointment (staff_find_patient or staff_day_overview) so the date/time in the message are real, never guessed. Two-step: call WITHOUT confirmed to resolve the recipient and preview, then confirm with confirmed:true to send. Refuses patients who have opted out.",
+    input_schema: {
+      type: "object",
+      properties: {
+        patientName: { type: "string", description: "Patient's name (provide name or phone)" },
+        patientPhone: { type: "string", description: "Patient's phone (provide name or phone)" },
+        message: { type: "string", description: "The exact message text to send to the patient" },
         confirmed: { type: "boolean", description: "Set true ONLY after the staff member explicitly confirms sending" },
       },
       required: ["message"],
@@ -1391,6 +1475,97 @@ export async function executeTool(
         "whatsapp_staff"
       )
       return JSON.stringify({ success: true, sent, totalRecipients: list.length, cappedAt: MAX_BROADCAST, unreachable, optedOut: optedOutCount })
+    }
+
+    case "staff_message_patient": {
+      if (!isStaffElevated(session)) return NOT_AUTH
+      const guard = requireString(input, "message")
+      if (!guard.ok) return JSON.stringify({ error: "validation", message: "Provide the message to send." })
+      if (!input.patientName && !input.patientPhone) {
+        return JSON.stringify({ error: "validation", message: "Identify the patient by name or phone." })
+      }
+
+      const candidates = await resolveRecipient(db, input)
+      if (candidates.length === 0) {
+        return JSON.stringify({ success: false, reason: "No patient found by that name or phone." })
+      }
+      if (candidates.length > 1) {
+        return JSON.stringify({
+          success: false,
+          needsClarification: true,
+          message: "Multiple patients match — ask which one (by phone) to message.",
+          candidates: candidates.map((c) => ({ name: c.name, phone: c.phone })),
+        })
+      }
+      const recipient = candidates[0]
+      const recipientDigits = recipient.phone.replace(/\D/g, "")
+      const text = String(input.message).trim()
+
+      // Build the JID index + opted-out set from existing sessions in one pass.
+      const sessions = await getAllSessions()
+      const optedOut = new Set<string>()
+      let existingChatId: string | undefined
+      for (const s of sessions) {
+        if (s.optedOut) {
+          for (const p of [s.realPhone, s.patientPhone, s.phoneNumber]) {
+            const k = last9Key(p)
+            if (k) optedOut.add(k)
+          }
+        }
+        if (
+          !existingChatId &&
+          s.chatId &&
+          [s.phoneNumber, s.realPhone, s.patientPhone].some((p) => p && samePhone(p, recipientDigits))
+        ) {
+          existingChatId = s.chatId
+        }
+      }
+
+      // Never message a patient who replied STOP.
+      if (optedOut.has(last9Key(recipientDigits))) {
+        return JSON.stringify({
+          success: false,
+          optedOut: true,
+          recipient,
+          message: "This patient has opted out (replied STOP). Do not message them.",
+        })
+      }
+
+      // Two-step: stage + preview first, only send after explicit confirmation.
+      if (input.confirmed !== true) {
+        session.phase = "awaiting_confirmation"
+        session.pendingAction = { type: "staff_message_patient", phone: recipient.phone }
+        return JSON.stringify({
+          needsConfirmation: true,
+          action: "message_patient",
+          recipient,
+          messagePreview: text,
+          message: "Read the recipient and the message back to the staff member, get an explicit yes, then call again with confirmed:true.",
+        })
+      }
+
+      // Anti-ban: a single relay still counts against the per-contact/daily budget.
+      const budget = await withinSendBudget(recipientDigits)
+      if (!budget.ok) {
+        return JSON.stringify({ success: false, throttled: true, reason: budget.reason })
+      }
+
+      // Prefer the patient's existing chatId (preserves @lid threading); else <digits>@c.us.
+      const jid = existingChatId || toChatId(recipientDigits)
+      await sendToChat(jid, text)
+      await appendMessages(recipientDigits, [
+        { role: "assistant", content: text, timestamp: new Date().toISOString(), via: "staff" },
+      ])
+      await writeAudit(
+        db,
+        "patient_updated",
+        `WhatsApp message sent by ${session.staffName} to ${recipient.name} (${recipient.phone})`,
+        session.staffName || "Staff",
+        "whatsapp_staff"
+      )
+      session.phase = "idle"
+      session.pendingAction = null
+      return JSON.stringify({ success: true, sentTo: recipient })
     }
 
     default:
