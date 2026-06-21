@@ -34,7 +34,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // depth — the tool list already hides these from patients, but never trust that).
 const NOT_AUTH = JSON.stringify({
   error: "not_authorized",
-  message: "Staff session required. Ask them to send their PIN (e.g. 'staff <PIN>').",
+  message: "Staff session required. Ask them to send their login code (e.g. 'staff <code>').",
 })
 
 // Loose date check for staff inputs (they may legitimately query past dates or

@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Staff auth (deterministic, BEFORE the LLM) ──
-    // The PIN is verified here and never routed to the model or stored verbatim.
+    // The login code is verified here and never routed to the model or stored verbatim.
     const cmd = parseStaffCommand(messageText)
     if (cmd.kind === "login") {
       if (isPinLockedOut(session)) {
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
         await sendToChat(replyJid, "❌ Couldn't verify your number. Please try again.")
         return NextResponse.json({ status: "ok", reason: "staff_login_no_phone" })
       }
-      const ident = await verifyStaffMember(senderPhone, cmd.pin)
+      const ident = await verifyStaffMember(senderPhone, cmd.code)
       if (ident) {
         await updateSession(sessionKey, {
           chatId: replyJid,

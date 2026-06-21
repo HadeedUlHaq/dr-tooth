@@ -20,8 +20,8 @@ import { samePhone } from "./phone"
 // greeting and the audit trail.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const STAFF_AUTH_TTL_MS = 8 * 60 * 60 * 1000 // 8h, then re-PIN
-export const MAX_PIN_ATTEMPTS = 5 // failed PINs per session before lockout
+export const STAFF_AUTH_TTL_MS = 8 * 60 * 60 * 1000 // 8h, then re-authenticate
+export const MAX_PIN_ATTEMPTS = 5 // failed code attempts per session before lockout
 
 export type StaffRole = "doctor" | "receptionist"
 export interface StaffIdentity {
@@ -90,7 +90,7 @@ export async function verifyStaffMember(
 }
 
 export type StaffCommand =
-  | { kind: "login"; pin: string }
+  | { kind: "login"; code: string }
   | { kind: "logout" }
   | { kind: null }
 
@@ -105,14 +105,14 @@ export function parseStaffCommand(text: string): StaffCommand {
   }
   const m = t.match(/^\/?staff\s+(?:login\s+)?(\S+)$/i)
   if (m) {
-    const pin = m[1]
-    if (pin.toLowerCase() === "logout") return { kind: "logout" }
+    const code = m[1]
+    if (code.toLowerCase() === "logout") return { kind: "logout" }
     // Avoid hijacking ordinary patient messages like "staff parking?": only treat
     // it as a login when the user explicitly wrote "login", or the token looks like
-    // a PIN (alphanumeric AND contains a digit — recommend numeric staff PINs).
+    // a login code (alphanumeric AND contains a digit).
     const explicit = /\blogin\b/i.test(t)
-    const pinLike = /^[A-Za-z0-9]{3,32}$/.test(pin) && /[0-9]/.test(pin)
-    if (explicit || pinLike) return { kind: "login", pin }
+    const codeLike = /^[A-Za-z0-9]{3,32}$/.test(code) && /[0-9]/.test(code)
+    if (explicit || codeLike) return { kind: "login", code }
   }
   return { kind: null }
 }
@@ -126,7 +126,7 @@ export function isStaffElevated(session: WhatsAppSession): boolean {
   return Date.now() - at < STAFF_AUTH_TTL_MS
 }
 
-// Is the session locked out from further PIN attempts?
+// Is the session locked out from further login-code attempts?
 export function isPinLockedOut(session: WhatsAppSession): boolean {
   return (session.staffPinAttempts ?? 0) >= MAX_PIN_ATTEMPTS
 }

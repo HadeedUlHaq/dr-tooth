@@ -188,10 +188,10 @@ export interface WhatsAppSession {
   // broadcasts). The reactive bot can still answer if they message. Reply START to clear.
   optedOut?: boolean
   optedOutAt?: string | null
-  // ── Staff/doctor elevation (set after a successful PIN; see lib/whatsapp/staffAuth.ts) ──
+  // ── Staff/doctor elevation (set after a successful login code; see lib/whatsapp/staffAuth.ts) ──
   // The authenticated staff member's display name, their role (audit/greeting only —
   // doctor and receptionist share the same powers), when they last authenticated
-  // (drives the 8h TTL), and a failed-PIN counter for lockout. All absent = patient.
+  // (drives the 8h TTL), and a failed-code counter for lockout. All absent = patient.
   staffName?: string | null
   staffRole?: "doctor" | "receptionist" | null
   staffAuthAt?: string | null
@@ -214,4 +214,3 @@ export interface StaffMember {
   updatedAt?: string
   createdBy?: string
 }
-

@@ -19,7 +19,8 @@ const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini"
 
 // Staff/doctor assistant prompt — used only for an authenticated staff session.
 // It is allowed to surface clinic-wide and patient data because the caller has
-// proven they are staff (PIN). The staff tools themselves also re-check elevation.
+// proven they are staff (registered WhatsApp number + login code). The staff
+// tools themselves also re-check elevation.
 function buildStaffPrompt(session: WhatsAppSession): string {
   const now = new Date()
   const today = now.toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" })
@@ -102,8 +103,8 @@ STYLE:
   detail. Use Markdown tables for schedules/patient lists/money; format money as "Rs." with
   thousands separators.
 - Mirror the staff member's language (English, Urdu, Roman Urdu, Arabic, Roman Arabic).
-- If a tool reports not_authorized, tell them their staff session expired — send the PIN again
-  ("staff <PIN>").`
+- If a tool reports not_authorized, tell them their staff session expired — send their login code
+  again ("staff <code>").`
 }
 
 function buildSystemPrompt(session: WhatsAppSession): string {
