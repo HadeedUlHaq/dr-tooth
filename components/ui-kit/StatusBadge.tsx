@@ -17,10 +17,11 @@ const APPOINTMENT_STATUS: Record<string, StatusTone> = {
 }
 
 const INVOICE_STATUS: Record<string, StatusTone> = {
-  paid: { bg: "bg-green-500/15", text: "text-green-400" },
+  paid: { bg: "bg-emerald-500/15", text: "text-emerald-400" },
+  partial: { bg: "bg-amber-500/15", text: "text-amber-400" },
+  unpaid: { bg: "bg-red-500/15", text: "text-red-400" },
   pending: { bg: "bg-amber-500/15", text: "text-amber-400" },
   overdue: { bg: "bg-red-500/15", text: "text-red-400" },
-  partial: { bg: "bg-blue-500/15", text: "text-blue-400" },
   cancelled: { bg: "bg-white/[0.05]", text: "text-[#8A8F98]" },
 }
 

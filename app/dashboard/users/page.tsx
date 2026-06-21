@@ -5,8 +5,9 @@ import { useAuth } from "@/contexts/AuthContext"
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import type { User } from "@/lib/types"
-import { Edit, Trash, UserIcon } from "lucide-react"
+import { Edit, Trash, UserIcon, Users } from "lucide-react"
 import ProtectedRoute from "@/components/ProtectedRoute"
+import { PageHeader, EmptyState, SkeletonList, Modal, Button } from "@/components/ui-kit"
 
 export default function UsersManagement() {
   const { userData } = useAuth()
@@ -80,19 +81,19 @@ export default function UsersManagement() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <div className="space-y-6">
+          <PageHeader title="User Management" subtitle="Manage user roles and permissions" />
+          <SkeletonList rows={5} />
+        </div>
+      </ProtectedRoute>
     )
   }
 
   return (
     <ProtectedRoute allowedRoles={["admin"]}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#EDEDEF]">User Management</h1>
-          <p className="mt-1 text-sm text-[#8A8F98]">Manage user roles and permissions</p>
-        </div>
+        <PageHeader title="User Management" subtitle="Manage user roles and permissions" />
 
         {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg">{error}</div>}
 
@@ -102,7 +103,7 @@ export default function UsersManagement() {
           </div>
           <div className="overflow-hidden">
             {users.length === 0 ? (
-              <div className="text-center py-8 text-[#8A8F98]">No users found.</div>
+              <EmptyState icon={Users} title="No users" message="No users found." />
             ) : (
               <table className="min-w-full divide-y divide-white/[0.06]">
                 <thead className="bg-white/[0.03]">
@@ -191,13 +192,15 @@ export default function UsersManagement() {
                                 setEditingUser(user)
                                 setEditRole(user.role)
                               }}
-                              className="text-[#8A8F98] hover:text-[#EDEDEF] transition-colors"
+                              aria-label={`Edit role for ${user.name}`}
+                              className="text-[#8A8F98] hover:text-[#EDEDEF] transition-colors p-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50"
                             >
                               <Edit className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => setShowDeleteConfirm(user.uid)}
-                              className="text-red-400/70 hover:text-red-400 transition-colors"
+                              aria-label={`Delete ${user.name}`}
+                              className="text-red-400/70 hover:text-red-400 transition-colors p-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
                             >
                               <Trash className="h-4 w-4" />
                             </button>
@@ -212,30 +215,24 @@ export default function UsersManagement() {
           </div>
         </div>
 
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl p-6 max-w-md w-full">
-              <h3 className="text-lg font-medium text-[#EDEDEF]">Delete User</h3>
-              <p className="mt-2 text-sm text-[#8A8F98]">
-                Are you sure you want to delete this user? This action cannot be undone.
-              </p>
-              <div className="mt-4 flex justify-end space-x-3">
-                <button
-                  onClick={() => setShowDeleteConfirm(null)}
-                  className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors focus:outline-none"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleDeleteUser(showDeleteConfirm)}
-                  className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors focus:outline-none"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <Modal
+          open={!!showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(null)}
+          title="Delete User"
+          description="Are you sure you want to delete this user? This action cannot be undone."
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setShowDeleteConfirm(null)}>
+                Cancel
+              </Button>
+              <Button variant="danger" onClick={() => showDeleteConfirm && handleDeleteUser(showDeleteConfirm)}>
+                Delete
+              </Button>
+            </>
+          }
+        >
+          {null}
+        </Modal>
       </div>
     </ProtectedRoute>
   )

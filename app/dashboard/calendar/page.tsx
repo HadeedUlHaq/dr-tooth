@@ -155,8 +155,17 @@ export default function CalendarPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-7 w-40 rounded-lg bg-white/[0.06] animate-pulse" />
+            <div className="h-4 w-56 rounded bg-white/[0.04] animate-pulse" />
+          </div>
+        </div>
+        <div
+          className="rounded-xl border border-white/[0.06] bg-white/[0.02] animate-pulse"
+          style={{ height: "calc(100vh - 220px)", minHeight: 520 }}
+        />
       </div>
     )
   }

@@ -22,6 +22,7 @@ import {
   RefreshCw,
   User,
 } from "lucide-react"
+import { PageHeader, Button, EmptyState, SkeletonList, Modal, Field, Select } from "@/components/ui-kit"
 
 const LAB_NAMES: LabName[] = ["Tanveer Dental Lab", "Zubair Dental Lab", "None"]
 const STATUSES: LabCaseStatus[] = [
@@ -291,8 +292,9 @@ export default function LabTrackingPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-6">
+        <PageHeader title="Lab Tracking" subtitle="Track crowns, bridges, and lab work" />
+        <SkeletonList rows={6} withHeader={false} />
       </div>
     )
   }
@@ -300,23 +302,18 @@ export default function LabTrackingPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#EDEDEF] tracking-tight">Lab Tracking</h1>
-          <p className="mt-1 text-sm text-[#8A8F98]">Track crowns, bridges, and lab work</p>
-        </div>
-        {canEdit && (
-          <div className="mt-4 sm:mt-0">
-            <button
-              onClick={() => { resetCreateForm(); setShowCreateModal(true) }}
-              className="inline-flex items-center px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] transition-colors"
-            >
+      <PageHeader
+        title="Lab Tracking"
+        subtitle="Track crowns, bridges, and lab work"
+        actions={
+          canEdit ? (
+            <Button size="sm" onClick={() => { resetCreateForm(); setShowCreateModal(true) }}>
               <Plus className="h-4 w-4 mr-2" />
               New Lab Case
-            </button>
-          </div>
-        )}
-      </div>
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* Filters */}
       <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
@@ -369,8 +366,16 @@ export default function LabTrackingPage() {
             <tbody className="divide-y divide-white/[0.06]">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={canEdit ? 7 : 6} className="px-6 py-10 text-center text-sm text-[#8A8F98]">
-                    {searchTerm || statusFilter !== "active" ? "No lab cases match your filters." : "No active lab cases. Click \"New Lab Case\" to create one."}
+                  <td colSpan={canEdit ? 7 : 6} className="p-0">
+                    <EmptyState
+                      icon={Package}
+                      title={searchTerm || statusFilter !== "active" ? "No matches" : "No active lab cases"}
+                      message={
+                        searchTerm || statusFilter !== "active"
+                          ? "No lab cases match your filters."
+                          : 'Track your first crown or bridge with the "New Lab Case" button above.'
+                      }
+                    />
                   </td>
                 </tr>
               ) : (
@@ -427,9 +432,15 @@ export default function LabTrackingPage() {
         {/* Mobile Cards */}
         <div className="sm:hidden divide-y divide-white/[0.06]">
           {filtered.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-[#8A8F98]">
-              {searchTerm || statusFilter !== "active" ? "No lab cases match your filters." : "No active lab cases."}
-            </div>
+            <EmptyState
+              icon={Package}
+              title={searchTerm || statusFilter !== "active" ? "No matches" : "No active lab cases"}
+              message={
+                searchTerm || statusFilter !== "active"
+                  ? "No lab cases match your filters."
+                  : 'Tap "New Lab Case" above to track one.'
+              }
+            />
           ) : (
             filtered.map((c) => (
               <div key={c.id} className="p-4 hover:bg-white/[0.03] transition-colors">
@@ -592,80 +603,72 @@ export default function LabTrackingPage() {
       )}
 
       {/* ═══ Update Status Modal ═══ */}
-      {updatingCase && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-sm w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-[#EDEDEF]">Update Status</h3>
-                <p className="text-xs text-[#8A8F98]">{updatingCase.patientName} · {updatingCase.toothDetails}</p>
-              </div>
-              <button onClick={() => setUpdatingCase(null)} className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+      <Modal
+        open={!!updatingCase}
+        onClose={() => setUpdatingCase(null)}
+        title="Update Status"
+        description={updatingCase ? `${updatingCase.patientName} · ${updatingCase.toothDetails}` : undefined}
+        className="max-w-sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setUpdatingCase(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStatusUpdate}
+              disabled={saving || (updateStatus === "Sent to Lab" && updateLabName === "None")}
+            >
+              {saving ? "Saving..." : "Update"}
+            </Button>
+          </>
+        }
+      >
+        {updatingCase && (
+          <div className="space-y-4">
+            <Field label="Status">
+              <Select value={updateStatus} onChange={(e) => setUpdateStatus(e.target.value as LabCaseStatus)}>
+                {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </Select>
+            </Field>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#8A8F98] mb-1">Status</label>
-                <select value={updateStatus} onChange={(e) => setUpdateStatus(e.target.value as LabCaseStatus)}
-                  className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors">
-                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
+            {/* Show lab name picker when sending to lab */}
+            {updateStatus === "Sent to Lab" && (
+              <Field label="Lab Name *" hint="Sent date will be set to today automatically.">
+                <Select value={updateLabName} onChange={(e) => setUpdateLabName(e.target.value as LabName)}>
+                  {LAB_NAMES.filter((l) => l !== "None").map((l) => <option key={l} value={l}>{l}</option>)}
+                </Select>
+              </Field>
+            )}
 
-              {/* Show lab name picker when sending to lab */}
-              {updateStatus === "Sent to Lab" && (
-                <div>
-                  <label className="block text-sm font-medium text-[#8A8F98] mb-1">Lab Name *</label>
-                  <select value={updateLabName} onChange={(e) => setUpdateLabName(e.target.value as LabName)}
-                    className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors">
-                    {LAB_NAMES.filter((l) => l !== "None").map((l) => <option key={l} value={l}>{l}</option>)}
-                  </select>
-                  <p className="mt-1 text-xs text-[#8A8F98]">Sent date will be set to today automatically.</p>
-                </div>
-              )}
-
-              {updateStatus === "Received from Lab" && (
-                <p className="text-xs text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-3 py-2">
-                  Received date will be set to today automatically.
-                </p>
-              )}
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setUpdatingCase(null)}
-                className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">
-                Cancel
-              </button>
-              <button onClick={handleStatusUpdate} disabled={saving || (updateStatus === "Sent to Lab" && updateLabName === "None")}
-                className="inline-flex items-center justify-center py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] disabled:opacity-50 min-h-[44px] transition-colors">
-                {saving ? "Saving..." : "Update"}
-              </button>
-            </div>
+            {updateStatus === "Received from Lab" && (
+              <p className="text-xs text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-3 py-2">
+                Received date will be set to today automatically.
+              </p>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
 
       {/* ═══ Delete Confirm ═══ */}
-      {deleteId && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold text-[#EDEDEF]">Delete Lab Case</h3>
-            <p className="mt-2 text-sm text-[#8A8F98]">Are you sure? This action cannot be undone.</p>
-            <div className="mt-4 flex justify-end gap-3">
-              <button onClick={() => setDeleteId(null)}
-                className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">
-                Cancel
-              </button>
-              <button onClick={() => deleteId && handleDelete(deleteId)}
-                className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        title="Delete Lab Case"
+        description="Are you sure? This action cannot be undone."
+        className="max-w-sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteId(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={() => deleteId && handleDelete(deleteId)}>
+              Delete
+            </Button>
+          </>
+        }
+      >
+        {null}
+      </Modal>
     </div>
   )
 }

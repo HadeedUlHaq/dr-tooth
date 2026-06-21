@@ -7,6 +7,7 @@ import type { Invoice } from "@/lib/types"
 import { Search, Plus, Receipt, Eye } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { PageHeader, ButtonLink, StatusBadge, EmptyState, SkeletonList } from "@/components/ui-kit"
 
 export default function InvoicesPage() {
   const { user, userData } = useAuth()
@@ -54,19 +55,6 @@ export default function InvoicesPage() {
     setFiltered(result)
   }, [invoices, searchTerm, statusFilter])
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "unpaid":
-        return "bg-red-500/15 text-red-400"
-      case "partial":
-        return "bg-amber-500/15 text-amber-400"
-      case "paid":
-        return "bg-emerald-500/15 text-emerald-400"
-      default:
-        return "bg-white/[0.05] text-[#8A8F98]"
-    }
-  }
-
   const formatRupees = (amount: number) => {
     return `Rs. ${amount.toLocaleString()}`
   }
@@ -80,8 +68,9 @@ export default function InvoicesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-6">
+        <PageHeader title="Invoices" subtitle="Manage billing and payments" />
+        <SkeletonList rows={6} withHeader={false} />
       </div>
     )
   }
@@ -89,21 +78,16 @@ export default function InvoicesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#EDEDEF] tracking-tight">Invoices</h1>
-          <p className="mt-1 text-sm text-[#8A8F98]">Manage billing and payments</p>
-        </div>
-        <div className="mt-4 sm:mt-0">
-          <Link
-            href="/dashboard/invoices/new"
-            className="inline-flex items-center px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] transition-colors"
-          >
+      <PageHeader
+        title="Invoices"
+        subtitle="Manage billing and payments"
+        actions={
+          <ButtonLink href="/dashboard/invoices/new" size="sm">
             <Plus className="h-4 w-4 mr-2" />
             New Invoice
-          </Link>
-        </div>
-      </div>
+          </ButtonLink>
+        }
+      />
 
       {/* Filters */}
       <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
@@ -154,10 +138,16 @@ export default function InvoicesPage() {
             <tbody className="divide-y divide-white/[0.06]">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-10 text-center text-sm text-[#8A8F98]">
-                    {searchTerm || statusFilter !== "all"
-                      ? "No invoices match your filters."
-                      : "No invoices yet. Click \"New Invoice\" to create one."}
+                  <td colSpan={7} className="p-0">
+                    <EmptyState
+                      icon={Receipt}
+                      title={searchTerm || statusFilter !== "all" ? "No matches" : "No invoices yet"}
+                      message={
+                        searchTerm || statusFilter !== "all"
+                          ? "No invoices match your filters."
+                          : 'Create your first invoice with the "New Invoice" button above.'
+                      }
+                    />
                   </td>
                 </tr>
               ) : (
@@ -179,9 +169,7 @@ export default function InvoicesPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-emerald-400">{formatRupees(inv.amountPaid)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#EDEDEF]">{formatRupees(inv.balanceDue)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-0.5 inline-flex text-xs font-semibold rounded-full capitalize ${getStatusBadge(inv.status)}`}>
-                        {inv.status}
-                      </span>
+                      <StatusBadge status={inv.status} kind="invoice" />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <Link
@@ -202,11 +190,15 @@ export default function InvoicesPage() {
         {/* Mobile Cards */}
         <div className="sm:hidden divide-y divide-white/[0.06]">
           {filtered.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-[#8A8F98]">
-              {searchTerm || statusFilter !== "all"
-                ? "No invoices match your filters."
-                : "No invoices yet. Tap \"New Invoice\" to create one."}
-            </div>
+            <EmptyState
+              icon={Receipt}
+              title={searchTerm || statusFilter !== "all" ? "No matches" : "No invoices yet"}
+              message={
+                searchTerm || statusFilter !== "all"
+                  ? "No invoices match your filters."
+                  : 'Tap "New Invoice" above to create one.'
+              }
+            />
           ) : (
             filtered.map((inv) => (
               <Link
@@ -224,9 +216,7 @@ export default function InvoicesPage() {
                       <div className="text-xs text-[#8A8F98]">{formatDate(inv.date)}</div>
                     </div>
                   </div>
-                  <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full capitalize flex-shrink-0 ${getStatusBadge(inv.status)}`}>
-                    {inv.status}
-                  </span>
+                  <StatusBadge status={inv.status} kind="invoice" className="flex-shrink-0" />
                 </div>
                 <div className="mt-3 flex items-center gap-4 text-xs">
                   <span className="text-[#EDEDEF] font-medium">Total: {formatRupees(inv.total)}</span>
