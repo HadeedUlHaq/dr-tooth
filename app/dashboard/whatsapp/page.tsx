@@ -44,7 +44,8 @@ const CONNECTED = new Set(["connected", "ready"])
 
 export default function WhatsAppPortalPage() {
   const { userData } = useAuth()
-  const isAdmin = userData?.role === "admin"
+  // Admins and receptionists can manage staff WhatsApp access (doctors cannot).
+  const canManageStaff = userData?.role === "admin" || userData?.role === "receptionist"
 
   const [sessions, setSessions] = useState<WhatsAppSession[]>([])
   const [conn, setConn] = useState<Connection | null>(null)
@@ -68,7 +69,7 @@ export default function WhatsAppPortalPage() {
   const [sending, setSending] = useState(false)
   const [sendResult, setSendResult] = useState<string | null>(null)
 
-  // Staff WhatsApp access (admin only): registered numbers + per-doctor codes.
+  // Staff WhatsApp access (admin + receptionist): registered numbers + per-doctor codes.
   const [staff, setStaff] = useState<StaffMember[]>([])
   const [showAddStaff, setShowAddStaff] = useState(false)
   const [staffForm, setStaffForm] = useState({ name: "", role: "doctor", phone: "", code: "" })
@@ -80,7 +81,7 @@ export default function WhatsAppPortalPage() {
   const [removeStaffMember, setRemoveStaffMember] = useState<StaffMember | null>(null)
 
   const loadStaff = useCallback(async () => {
-    if (!isAdmin) return
+    if (!canManageStaff) return
     try {
       const res = await authedFetch("/api/whatsapp/staff")
       if (res.ok) {
@@ -90,7 +91,7 @@ export default function WhatsAppPortalPage() {
     } catch {
       /* non-fatal */
     }
-  }, [isAdmin])
+  }, [canManageStaff])
 
   useEffect(() => {
     loadStaff()
@@ -450,7 +451,7 @@ export default function WhatsAppPortalPage() {
       </div>
 
       {/* Staff WhatsApp access (admin only) — double-verified login */}
-      {isAdmin && (
+      {canManageStaff && (
         <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-[#8A8F98] uppercase tracking-wide">Staff WhatsApp Access</span>

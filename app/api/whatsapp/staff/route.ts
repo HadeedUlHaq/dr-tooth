@@ -6,10 +6,12 @@ import { newSalt, hashCode, STAFF_COLLECTION } from "@/lib/whatsapp/staffAuth"
 export const runtime = "nodejs"
 
 // Staff-WhatsApp-access management. The middleware already requires a valid STAFF
-// token for /api/whatsapp/*; these routes additionally require the ADMIN role
-// (re-verify the bearer, read users/<uid>.role). Codes are stored hashed and are
-// never returned to the client.
-export async function requireAdmin(
+// token for /api/whatsapp/*; these routes additionally require an admin OR
+// receptionist role (re-verify the bearer, read users/<uid>.role). Doctors cannot
+// manage access. Codes are stored hashed and are never returned to the client.
+const STAFF_MANAGER_ROLES = new Set(["admin", "receptionist"])
+
+export async function requireStaffManager(
   req: NextRequest
 ): Promise<{ ok: true; uid: string } | { ok: false; res: NextResponse }> {
   const authz = req.headers.get("authorization") || ""
@@ -20,7 +22,7 @@ export async function requireAdmin(
   }
   try {
     const snap = await getAdminDb().collection("users").doc(claims.sub).get()
-    if (!snap.exists || String(snap.data()?.role || "") !== "admin") {
+    if (!snap.exists || !STAFF_MANAGER_ROLES.has(String(snap.data()?.role || ""))) {
       return { ok: false, res: NextResponse.json({ error: "forbidden" }, { status: 403 }) }
     }
   } catch {
@@ -30,7 +32,7 @@ export async function requireAdmin(
 }
 
 export async function GET(req: NextRequest) {
-  const gate = await requireAdmin(req)
+  const gate = await requireStaffManager(req)
   if (!gate.ok) return gate.res
   const snap = await getAdminDb().collection(STAFF_COLLECTION).get()
   const staff = snap.docs
@@ -50,7 +52,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const gate = await requireAdmin(req)
+  const gate = await requireStaffManager(req)
   if (!gate.ok) return gate.res
   const body = (await req.json()) as { name?: string; role?: string; phone?: string; code?: string }
   const name = String(body.name ?? "").trim()

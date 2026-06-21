@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAdminDb, FieldValue } from "@/lib/whatsapp/firebaseAdmin"
 import { newSalt, hashCode, STAFF_COLLECTION } from "@/lib/whatsapp/staffAuth"
-import { requireAdmin } from "../route"
+import { requireStaffManager } from "../route"
 
 export const runtime = "nodejs"
 
 // Update a staff member: name / role / phone / active, and reset the code when a
-// new `code` is supplied. Admin-only (see requireAdmin).
+// new `code` is supplied. Admin or receptionist (see requireStaffManager).
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireAdmin(req)
+  const gate = await requireStaffManager(req)
   if (!gate.ok) return gate.res
   const { id } = await params
   const body = (await req.json()) as {
@@ -39,7 +39,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireAdmin(req)
+  const gate = await requireStaffManager(req)
   if (!gate.ok) return gate.res
   const { id } = await params
   await getAdminDb().collection(STAFF_COLLECTION).doc(id).delete()
