@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef, useMemo } from "react"
-import { Bell, Trash2 } from "lucide-react"
+import { Bell, Package, Trash2 } from "lucide-react"
 import { subscribeToActivities, deleteActivity, clearAllActivities } from "@/lib/activityService"
 import { showToast } from "@/components/ui/toast-notification"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -24,30 +24,31 @@ function timeAgo(dateString: string): string {
 function getTypeIcon(type: ActivityLog["type"]): string {
   switch (type) {
     case "patient_added":
-      return "👤"
+      return "Patient added"
     case "patient_updated":
+      return "Patient updated"
     case "patient_deleted":
-      return "📋"
+      return "Patient deleted"
     case "appointment_created":
-      return "📅"
+      return "Appointment created"
     case "appointment_updated":
     case "appointment_status_changed":
-      return "🔄"
+      return "Appointment updated"
     case "appointment_deleted":
-      return "🗑️"
+      return "Appointment deleted"
     case "appointment_delayed":
-      return "⏰"
+      return "Appointment delayed"
     case "invoice_created":
     case "invoice_updated":
     case "invoice_deleted":
-      return "🧾"
+      return "Invoice update"
     case "payment_recorded":
-      return "💰"
+      return "Payment recorded"
     case "lab_case_created":
     case "lab_case_updated":
-      return "🦷"
+      return "Lab case update"
     default:
-      return "📌"
+      return "Activity"
   }
 }
 
@@ -185,8 +186,11 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
           }`}
         >
           <div className="flex items-start gap-3">
-            <span className="text-base mt-0.5 flex-shrink-0">
-              {getTypeIcon(activity.type)}
+            <span
+              className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/[0.05] text-[#22D3EE]"
+              title={getTypeIcon(activity.type)}
+            >
+              <Package className="h-4 w-4" aria-hidden="true" />
             </span>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-[#F0FCFF] leading-snug">
@@ -202,10 +206,11 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
               )}
               <button
                 onClick={(e) => handleDeleteOne(e, activity.id)}
-                className="mt-0.5 p-1 rounded text-white/0 group-hover:text-[#A9BFC5] hover:!text-red-400 hover:bg-white/[0.05] transition-all"
+                className="mt-0.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#A9BFC5] hover:!text-red-400 hover:bg-white/[0.05] transition-all"
                 title="Remove notification"
+                aria-label="Remove notification"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -219,7 +224,9 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
       {/* Bell Button */}
       <button
         onClick={handleToggle}
-        className="relative p-2 rounded-lg text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
+        className="relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]/55"
+        aria-label="Open notifications"
+        aria-expanded={isOpen}
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -231,13 +238,13 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#061417] border border-white/[0.08] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] z-50 overflow-hidden">
+        <div className="fixed left-2 right-2 top-16 z-50 overflow-hidden rounded-lg border border-white/[0.08] bg-[#061417] shadow-[0_8px_40px_rgba(0,0,0,0.6)] sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96">
           <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[#F0FCFF]">Notifications</h3>
             {activities.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="flex items-center gap-1.5 text-xs text-[#A9BFC5] hover:text-red-400 transition-colors"
+                className="flex min-h-[44px] items-center gap-1.5 rounded-lg px-2 text-xs text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-red-400"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Clear All
@@ -246,44 +253,44 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <div className="px-3 pt-2 pb-1 border-b border-white/[0.06]">
-              <TabsList className="w-full bg-white/[0.03] rounded-lg p-0.5 h-auto">
+            <div className="border-b border-white/[0.06] px-3 pb-1 pt-2">
+              <TabsList className="h-auto w-full rounded-lg bg-white/[0.03] p-0.5">
                 <TabsTrigger
                   value="appointments"
-                  className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#0891B2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#A9BFC5] data-[state=inactive]:bg-transparent rounded-md transition-colors"
+                  className="min-h-[44px] flex-1 rounded-md px-2 py-2 text-xs transition-colors data-[state=active]:bg-[#0891B2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-[#A9BFC5]"
                 >
-                  📅 Appointments
+                  Appointments
                 </TabsTrigger>
                 <TabsTrigger
                   value="lab"
-                  className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#0891B2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#A9BFC5] data-[state=inactive]:bg-transparent rounded-md transition-colors"
+                  className="min-h-[44px] flex-1 rounded-md px-2 py-2 text-xs transition-colors data-[state=active]:bg-[#0891B2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-[#A9BFC5]"
                 >
-                  🦷 Lab Cases
+                  Lab Cases
                 </TabsTrigger>
                 {userRole !== "doctor" && (
                   <TabsTrigger
                     value="invoices"
-                    className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#0891B2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#A9BFC5] data-[state=inactive]:bg-transparent rounded-md transition-colors"
+                    className="min-h-[44px] flex-1 rounded-md px-2 py-2 text-xs transition-colors data-[state=active]:bg-[#0891B2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-[#A9BFC5]"
                   >
-                    🧾 Invoices
+                    Invoices
                   </TabsTrigger>
                 )}
               </TabsList>
             </div>
 
             <TabsContent value="appointments" className="mt-0">
-              <div className="max-h-72 overflow-y-auto">
+              <div className="max-h-[60dvh] overflow-y-auto sm:max-h-72">
                 {renderActivityList(appointmentActivities)}
               </div>
             </TabsContent>
             <TabsContent value="lab" className="mt-0">
-              <div className="max-h-72 overflow-y-auto">
+              <div className="max-h-[60dvh] overflow-y-auto sm:max-h-72">
                 {renderActivityList(labActivities)}
               </div>
             </TabsContent>
             {userRole !== "doctor" && (
               <TabsContent value="invoices" className="mt-0">
-                <div className="max-h-72 overflow-y-auto">
+                <div className="max-h-[60dvh] overflow-y-auto sm:max-h-72">
                   {renderActivityList(invoiceActivities)}
                 </div>
               </TabsContent>

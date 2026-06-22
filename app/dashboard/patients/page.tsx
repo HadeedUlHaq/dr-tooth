@@ -689,7 +689,7 @@ export default function PatientsPage() {
                           <button
                             onClick={() => setOpenDropdownId(openDropdownId === patient.id ? null : patient.id)}
                             aria-label={`Actions for ${patient.name}`}
-                            className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/50"
+                            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/50"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
@@ -698,7 +698,7 @@ export default function PatientsPage() {
                               {(userData?.role === "admin" || userData?.role === "receptionist") && (
                                 <button
                                   onClick={() => { openBillingHistory(patient); setOpenDropdownId(null) }}
-                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
+                                  className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF]"
                                 >
                                   <Receipt className="h-4 w-4" />
                                   Billing History
@@ -706,14 +706,14 @@ export default function PatientsPage() {
                               )}
                               <button
                                 onClick={() => { openLabCases(patient); setOpenDropdownId(null) }}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
+                                className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF]"
                               >
                                 <Package className="h-4 w-4" />
                                 Lab Cases
                               </button>
                               <button
                                 onClick={() => { startEdit(patient); setOpenDropdownId(null) }}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
+                                className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF]"
                               >
                                 <Edit className="h-4 w-4" />
                                 Edit Patient
@@ -721,7 +721,7 @@ export default function PatientsPage() {
                               <div className="my-1 border-t border-white/[0.06]" />
                               <button
                                 onClick={() => { setShowDeleteConfirm(patient.id); setOpenDropdownId(null) }}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                                className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10"
                               >
                                 <Trash className="h-4 w-4" />
                                 Delete Patient
@@ -842,7 +842,7 @@ export default function PatientsPage() {
                             {(userData?.role === "admin" || userData?.role === "receptionist") && (
                               <button
                                 onClick={() => { openBillingHistory(patient); setOpenDropdownId(null) }}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
+                                className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF]"
                               >
                                 <Receipt className="h-4 w-4" />
                                 Billing History
@@ -850,14 +850,14 @@ export default function PatientsPage() {
                             )}
                             <button
                               onClick={() => { openLabCases(patient); setOpenDropdownId(null) }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
+                              className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF]"
                             >
                               <Package className="h-4 w-4" />
                               Lab Cases
                             </button>
                             <button
                               onClick={() => { startEdit(patient); setOpenDropdownId(null) }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
+                              className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF]"
                             >
                               <Edit className="h-4 w-4" />
                               Edit Patient
@@ -865,7 +865,7 @@ export default function PatientsPage() {
                             <div className="my-1 border-t border-white/[0.06]" />
                             <button
                               onClick={() => { setShowDeleteConfirm(patient.id); setOpenDropdownId(null) }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                              className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10"
                             >
                               <Trash className="h-4 w-4" />
                               Delete Patient
@@ -904,7 +904,7 @@ export default function PatientsPage() {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-1.5 rounded-lg text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#A9BFC5] transition-colors"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#A9BFC5]"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -937,7 +937,7 @@ export default function PatientsPage() {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`min-w-[28px] h-7 rounded-lg text-xs font-medium transition-colors ${
+                      className={`min-h-[44px] min-w-[44px] rounded-lg text-xs font-medium transition-colors ${
                         page === currentPage
                           ? "bg-[#0891B2] text-white"
                           : "text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05]"
@@ -951,7 +951,7 @@ export default function PatientsPage() {
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="p-1.5 rounded-lg text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#A9BFC5] transition-colors"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#A9BFC5]"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -983,8 +983,8 @@ export default function PatientsPage() {
 
       {/* Import Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+          <div className="bg-[#061417] border border-white/[0.06] rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-4 sm:p-6 max-w-lg w-full max-h-[calc(100dvh-1.5rem)] flex flex-col">
 
             {/* Passcode Gate */}
             {!importUnlocked ? (
@@ -1001,7 +1001,7 @@ export default function PatientsPage() {
                   </div>
                   <button
                     onClick={handleCloseImportModal}
-                    className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1 transition-colors"
+                    className="flex h-11 w-11 items-center justify-center rounded-lg text-[#A9BFC5] transition-colors hover:bg-white/[0.06] hover:text-[#F0FCFF]"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -1060,7 +1060,7 @@ export default function PatientsPage() {
               </div>
               <button
                 onClick={handleCloseImportModal}
-                className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1 transition-colors"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-[#A9BFC5] transition-colors hover:bg-white/[0.06] hover:text-[#F0FCFF]"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1200,8 +1200,8 @@ export default function PatientsPage() {
 
       {/* Billing History Modal — admin/receptionist only */}
       {billingPatient && (userData?.role === "admin" || userData?.role === "receptionist") && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+          <div className="bg-[#061417] border border-white/[0.06] rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-4 sm:p-6 max-w-lg w-full max-h-[calc(100dvh-1.5rem)] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="bg-[#0891B2]/10 border border-[#0891B2]/20 rounded-xl p-2.5">
@@ -1214,7 +1214,7 @@ export default function PatientsPage() {
               </div>
               <button
                 onClick={() => { setBillingPatient(null); setBillingInvoices([]) }}
-                className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1 transition-colors"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-[#A9BFC5] transition-colors hover:bg-white/[0.06] hover:text-[#F0FCFF]"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1293,8 +1293,8 @@ export default function PatientsPage() {
 
       {/* Lab Cases Modal — all roles can view */}
       {labPatient && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+          <div className="bg-[#061417] border border-white/[0.06] rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-4 sm:p-6 max-w-lg w-full max-h-[calc(100dvh-1.5rem)] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="bg-[#0891B2]/10 border border-[#0891B2]/20 rounded-xl p-2.5">
@@ -1307,7 +1307,7 @@ export default function PatientsPage() {
               </div>
               <button
                 onClick={() => { setLabPatient(null); setLabCases([]) }}
-                className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1 transition-colors"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-[#A9BFC5] transition-colors hover:bg-white/[0.06] hover:text-[#F0FCFF]"
               >
                 <X className="h-5 w-5" />
               </button>

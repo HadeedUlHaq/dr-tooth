@@ -247,23 +247,23 @@ export default function AppointmentsList() {
       />
 
       <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
-        <div className="px-5 py-4 border-b border-white/[0.06]">
+        <div className="border-b border-white/[0.06] px-4 py-4 sm:px-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="relative max-w-xs w-full">
+            <div className="relative w-full sm:max-w-xs">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-white/30" />
               </div>
               <input
                 type="text"
-                className="block w-full pl-10 pr-3 py-2.5 bg-[#082127] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
+                className="block min-h-[44px] w-full rounded-lg border border-white/10 bg-[#082127] py-2.5 pl-10 pr-3 text-sm text-gray-100 placeholder-gray-500 transition-colors focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20"
                 placeholder="Search patients..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
               <select
-                className="block w-full sm:w-auto px-3 py-2.5 bg-[#082127] border border-white/10 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
+                className="block min-h-[44px] w-full rounded-lg border border-white/10 bg-[#082127] px-3 py-2.5 text-sm text-gray-100 transition-colors focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20 sm:w-auto"
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value as any)}
               >
@@ -273,7 +273,7 @@ export default function AppointmentsList() {
                 <option value="all">All Time</option>
               </select>
               <select
-                className="block w-full sm:w-auto px-3 py-2.5 bg-[#082127] border border-white/10 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
+                className="block min-h-[44px] w-full rounded-lg border border-white/10 bg-[#082127] px-3 py-2.5 text-sm text-gray-100 transition-colors focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20 sm:w-auto"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -310,10 +310,10 @@ export default function AppointmentsList() {
               {filteredAppointments.map((appointment) => (
                 <li key={appointment.id} className="hover:bg-white/[0.03] transition-colors">
                   <div className="flex items-stretch">
-                    <Link href={`/dashboard/appointments/${appointment.id}`} className="block flex-1 min-w-0">
-                      <div className="px-5 py-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 flex-wrap">
+                    <Link href={`/dashboard/appointments/${appointment.id}`} className="block min-w-0 flex-1">
+                      <div className="px-4 py-4 sm:px-5">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
                             <User className="h-4 w-4 text-white/40" />
                             <p className="text-sm font-medium text-[#0891B2] truncate">{appointment.patientName}</p>
                             {appointment.patientPhone && (
@@ -325,9 +325,9 @@ export default function AppointmentsList() {
                               </span>
                             )}
                           </div>
-                          <div className="ml-2 flex-shrink-0 flex items-center gap-2">
+                          <div className="flex flex-shrink-0 items-center gap-2">
                             {appointment.isLate && (appointment.status === "scheduled" || appointment.status === "confirmed") && (
-                              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full animate-pulse bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                              <span className="hidden items-center gap-1 rounded-full border border-orange-500/30 bg-orange-500/15 px-2 py-0.5 text-xs font-medium text-orange-400 sm:inline-flex">
                                 {calculateDelayMinutes(appointment)}m Late
                               </span>
                             )}
@@ -355,7 +355,7 @@ export default function AppointmentsList() {
                         {/* Late badge - mobile (full detail) */}
                         {appointment.isLate && (appointment.status === "scheduled" || appointment.status === "confirmed") && (
                           <div className="mt-2">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full animate-pulse bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/15 px-2.5 py-1 text-xs font-medium text-orange-400">
                               Running {calculateDelayMinutes(appointment)}m Late (Originally {formatTime(appointment.originalTime || "")})
                             </span>
                           </div>
@@ -385,7 +385,7 @@ export default function AppointmentsList() {
                             }
                           }}
                           aria-label={`Actions for ${appointment.patientName}`}
-                          className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/50"
+                        className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#A9BFC5] transition-colors hover:bg-white/[0.05] hover:text-[#F0FCFF] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/50"
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </button>
@@ -404,7 +404,7 @@ export default function AppointmentsList() {
                                 setDropdownPosition(null)
                                 triggerButtonRef.current = null
                               }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-orange-400 hover:bg-orange-500/10 transition-colors"
+                            className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-sm text-orange-400 transition-colors hover:bg-orange-500/10"
                             >
                               <AlertTriangle className="h-4 w-4" />
                               Mark Late
@@ -420,7 +420,7 @@ export default function AppointmentsList() {
                                   triggerButtonRef.current = null
                                 }}
                                 disabled={revokingLateId === appointment.id}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-50"
+                                className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-sm text-emerald-400 transition-colors hover:bg-emerald-500/10 disabled:opacity-50"
                               >
                                 <Undo2 className="h-4 w-4" />
                                 {revokingLateId === appointment.id ? "Reverting..." : "Remove Late Status"}

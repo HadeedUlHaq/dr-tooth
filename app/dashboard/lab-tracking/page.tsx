@@ -330,12 +330,12 @@ export default function LabTrackingPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {["active", "all", ...STATUSES].map((s) => (
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                className={`min-h-[44px] rounded-lg px-3 py-2 text-sm font-medium transition-colors sm:text-xs ${
                   statusFilter === s
                     ? "bg-[#0891B2] text-white"
                     : "bg-white/[0.05] text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.08]"
@@ -444,8 +444,8 @@ export default function LabTrackingPage() {
           ) : (
             filtered.map((c) => (
               <div key={c.id} className="p-4 hover:bg-white/[0.03] transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#0891B2]/10 border border-[#0891B2]/20 flex items-center justify-center">
                       <Package className="h-5 w-5 text-[#0891B2]" />
                     </div>
@@ -454,27 +454,27 @@ export default function LabTrackingPage() {
                       <div className="text-xs text-[#A9BFC5]">{c.toothDetails} · {c.material}</div>
                     </div>
                   </div>
-                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0 ${getStatusColor(c.status)}`}>
+                  <span className={`max-w-[9rem] flex-shrink-0 rounded-full px-2 py-0.5 text-center text-xs font-semibold ${getStatusColor(c.status)}`}>
                     {c.status}
                   </span>
                 </div>
-                <div className="mt-3 flex items-center gap-4 text-xs text-[#A9BFC5]">
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#A9BFC5]">
                   <span>Lab: {c.labName === "None" ? "—" : c.labName}</span>
                   {c.sentDate && <span>Sent: {formatDate(c.sentDate)}</span>}
                   {c.receivedDate && <span>Recv: {formatDate(c.receivedDate)}</span>}
                 </div>
                 {canEdit && (
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-3 grid grid-cols-2 gap-2">
                     <button
                       onClick={() => openUpdateModal(c)}
-                      className="inline-flex items-center px-3 py-1.5 bg-[#0891B2]/15 text-[#0891B2] rounded-lg text-xs font-medium transition-colors hover:bg-[#0891B2]/25"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-[#0891B2]/15 px-3 py-2 text-xs font-medium text-[#0891B2] transition-colors hover:bg-[#0891B2]/25"
                     >
                       <RefreshCw className="h-3 w-3 mr-1" />
                       Update Status
                     </button>
                     <button
                       onClick={() => setDeleteId(c.id)}
-                      className="inline-flex items-center px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg text-xs font-medium transition-colors hover:bg-red-500/20"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-red-500/10 px-3 py-2 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/20"
                     >
                       <Trash className="h-3 w-3 mr-1" />
                       Delete
@@ -496,11 +496,11 @@ export default function LabTrackingPage() {
 
       {/* ═══ Create Modal ═══ */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+          <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-white/[0.06] bg-[#061417] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-[#F0FCFF]">New Lab Case</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1 transition-colors">
+              <button onClick={() => setShowCreateModal(false)} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#A9BFC5] transition-colors hover:bg-white/[0.06] hover:text-[#F0FCFF]" aria-label="Close modal">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -516,7 +516,7 @@ export default function LabTrackingPage() {
                 {selectedPatient ? (
                   <div className="flex items-center justify-between bg-[#082127] border border-white/10 rounded-lg px-3 py-2.5 min-h-[44px]">
                     <span className="text-sm text-[#F0FCFF]">{selectedPatient.name} <span className="text-[#A9BFC5]">{selectedPatient.phone}</span></span>
-                    <button type="button" onClick={() => { setSelectedPatient(null); setPatientSearch("") }} className="text-[#A9BFC5] hover:text-red-400">
+                    <button type="button" onClick={() => { setSelectedPatient(null); setPatientSearch("") }} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#A9BFC5] hover:text-red-400" aria-label="Clear selected patient">
                       <X className="h-4 w-4" />
                     </button>
                   </div>
@@ -587,13 +587,13 @@ export default function LabTrackingPage() {
                   placeholder="Additional notes..." />
               </div>
 
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
                 <button type="button" onClick={() => setShowCreateModal(false)}
-                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">
+                  className="min-h-[44px] w-full rounded-lg border border-white/[0.06] bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-[#F0FCFF] transition-colors hover:bg-white/[0.08] sm:w-auto">
                   Cancel
                 </button>
                 <button type="submit" disabled={creating}
-                  className="inline-flex items-center justify-center py-2.5 px-4 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] disabled:opacity-50 min-h-[44px] transition-colors">
+                  className="inline-flex min-h-[44px] w-full items-center justify-center rounded-lg bg-[#0891B2] px-4 py-2.5 text-sm font-medium text-white shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] transition-colors hover:bg-[#0E7490] disabled:opacity-50 sm:w-auto">
                   {creating ? "Creating..." : "Create Lab Case"}
                 </button>
               </div>

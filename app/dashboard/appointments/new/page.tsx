@@ -180,24 +180,24 @@ export default function NewAppointment() {
       <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
         <div className="px-4 py-5 sm:p-6">
           {error && (
-            <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg px-4 py-3">
+            <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-red-400" role="alert">
               {error}
             </div>
           )}
 
           <div className="mb-4">
-            <div className="flex items-center">
+            <label htmlFor="quickAppointment" className="inline-flex min-h-[44px] items-center text-sm text-[#F0FCFF]">
               <input
                 type="checkbox"
                 id="quickAppointment"
                 checked={isQuickAppointment}
                 onChange={(e) => setIsQuickAppointment(e.target.checked)}
-                className="h-4 w-4 accent-[#0891B2] rounded"
+                className="h-4 w-4 rounded accent-[#0891B2]"
               />
-              <label htmlFor="quickAppointment" className="ml-2 block text-sm text-[#F0FCFF]">
+              <span className="ml-2">
                 Quick Appointment (Name, Date, Time only)
-              </label>
-            </div>
+              </span>
+            </label>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -264,18 +264,18 @@ export default function NewAppointment() {
                   />
                 </div>
                 <div className="mt-2">
-                  <div className="flex items-center">
+                  <label htmlFor="onCall" className="inline-flex min-h-[44px] items-center text-sm text-[#F0FCFF]">
                     <input
                       type="checkbox"
                       id="onCall"
                       checked={isOnCall}
                       onChange={(e) => setIsOnCall(e.target.checked)}
-                      className="h-4 w-4 accent-[#0891B2] rounded"
+                      className="h-4 w-4 rounded accent-[#0891B2]"
                     />
-                    <label htmlFor="onCall" className="ml-2 block text-sm text-[#F0FCFF]">
+                    <span className="ml-2">
                       On Call (No specific time)
-                    </label>
-                  </div>
+                    </span>
+                  </label>
                 </div>
               </div>
 
@@ -311,7 +311,7 @@ export default function NewAppointment() {
                         id="doctor"
                         value={doctorId}
                         onChange={(e) => setDoctorId(e.target.value)}
-                        className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                        className="block min-h-[44px] w-full rounded-lg border border-white/10 bg-[#082127] px-3 py-2.5 text-sm text-gray-100 placeholder-gray-500 transition-colors focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20"
                         disabled={userData?.role === "doctor"}
                       >
                         <option value="">Select a doctor</option>
@@ -334,7 +334,7 @@ export default function NewAppointment() {
                         rows={3}
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                        className="block min-h-[88px] w-full rounded-lg border border-white/10 bg-[#082127] px-3 py-2.5 text-sm text-gray-100 placeholder-gray-500 transition-colors focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20"
                       />
                     </div>
                   </div>
@@ -342,18 +342,18 @@ export default function NewAppointment() {
               )}
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2 px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20"
+                className="min-h-[44px] w-full rounded-lg border border-white/[0.06] bg-white/[0.05] px-4 py-2 text-sm font-medium text-[#F0FCFF] hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20 sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="ml-3 inline-flex justify-center py-2 px-4 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20 disabled:opacity-50"
+                className="inline-flex min-h-[44px] w-full justify-center rounded-lg bg-[#0891B2] px-4 py-2 text-sm font-medium text-white shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:bg-[#0E7490] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20 disabled:opacity-50 sm:w-auto"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

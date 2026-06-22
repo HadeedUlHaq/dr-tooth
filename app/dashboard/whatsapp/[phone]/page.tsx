@@ -102,8 +102,8 @@ export default function WhatsAppSessionPage() {
         Back
       </Link>
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-xl font-semibold text-[#F0FCFF]">{session.patientName ?? "Guest"}</h1>
           <p className="text-xs text-[#A9BFC5] mt-1">
             +{session.phoneNumber} · last active {formatTime(session.lastActiveAt)}
@@ -112,7 +112,7 @@ export default function WhatsAppSessionPage() {
         <button
           onClick={toggleBot}
           disabled={togglingBot}
-          className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50 whitespace-nowrap ${
+          className={`inline-flex min-h-[44px] w-full items-center justify-center rounded-lg px-3 py-2 text-sm transition-colors disabled:opacity-50 sm:w-auto ${
             session.botPaused
               ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
               : "bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20"
@@ -136,7 +136,7 @@ export default function WhatsAppSessionPage() {
           session.messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+                className={`max-w-[92%] rounded-lg px-4 py-2.5 text-sm sm:max-w-[80%] ${
                   m.role === "user"
                     ? "bg-[#0891B2] text-white rounded-tr-sm"
                     : "bg-white/[0.06] text-[#F0FCFF] rounded-tl-sm"
@@ -153,17 +153,17 @@ export default function WhatsAppSessionPage() {
         )}
       </div>
 
-      <form onSubmit={sendReply} className="flex gap-2 sticky bottom-0 bg-[#061417] py-3">
+      <form onSubmit={sendReply} className="sticky bottom-0 flex gap-2 bg-[#061417] py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <input
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
           placeholder="Type a reply to send manually…"
-          className="flex-1 px-3 py-2 rounded-lg bg-[#111113] border border-white/[0.08] text-sm text-[#F0FCFF] placeholder-[#A9BFC5] focus:outline-none focus:border-[#0891B2]/50"
+          className="min-h-[44px] flex-1 rounded-lg border border-white/[0.08] bg-[#111113] px-3 py-2 text-sm text-[#F0FCFF] placeholder-[#A9BFC5] focus:border-[#0891B2]/50 focus:outline-none"
         />
         <button
           type="submit"
           disabled={sending || !msg.trim()}
-          className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-[#0891B2] text-white hover:bg-[#5058C8] transition-colors disabled:opacity-50"
+          className="inline-flex min-h-[44px] items-center rounded-lg bg-[#0891B2] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0E7490] disabled:opacity-50"
         >
           <Send className="h-4 w-4 mr-1.5" />
           {sending ? "…" : "Send"}

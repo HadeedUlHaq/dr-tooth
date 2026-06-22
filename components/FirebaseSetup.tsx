@@ -32,8 +32,8 @@ export default function FirebaseSetup() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 p-4">
-      <div className="bg-[#061417] border border-white/[0.06] p-6 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4">
+      <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl overflow-y-auto rounded-lg border border-white/[0.06] bg-[#061417] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] sm:p-6">
         <h2 className="text-2xl font-bold text-[#0891B2] mb-4">Firebase Configuration Required</h2>
 
         <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
@@ -43,7 +43,7 @@ export default function FirebaseSetup() {
           </p>
         </div>
 
-        <button onClick={() => setShowInstructions(!showInstructions)} className="mb-4 text-[#0891B2] hover:text-[#0E7490] underline transition-colors">
+        <button onClick={() => setShowInstructions(!showInstructions)} className="mb-4 min-h-[44px] text-[#0891B2] underline transition-colors hover:text-[#0E7490]">
           {showInstructions ? "Hide Instructions" : "Show Setup Instructions"}
         </button>
 
@@ -128,7 +128,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id`}
         <div className="flex justify-end">
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-[#0891B2] text-white rounded-lg hover:bg-[#0E7490] shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] transition-colors font-medium text-sm"
+            className="min-h-[44px] w-full rounded-lg bg-[#0891B2] px-4 py-2.5 text-sm font-medium text-white shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] transition-colors hover:bg-[#0E7490] sm:w-auto"
           >
             Refresh Page
           </button>

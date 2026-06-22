@@ -35,7 +35,7 @@ export function Modal({
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
-        className={`max-w-md w-full gap-0 rounded-lg border border-white/[0.1] bg-[#0A2228] p-6 text-[#F0FCFF] shadow-[0_1px_0_rgba(255,255,255,0.06),0_20px_48px_rgba(0,0,0,0.42)] ${className}`}
+        className={`max-w-md gap-0 rounded-lg border border-white/[0.1] bg-[#0A2228] p-4 text-[#F0FCFF] shadow-[0_1px_0_rgba(255,255,255,0.06),0_20px_48px_rgba(0,0,0,0.42)] sm:p-6 ${className}`}
       >
         {(title || description) && (
           <DialogHeader className="text-left mb-4 space-y-1">
@@ -51,7 +51,11 @@ export function Modal({
           </DialogHeader>
         )}
         {children}
-        {footer && <DialogFooter className="mt-6 gap-3">{footer}</DialogFooter>}
+        {footer && (
+          <DialogFooter className="mt-6 gap-3 [&>button]:w-full sm:[&>button]:w-auto">
+            {footer}
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   )

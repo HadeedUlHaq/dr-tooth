@@ -131,10 +131,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#061417]">
+    <div className="flex h-dvh min-h-dvh flex-col bg-[#061417]">
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] bg-[#061417]/80 backdrop-blur-sm">
-        <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-[#0891B2]/10 border border-[#0891B2]/20">
+      <header className="flex items-center gap-3 border-b border-white/[0.06] bg-[#061417]/80 px-3 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur-sm sm:px-4">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#0891B2]/20 bg-[#0891B2]/10">
           <Stethoscope className="h-5 w-5 text-[#0891B2]" />
         </div>
         <div>
@@ -149,7 +149,7 @@ export default function ChatPage() {
       </header>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-6">
         <div className="max-w-2xl mx-auto space-y-4">
           {messages.map((msg, i) => (
             <div
@@ -157,7 +157,7 @@ export default function ChatPage() {
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                className={`max-w-[92%] rounded-lg px-4 py-2.5 text-sm leading-relaxed sm:max-w-[85%] ${
                   msg.role === "user"
                     ? "bg-[#0891B2] text-white rounded-tr-sm"
                     : "bg-white/[0.06] text-[#F0FCFF] rounded-tl-sm"
@@ -189,7 +189,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-white/[0.06] bg-[#061417] px-4 py-3">
+      <div className="border-t border-white/[0.06] bg-[#061417] px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-4">
         <div className="max-w-2xl mx-auto flex items-end gap-2">
           <textarea
             value={input}
@@ -197,12 +197,13 @@ export default function ChatPage() {
             onKeyDown={handleKeyDown}
             placeholder="Type your message…"
             rows={1}
-            className="flex-1 resize-none rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-[#F0FCFF] placeholder:text-[#A9BFC5] focus:outline-none focus:border-[#0891B2]/50 max-h-32"
+            className="max-h-32 min-h-[44px] flex-1 resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-[#F0FCFF] placeholder:text-[#A9BFC5] focus:border-[#0891B2]/50 focus:outline-none"
           />
           <button
             onClick={handleSend}
             disabled={sending || !input.trim()}
-            className="flex items-center justify-center h-11 w-11 rounded-xl bg-[#0891B2] text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#0891B2]/90 transition-colors shrink-0"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#0891B2] text-white transition-colors hover:bg-[#0891B2]/90 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Send message"
           >
             <Send className="h-5 w-5" />
           </button>

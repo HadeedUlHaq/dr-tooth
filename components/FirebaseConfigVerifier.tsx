@@ -17,8 +17,8 @@ export default function FirebaseConfigVerifier() {
   if (!configError) return null
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-      <div className="bg-[#061417] border border-white/[0.06] p-6 rounded-2xl max-w-md w-full shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+      <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-lg border border-white/[0.06] bg-[#061417] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] sm:p-6">
         <h2 className="text-xl font-bold text-red-400 mb-4">Firebase Configuration Error</h2>
         <p className="mb-4 text-[#F0FCFF] text-sm">{configError}</p>
         <p className="text-sm text-[#A9BFC5]">

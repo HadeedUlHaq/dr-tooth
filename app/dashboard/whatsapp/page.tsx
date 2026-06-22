@@ -320,14 +320,14 @@ export default function WhatsAppPortalPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-[#F0FCFF]">WhatsApp Portal</h1>
           <p className="text-sm text-[#A9BFC5] mt-1">Gateway, bot, and conversations</p>
         </div>
         <Link
           href="/dashboard/whatsapp/connect"
-          className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-white/[0.04] border border-white/[0.08] text-[#F0FCFF] hover:bg-white/[0.08] transition-colors whitespace-nowrap"
+          className="inline-flex min-h-[44px] w-full items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm font-medium text-[#F0FCFF] transition-colors hover:bg-white/[0.08] sm:w-auto"
         >
           <Smartphone className="h-4 w-4 mr-1.5" />
           QR / Pairing
@@ -355,11 +355,11 @@ export default function WhatsAppPortalPage() {
               ? conn?.message?.slice(0, 80)
               : "Scan the QR to link a number"}
           </p>
-          <div className="flex gap-2 mt-4">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:flex">
             <button
               onClick={reconnect}
               disabled={reconnecting}
-              className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-white/[0.04] border border-white/[0.08] text-[#F0FCFF] hover:bg-white/[0.08] transition-colors disabled:opacity-50"
+              className="inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm bg-white/[0.04] border border-white/[0.08] text-[#F0FCFF] hover:bg-white/[0.08] transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`h-4 w-4 mr-1.5 ${reconnecting ? "animate-spin" : ""}`} />
               Reconnect
@@ -367,7 +367,7 @@ export default function WhatsAppPortalPage() {
             {!isConnected && (
               <Link
                 href="/dashboard/whatsapp/connect"
-                className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-[#0891B2]/10 border border-[#0891B2]/20 text-[#0891B2] hover:bg-[#0891B2]/20 transition-colors"
+                className="inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm bg-[#0891B2]/10 border border-[#0891B2]/20 text-[#0891B2] hover:bg-[#0891B2]/20 transition-colors"
               >
                 <Smartphone className="h-4 w-4 mr-1.5" />
                 Show QR
@@ -392,7 +392,7 @@ export default function WhatsAppPortalPage() {
           <button
             onClick={toggleBot}
             disabled={togglingBot}
-            className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm mt-4 transition-colors disabled:opacity-50 ${
+            className={`inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm mt-4 transition-colors disabled:opacity-50 ${
               stats?.globalPaused
                 ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
                 : "bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20"
@@ -426,7 +426,7 @@ export default function WhatsAppPortalPage() {
               <button
                 onClick={() => toggleReminder(row.k)}
                 disabled={!reminders || togglingReminder === row.k}
-                className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
+                className={`inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
                   row.on
                     ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
                     : "bg-white/[0.05] border border-white/[0.08] text-[#A9BFC5] hover:bg-white/[0.08]"
@@ -496,7 +496,7 @@ export default function WhatsAppPortalPage() {
                       onClick={() => { setResetCodeFor(m); setNewCode("") }}
                       disabled={busyStaffId === m.id}
                       title="Reset code"
-                      className="inline-flex items-center justify-center p-1.5 rounded-md text-[#A9BFC5] hover:text-[#0891B2] hover:bg-[#0891B2]/10 transition-colors disabled:opacity-50"
+                      className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-md text-[#A9BFC5] hover:text-[#0891B2] hover:bg-[#0891B2]/10 transition-colors disabled:opacity-50"
                     >
                       <KeyRound className="h-4 w-4" />
                     </button>
@@ -504,7 +504,7 @@ export default function WhatsAppPortalPage() {
                       onClick={() => patchStaff(m.id, { active: !m.active })}
                       disabled={busyStaffId === m.id}
                       title={m.active ? "Deactivate" : "Activate"}
-                      className={`inline-flex items-center justify-center p-1.5 rounded-md transition-colors disabled:opacity-50 ${
+                      className={`inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-md transition-colors disabled:opacity-50 ${
                         m.active
                           ? "text-[#A9BFC5] hover:text-amber-400 hover:bg-amber-500/10"
                           : "text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20"
@@ -516,7 +516,7 @@ export default function WhatsAppPortalPage() {
                       onClick={() => setRemoveStaffMember(m)}
                       disabled={busyStaffId === m.id}
                       title="Remove"
-                      className="inline-flex items-center justify-center p-1.5 rounded-md text-[#A9BFC5] hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                      className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-md text-[#A9BFC5] hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -528,7 +528,7 @@ export default function WhatsAppPortalPage() {
 
           <button
             onClick={() => { setShowAddStaff(true); setStaffError(null); setStaffForm({ name: "", role: "doctor", phone: "", code: "" }) }}
-            className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm mt-4 bg-[#0891B2]/10 border border-[#0891B2]/20 text-[#0891B2] hover:bg-[#0891B2]/20 transition-colors"
+            className="inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm mt-4 bg-[#0891B2]/10 border border-[#0891B2]/20 text-[#0891B2] hover:bg-[#0891B2]/20 transition-colors"
           >
             <UserPlus className="h-4 w-4 mr-1.5" />
             Add staff
@@ -567,7 +567,7 @@ export default function WhatsAppPortalPage() {
           <button
             type="submit"
             disabled={sending || !toPhone.trim() || !msg.trim() || !isConnected}
-            className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-[#0891B2] text-white hover:bg-[#5058C8] transition-colors disabled:opacity-50"
+            className="inline-flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-lg text-sm font-medium bg-[#0891B2] text-white hover:bg-[#5058C8] transition-colors disabled:opacity-50"
           >
             <Send className="h-4 w-4 mr-1.5" />
             {sending ? "Sending…" : "Send"}
@@ -670,7 +670,7 @@ export default function WhatsAppPortalPage() {
                           onClick={() => toggleBlock(s.phoneNumber, !s.blocked)}
                           disabled={blockingPhone === s.phoneNumber}
                           title={s.blocked ? "Unblock" : "Block"}
-                          className={`inline-flex items-center justify-center p-1.5 rounded-md transition-colors disabled:opacity-50 ${
+                          className={`inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-md transition-colors disabled:opacity-50 ${
                             s.blocked
                               ? "text-red-400 bg-red-500/10 hover:bg-red-500/20"
                               : "text-[#A9BFC5] hover:text-amber-400 hover:bg-amber-500/10"
@@ -680,7 +680,7 @@ export default function WhatsAppPortalPage() {
                         </button>
                         <button
                           onClick={() => setConfirmDelete({ phone: s.phoneNumber, name: s.patientName ?? "Guest" })}
-                          className="inline-flex items-center justify-center p-1.5 rounded-md text-[#A9BFC5] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-md text-[#A9BFC5] hover:text-red-400 hover:bg-red-500/10 transition-colors"
                           title="Delete conversation"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -701,14 +701,14 @@ export default function WhatsAppPortalPage() {
                   <button
                     onClick={() => setPage((p) => Math.max(0, p - 1))}
                     disabled={safePage === 0}
-                    className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs bg-white/[0.04] border border-white/[0.08] text-[#F0FCFF] hover:bg-white/[0.08] disabled:opacity-40 transition-colors"
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-xs text-[#F0FCFF] transition-colors hover:bg-white/[0.08] disabled:opacity-40"
                   >
                     <ChevronLeft className="h-4 w-4 mr-0.5" /> Prev
                   </button>
                   <button
                     onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
                     disabled={safePage >= pageCount - 1}
-                    className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs bg-white/[0.04] border border-white/[0.08] text-[#F0FCFF] hover:bg-white/[0.08] disabled:opacity-40 transition-colors"
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-xs text-[#F0FCFF] transition-colors hover:bg-white/[0.08] disabled:opacity-40"
                   >
                     Next <ChevronRight className="h-4 w-4 ml-0.5" />
                   </button>
@@ -721,26 +721,26 @@ export default function WhatsAppPortalPage() {
 
       {/* Delete conversation confirm */}
       {confirmDelete && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl p-6 max-w-md w-full">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+          <div className="bg-[#061417] border border-white/[0.06] rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
             <h3 className="text-lg font-medium text-[#F0FCFF]">Delete conversation</h3>
             <p className="mt-2 text-sm text-[#A9BFC5]">
               Delete the conversation with <span className="text-[#F0FCFF]">{confirmDelete.name}</span> (+
               {confirmDelete.phone})? This removes the stored chat history. If they message again, a new
               conversation starts.
             </p>
-            <div className="mt-4 flex justify-end gap-3">
+            <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 onClick={() => setConfirmDelete(null)}
                 disabled={deletingPhone === confirmDelete.phone}
-                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="min-h-[44px] w-full rounded-lg border border-white/[0.06] bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-[#F0FCFF] transition-colors hover:bg-white/[0.08] sm:w-auto disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={() => deleteConversation(confirmDelete.phone)}
                 disabled={deletingPhone === confirmDelete.phone}
-                className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="min-h-[44px] w-full rounded-lg border border-red-500/30 bg-red-500/20 px-4 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/30 sm:w-auto disabled:opacity-50"
               >
                 {deletingPhone === confirmDelete.phone ? "Deleting…" : "Delete"}
               </button>
@@ -751,8 +751,8 @@ export default function WhatsAppPortalPage() {
 
       {/* Add staff modal */}
       {showAddStaff && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <form onSubmit={addStaff} className="bg-[#061417] border border-white/[0.06] rounded-2xl p-6 max-w-md w-full">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+          <form onSubmit={addStaff} className="bg-[#061417] border border-white/[0.06] rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
             <h3 className="text-lg font-medium text-[#F0FCFF] flex items-center gap-2">
               <UserPlus className="h-5 w-5 text-[#0891B2]" />
               Add staff WhatsApp access
@@ -773,7 +773,7 @@ export default function WhatsAppPortalPage() {
                   onChange={(e) => setStaffForm((f) => ({ ...f, name: e.target.value }))}
                   placeholder="Dr Ali"
                   required
-                  className="w-full px-3 py-2.5 rounded-lg bg-[#082127] border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
+                  className="min-h-[44px] w-full rounded-lg bg-[#082127] px-3 py-2.5 border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 />
               </div>
               <div>
@@ -781,7 +781,7 @@ export default function WhatsAppPortalPage() {
                 <select
                   value={staffForm.role}
                   onChange={(e) => setStaffForm((f) => ({ ...f, role: e.target.value }))}
-                  className="w-full px-3 py-2.5 rounded-lg bg-[#082127] border border-white/10 text-sm text-[#F0FCFF] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
+                  className="min-h-[44px] w-full rounded-lg bg-[#082127] px-3 py-2.5 border border-white/10 text-sm text-[#F0FCFF] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 >
                   <option value="doctor">Doctor</option>
                   <option value="receptionist">Receptionist</option>
@@ -794,7 +794,7 @@ export default function WhatsAppPortalPage() {
                   onChange={(e) => setStaffForm((f) => ({ ...f, phone: e.target.value }))}
                   placeholder="+92 300 1234567"
                   required
-                  className="w-full px-3 py-2.5 rounded-lg bg-[#082127] border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
+                  className="min-h-[44px] w-full rounded-lg bg-[#082127] px-3 py-2.5 border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 />
                 <p className="mt-1 text-[11px] text-[#A9BFC5]">Include the country code. This must be the number they message from.</p>
               </div>
@@ -806,23 +806,23 @@ export default function WhatsAppPortalPage() {
                   placeholder="4–8 characters"
                   required
                   minLength={4}
-                  className="w-full px-3 py-2.5 rounded-lg bg-[#082127] border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
+                  className="min-h-[44px] w-full rounded-lg bg-[#082127] px-3 py-2.5 border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 />
                 <p className="mt-1 text-[11px] text-[#A9BFC5]">Stored encrypted. Share it with them privately.</p>
               </div>
             </div>
-            <div className="mt-5 flex justify-end gap-3">
+            <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={() => setShowAddStaff(false)}
-                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+                className="min-h-[44px] w-full rounded-lg border border-white/[0.06] bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-[#F0FCFF] transition-colors hover:bg-white/[0.08] sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={savingStaff}
-                className="px-4 py-2 bg-[#0891B2] text-white hover:bg-[#5058C8] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="min-h-[44px] w-full rounded-lg bg-[#0891B2] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0E7490] sm:w-auto disabled:opacity-50"
               >
                 {savingStaff ? "Adding…" : "Add staff"}
               </button>
@@ -833,8 +833,8 @@ export default function WhatsAppPortalPage() {
 
       {/* Reset code modal */}
       {resetCodeFor && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl p-6 max-w-sm w-full">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+          <div className="bg-[#061417] border border-white/[0.06] rounded-lg p-4 sm:p-6 max-w-sm w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
             <h3 className="text-lg font-medium text-[#F0FCFF] flex items-center gap-2">
               <KeyRound className="h-5 w-5 text-[#0891B2]" />
               Reset code
@@ -847,19 +847,19 @@ export default function WhatsAppPortalPage() {
               onChange={(e) => setNewCode(e.target.value)}
               placeholder="New code (4–8 chars)"
               autoFocus
-              className="mt-4 w-full px-3 py-2.5 rounded-lg bg-[#082127] border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
+              className="mt-4 min-h-[44px] w-full rounded-lg bg-[#082127] px-3 py-2.5 border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
             />
-            <div className="mt-4 flex justify-end gap-3">
+            <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 onClick={() => { setResetCodeFor(null); setNewCode("") }}
-                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+                className="min-h-[44px] w-full rounded-lg border border-white/[0.06] bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-[#F0FCFF] transition-colors hover:bg-white/[0.08] sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 onClick={submitResetCode}
                 disabled={newCode.trim().length < 4 || busyStaffId === resetCodeFor.id}
-                className="px-4 py-2 bg-[#0891B2] text-white hover:bg-[#5058C8] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="min-h-[44px] w-full rounded-lg bg-[#0891B2] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0E7490] sm:w-auto disabled:opacity-50"
               >
                 {busyStaffId === resetCodeFor.id ? "Saving…" : "Save code"}
               </button>
@@ -870,24 +870,24 @@ export default function WhatsAppPortalPage() {
 
       {/* Remove staff confirm */}
       {removeStaffMember && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl p-6 max-w-sm w-full">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+          <div className="bg-[#061417] border border-white/[0.06] rounded-lg p-4 sm:p-6 max-w-sm w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
             <h3 className="text-lg font-medium text-[#F0FCFF]">Remove staff access</h3>
             <p className="mt-2 text-sm text-[#A9BFC5]">
               Remove <span className="text-[#F0FCFF]">{removeStaffMember.name}</span>? They will no longer be able to log in
               over WhatsApp.
             </p>
-            <div className="mt-4 flex justify-end gap-3">
+            <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 onClick={() => setRemoveStaffMember(null)}
-                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+                className="min-h-[44px] w-full rounded-lg border border-white/[0.06] bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-[#F0FCFF] transition-colors hover:bg-white/[0.08] sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 onClick={() => deleteStaff(removeStaffMember.id)}
                 disabled={busyStaffId === removeStaffMember.id}
-                className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="min-h-[44px] w-full rounded-lg border border-red-500/30 bg-red-500/20 px-4 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/30 sm:w-auto disabled:opacity-50"
               >
                 {busyStaffId === removeStaffMember.id ? "Removing…" : "Remove"}
               </button>

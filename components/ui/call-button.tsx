@@ -22,8 +22,8 @@ export function CallButton({ phone, size = "sm" }: CallButtonProps) {
       type="button"
       className={`inline-flex items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 hover:bg-emerald-500/25 transition-colors ${
         size === "sm"
-          ? "p-1.5"
-          : "gap-2 px-3 py-2 text-sm font-medium"
+          ? "min-h-[44px] min-w-[44px] p-2"
+          : "min-h-[44px] gap-2 px-3 py-2 text-sm font-medium"
       }`}
       title={`Call ${phone}`}
       onClick={(e) => {
