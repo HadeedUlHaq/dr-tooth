@@ -313,7 +313,7 @@ export default function WhatsAppPortalPage() {
   if (fetching) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#0891B2] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -322,12 +322,12 @@ export default function WhatsAppPortalPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-[#EDEDEF]">WhatsApp Portal</h1>
-          <p className="text-sm text-[#8A8F98] mt-1">Gateway, bot, and conversations</p>
+          <h1 className="text-2xl font-semibold text-[#F0FCFF]">WhatsApp Portal</h1>
+          <p className="text-sm text-[#A9BFC5] mt-1">Gateway, bot, and conversations</p>
         </div>
         <Link
           href="/dashboard/whatsapp/connect"
-          className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-white/[0.04] border border-white/[0.08] text-[#EDEDEF] hover:bg-white/[0.08] transition-colors whitespace-nowrap"
+          className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-white/[0.04] border border-white/[0.08] text-[#F0FCFF] hover:bg-white/[0.08] transition-colors whitespace-nowrap"
         >
           <Smartphone className="h-4 w-4 mr-1.5" />
           QR / Pairing
@@ -338,7 +338,7 @@ export default function WhatsAppPortalPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#8A8F98] uppercase tracking-wide">Connection</span>
+            <span className="text-xs font-medium text-[#A9BFC5] uppercase tracking-wide">Connection</span>
             {isConnected ? (
               <CheckCircle2 className="h-5 w-5 text-emerald-400" />
             ) : (
@@ -348,7 +348,7 @@ export default function WhatsAppPortalPage() {
           <p className={`text-lg font-medium mt-2 ${isConnected ? "text-emerald-400" : isError ? "text-red-400" : "text-amber-400"}`}>
             {isConnected ? "Connected" : isError ? "Gateway unreachable" : "Not connected"}
           </p>
-          <p className="text-sm text-[#8A8F98] mt-1">
+          <p className="text-sm text-[#A9BFC5] mt-1">
             {isConnected && conn?.phoneNumber
               ? `${conn.pushName ? conn.pushName + " · " : ""}+${conn.phoneNumber}`
               : isError
@@ -359,7 +359,7 @@ export default function WhatsAppPortalPage() {
             <button
               onClick={reconnect}
               disabled={reconnecting}
-              className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-white/[0.04] border border-white/[0.08] text-[#EDEDEF] hover:bg-white/[0.08] transition-colors disabled:opacity-50"
+              className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-white/[0.04] border border-white/[0.08] text-[#F0FCFF] hover:bg-white/[0.08] transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`h-4 w-4 mr-1.5 ${reconnecting ? "animate-spin" : ""}`} />
               Reconnect
@@ -367,7 +367,7 @@ export default function WhatsAppPortalPage() {
             {!isConnected && (
               <Link
                 href="/dashboard/whatsapp/connect"
-                className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 text-[#5E6AD2] hover:bg-[#5E6AD2]/20 transition-colors"
+                className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm bg-[#0891B2]/10 border border-[#0891B2]/20 text-[#0891B2] hover:bg-[#0891B2]/20 transition-colors"
               >
                 <Smartphone className="h-4 w-4 mr-1.5" />
                 Show QR
@@ -378,13 +378,13 @@ export default function WhatsAppPortalPage() {
 
         <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#8A8F98] uppercase tracking-wide">AI Bot</span>
+            <span className="text-xs font-medium text-[#A9BFC5] uppercase tracking-wide">AI Bot</span>
             <Power className={`h-5 w-5 ${stats?.globalPaused ? "text-amber-400" : "text-emerald-400"}`} />
           </div>
           <p className={`text-lg font-medium mt-2 ${stats?.globalPaused ? "text-amber-400" : "text-emerald-400"}`}>
             {stats?.globalPaused ? "Paused" : "Active"}
           </p>
-          <p className="text-sm text-[#8A8F98] mt-1">
+          <p className="text-sm text-[#A9BFC5] mt-1">
             {stats?.globalPaused
               ? "Auto-replies are off — staff handle chats manually."
               : "Auto-replying to incoming messages."}
@@ -407,10 +407,10 @@ export default function WhatsAppPortalPage() {
       {/* Appointment reminders */}
       <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-[#8A8F98] uppercase tracking-wide">Appointment Reminders</span>
-          <Bell className="h-5 w-5 text-[#5E6AD2]" />
+          <span className="text-xs font-medium text-[#A9BFC5] uppercase tracking-wide">Appointment Reminders</span>
+          <Bell className="h-5 w-5 text-[#0891B2]" />
         </div>
-        <p className="text-sm text-[#8A8F98] mt-2">
+        <p className="text-sm text-[#A9BFC5] mt-2">
           Patients automatically get a WhatsApp reminder before their appointment (Pakistan time). Turn each on or off below.
         </p>
         <div className="mt-4 space-y-2">
@@ -422,14 +422,14 @@ export default function WhatsAppPortalPage() {
               key={row.k}
               className="flex items-center justify-between rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2.5"
             >
-              <span className="text-sm text-[#EDEDEF]">{row.label}</span>
+              <span className="text-sm text-[#F0FCFF]">{row.label}</span>
               <button
                 onClick={() => toggleReminder(row.k)}
                 disabled={!reminders || togglingReminder === row.k}
                 className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
                   row.on
                     ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
-                    : "bg-white/[0.05] border border-white/[0.08] text-[#8A8F98] hover:bg-white/[0.08]"
+                    : "bg-white/[0.05] border border-white/[0.08] text-[#A9BFC5] hover:bg-white/[0.08]"
                 }`}
               >
                 {row.on ? "On" : "Off"}
@@ -437,7 +437,7 @@ export default function WhatsAppPortalPage() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-[#8A8F98] mt-3">
+        <p className="text-xs text-[#A9BFC5] mt-3">
           {!reminders
             ? "Loading…"
             : reminders.dayBefore && reminders.hourBefore
@@ -454,17 +454,17 @@ export default function WhatsAppPortalPage() {
       {canManageStaff && (
         <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#8A8F98] uppercase tracking-wide">Staff WhatsApp Access</span>
-            <ShieldCheck className="h-5 w-5 text-[#5E6AD2]" />
+            <span className="text-xs font-medium text-[#A9BFC5] uppercase tracking-wide">Staff WhatsApp Access</span>
+            <ShieldCheck className="h-5 w-5 text-[#0891B2]" />
           </div>
-          <p className="text-sm text-[#8A8F98] mt-2">
+          <p className="text-sm text-[#A9BFC5] mt-2">
             Doctors/staff can run the clinic over WhatsApp only when their number is registered here{" "}
-            <span className="text-[#EDEDEF]">and</span> they send their own code from that number (double-verified).
+            <span className="text-[#F0FCFF]">and</span> they send their own code from that number (double-verified).
           </p>
 
           <div className="mt-4 space-y-2">
             {staff.length === 0 ? (
-              <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-4 text-center text-sm text-[#8A8F98]">
+              <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-4 text-center text-sm text-[#A9BFC5]">
                 No staff registered yet. Add a doctor or receptionist to let them log in over WhatsApp.
               </div>
             ) : (
@@ -475,28 +475,28 @@ export default function WhatsAppPortalPage() {
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-[#EDEDEF] truncate">{m.name}</span>
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#5E6AD2]/10 text-[#5E6AD2] border border-[#5E6AD2]/20 capitalize">
+                      <span className="text-sm font-medium text-[#F0FCFF] truncate">{m.name}</span>
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#0891B2]/10 text-[#0891B2] border border-[#0891B2]/20 capitalize">
                         {m.role}
                       </span>
                       <span
                         className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${
                           m.active
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                            : "bg-white/[0.05] text-[#8A8F98] border-white/[0.08]"
+                            : "bg-white/[0.05] text-[#A9BFC5] border-white/[0.08]"
                         }`}
                       >
                         {m.active ? "Active" : "Disabled"}
                       </span>
                     </div>
-                    <div className="text-[11px] text-[#8A8F98] mt-0.5">+{String(m.phone).replace(/^\+/, "")} · code set 🔒</div>
+                    <div className="text-[11px] text-[#A9BFC5] mt-0.5">+{String(m.phone).replace(/^\+/, "")} · code set 🔒</div>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
                       onClick={() => { setResetCodeFor(m); setNewCode("") }}
                       disabled={busyStaffId === m.id}
                       title="Reset code"
-                      className="inline-flex items-center justify-center p-1.5 rounded-md text-[#8A8F98] hover:text-[#5E6AD2] hover:bg-[#5E6AD2]/10 transition-colors disabled:opacity-50"
+                      className="inline-flex items-center justify-center p-1.5 rounded-md text-[#A9BFC5] hover:text-[#0891B2] hover:bg-[#0891B2]/10 transition-colors disabled:opacity-50"
                     >
                       <KeyRound className="h-4 w-4" />
                     </button>
@@ -506,7 +506,7 @@ export default function WhatsAppPortalPage() {
                       title={m.active ? "Deactivate" : "Activate"}
                       className={`inline-flex items-center justify-center p-1.5 rounded-md transition-colors disabled:opacity-50 ${
                         m.active
-                          ? "text-[#8A8F98] hover:text-amber-400 hover:bg-amber-500/10"
+                          ? "text-[#A9BFC5] hover:text-amber-400 hover:bg-amber-500/10"
                           : "text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20"
                       }`}
                     >
@@ -516,7 +516,7 @@ export default function WhatsAppPortalPage() {
                       onClick={() => setRemoveStaffMember(m)}
                       disabled={busyStaffId === m.id}
                       title="Remove"
-                      className="inline-flex items-center justify-center p-1.5 rounded-md text-[#8A8F98] hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                      className="inline-flex items-center justify-center p-1.5 rounded-md text-[#A9BFC5] hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -528,7 +528,7 @@ export default function WhatsAppPortalPage() {
 
           <button
             onClick={() => { setShowAddStaff(true); setStaffError(null); setStaffForm({ name: "", role: "doctor", phone: "", code: "" }) }}
-            className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm mt-4 bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 text-[#5E6AD2] hover:bg-[#5E6AD2]/20 transition-colors"
+            className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm mt-4 bg-[#0891B2]/10 border border-[#0891B2]/20 text-[#0891B2] hover:bg-[#0891B2]/20 transition-colors"
           >
             <UserPlus className="h-4 w-4 mr-1.5" />
             Add staff
@@ -550,24 +550,24 @@ export default function WhatsAppPortalPage() {
 
       {/* Manual send */}
       <form onSubmit={sendManual} className="rounded-xl border border-white/[0.06] bg-[#111113] p-5 space-y-3">
-        <h2 className="text-sm font-medium text-[#EDEDEF]">Send a message</h2>
+        <h2 className="text-sm font-medium text-[#F0FCFF]">Send a message</h2>
         <div className="flex flex-col sm:flex-row gap-2">
           <input
             value={toPhone}
             onChange={(e) => setToPhone(e.target.value)}
             placeholder="Phone e.g. 923001234567"
-            className="sm:w-56 px-3 py-2 rounded-lg bg-[#0a0a0c] border border-white/[0.08] text-sm text-[#EDEDEF] placeholder-[#8A8F98] focus:outline-none focus:border-[#5E6AD2]/50"
+            className="sm:w-56 px-3 py-2 rounded-lg bg-[#061417] border border-white/[0.08] text-sm text-[#F0FCFF] placeholder-[#A9BFC5] focus:outline-none focus:border-[#0891B2]/50"
           />
           <input
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
             placeholder="Message"
-            className="flex-1 px-3 py-2 rounded-lg bg-[#0a0a0c] border border-white/[0.08] text-sm text-[#EDEDEF] placeholder-[#8A8F98] focus:outline-none focus:border-[#5E6AD2]/50"
+            className="flex-1 px-3 py-2 rounded-lg bg-[#061417] border border-white/[0.08] text-sm text-[#F0FCFF] placeholder-[#A9BFC5] focus:outline-none focus:border-[#0891B2]/50"
           />
           <button
             type="submit"
             disabled={sending || !toPhone.trim() || !msg.trim() || !isConnected}
-            className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-[#5E6AD2] text-white hover:bg-[#5058C8] transition-colors disabled:opacity-50"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-[#0891B2] text-white hover:bg-[#5058C8] transition-colors disabled:opacity-50"
           >
             <Send className="h-4 w-4 mr-1.5" />
             {sending ? "Sending…" : "Send"}
@@ -581,12 +581,12 @@ export default function WhatsAppPortalPage() {
 
       {/* Conversations */}
       <div>
-        <h2 className="text-sm font-medium text-[#EDEDEF] mb-3">
-          Conversations <span className="text-[#8A8F98]">({sessions.length})</span>
+        <h2 className="text-sm font-medium text-[#F0FCFF] mb-3">
+          Conversations <span className="text-[#A9BFC5]">({sessions.length})</span>
         </h2>
         {sessions.length === 0 ? (
           <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-12 text-center">
-            <p className="text-[#8A8F98] text-sm">No conversations yet.</p>
+            <p className="text-[#A9BFC5] text-sm">No conversations yet.</p>
           </div>
         ) : (
           <div className="rounded-xl border border-white/[0.06] bg-[#111113] overflow-hidden">
@@ -594,11 +594,11 @@ export default function WhatsAppPortalPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-                  <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Customer</th>
-                  <th className="text-left px-4 py-3 text-[#8A8F98] font-medium hidden md:table-cell">Phase</th>
-                  <th className="text-left px-4 py-3 text-[#8A8F98] font-medium">Bot</th>
-                  <th className="text-center px-4 py-3 text-[#8A8F98] font-medium hidden sm:table-cell">Msgs</th>
-                  <th className="text-left px-4 py-3 text-[#8A8F98] font-medium hidden md:table-cell">Last Active</th>
+                  <th className="text-left px-4 py-3 text-[#A9BFC5] font-medium">Customer</th>
+                  <th className="text-left px-4 py-3 text-[#A9BFC5] font-medium hidden md:table-cell">Phase</th>
+                  <th className="text-left px-4 py-3 text-[#A9BFC5] font-medium">Bot</th>
+                  <th className="text-center px-4 py-3 text-[#A9BFC5] font-medium hidden sm:table-cell">Msgs</th>
+                  <th className="text-left px-4 py-3 text-[#A9BFC5] font-medium hidden md:table-cell">Last Active</th>
                   <th className="px-4 py-3 w-px"></th>
                 </tr>
               </thead>
@@ -626,14 +626,14 @@ export default function WhatsAppPortalPage() {
                                 : "bg-emerald-400"
                           }`}
                         />
-                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#5E6AD2]/15 border border-[#5E6AD2]/20 flex items-center justify-center text-xs font-medium text-[#5E6AD2]">
+                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#0891B2]/15 border border-[#0891B2]/20 flex items-center justify-center text-xs font-medium text-[#0891B2]">
                           {(s.patientName ?? "G").charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
                           <span className="inline-flex items-center gap-1.5">
                             <Link
                               href={`/dashboard/whatsapp/${encodeURIComponent(s.phoneNumber)}`}
-                              className="text-[#EDEDEF] hover:text-[#5E6AD2] transition-colors font-medium"
+                              className="text-[#F0FCFF] hover:text-[#0891B2] transition-colors font-medium"
                             >
                               {s.patientName ?? "Guest"}
                             </Link>
@@ -646,12 +646,12 @@ export default function WhatsAppPortalPage() {
                               </span>
                             )}
                           </span>
-                          <div className="text-[10px] text-[#8A8F98]">+{s.realPhone || s.phoneNumber}</div>
+                          <div className="text-[10px] text-[#A9BFC5]">+{s.realPhone || s.phoneNumber}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-white/[0.06] text-[#8A8F98]">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-white/[0.06] text-[#A9BFC5]">
                         {phaseLabel[s.phase] ?? s.phase}
                       </span>
                     </td>
@@ -662,8 +662,8 @@ export default function WhatsAppPortalPage() {
                         <span className="text-xs text-emerald-400">Auto</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-center text-[#8A8F98] hidden sm:table-cell">{s.messages.length}</td>
-                    <td className="px-4 py-3 text-[#8A8F98] whitespace-nowrap hidden md:table-cell">{formatTime(s.lastActiveAt)}</td>
+                    <td className="px-4 py-3 text-center text-[#A9BFC5] hidden sm:table-cell">{s.messages.length}</td>
+                    <td className="px-4 py-3 text-[#A9BFC5] whitespace-nowrap hidden md:table-cell">{formatTime(s.lastActiveAt)}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
@@ -673,14 +673,14 @@ export default function WhatsAppPortalPage() {
                           className={`inline-flex items-center justify-center p-1.5 rounded-md transition-colors disabled:opacity-50 ${
                             s.blocked
                               ? "text-red-400 bg-red-500/10 hover:bg-red-500/20"
-                              : "text-[#8A8F98] hover:text-amber-400 hover:bg-amber-500/10"
+                              : "text-[#A9BFC5] hover:text-amber-400 hover:bg-amber-500/10"
                           }`}
                         >
                           <Ban className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => setConfirmDelete({ phone: s.phoneNumber, name: s.patientName ?? "Guest" })}
-                          className="inline-flex items-center justify-center p-1.5 rounded-md text-[#8A8F98] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          className="inline-flex items-center justify-center p-1.5 rounded-md text-[#A9BFC5] hover:text-red-400 hover:bg-red-500/10 transition-colors"
                           title="Delete conversation"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -694,21 +694,21 @@ export default function WhatsAppPortalPage() {
             </div>
             {pageCount > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06]">
-                <span className="text-xs text-[#8A8F98]">
+                <span className="text-xs text-[#A9BFC5]">
                   Page {safePage + 1} of {pageCount}
                 </span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setPage((p) => Math.max(0, p - 1))}
                     disabled={safePage === 0}
-                    className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs bg-white/[0.04] border border-white/[0.08] text-[#EDEDEF] hover:bg-white/[0.08] disabled:opacity-40 transition-colors"
+                    className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs bg-white/[0.04] border border-white/[0.08] text-[#F0FCFF] hover:bg-white/[0.08] disabled:opacity-40 transition-colors"
                   >
                     <ChevronLeft className="h-4 w-4 mr-0.5" /> Prev
                   </button>
                   <button
                     onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
                     disabled={safePage >= pageCount - 1}
-                    className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs bg-white/[0.04] border border-white/[0.08] text-[#EDEDEF] hover:bg-white/[0.08] disabled:opacity-40 transition-colors"
+                    className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs bg-white/[0.04] border border-white/[0.08] text-[#F0FCFF] hover:bg-white/[0.08] disabled:opacity-40 transition-colors"
                   >
                     Next <ChevronRight className="h-4 w-4 ml-0.5" />
                   </button>
@@ -722,10 +722,10 @@ export default function WhatsAppPortalPage() {
       {/* Delete conversation confirm */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium text-[#EDEDEF]">Delete conversation</h3>
-            <p className="mt-2 text-sm text-[#8A8F98]">
-              Delete the conversation with <span className="text-[#EDEDEF]">{confirmDelete.name}</span> (+
+          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium text-[#F0FCFF]">Delete conversation</h3>
+            <p className="mt-2 text-sm text-[#A9BFC5]">
+              Delete the conversation with <span className="text-[#F0FCFF]">{confirmDelete.name}</span> (+
               {confirmDelete.phone})? This removes the stored chat history. If they message again, a new
               conversation starts.
             </p>
@@ -733,7 +733,7 @@ export default function WhatsAppPortalPage() {
               <button
                 onClick={() => setConfirmDelete(null)}
                 disabled={deletingPhone === confirmDelete.phone}
-                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -752,13 +752,13 @@ export default function WhatsAppPortalPage() {
       {/* Add staff modal */}
       {showAddStaff && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <form onSubmit={addStaff} className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium text-[#EDEDEF] flex items-center gap-2">
-              <UserPlus className="h-5 w-5 text-[#5E6AD2]" />
+          <form onSubmit={addStaff} className="bg-[#061417] border border-white/[0.06] rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium text-[#F0FCFF] flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-[#0891B2]" />
               Add staff WhatsApp access
             </h3>
-            <p className="mt-1 text-sm text-[#8A8F98]">
-              They log in by sending <span className="text-[#EDEDEF]">staff &lt;code&gt;</span> from this exact number.
+            <p className="mt-1 text-sm text-[#A9BFC5]">
+              They log in by sending <span className="text-[#F0FCFF]">staff &lt;code&gt;</span> from this exact number.
             </p>
             {staffError && (
               <div className="mt-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg px-3 py-2 text-sm">
@@ -767,62 +767,62 @@ export default function WhatsAppPortalPage() {
             )}
             <div className="mt-4 space-y-3">
               <div>
-                <label className="block text-xs font-medium text-[#8A8F98] mb-1">Name</label>
+                <label className="block text-xs font-medium text-[#A9BFC5] mb-1">Name</label>
                 <input
                   value={staffForm.name}
                   onChange={(e) => setStaffForm((f) => ({ ...f, name: e.target.value }))}
                   placeholder="Dr Ali"
                   required
-                  className="w-full px-3 py-2.5 rounded-lg bg-[#0F0F12] border border-white/10 text-sm text-[#EDEDEF] placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                  className="w-full px-3 py-2.5 rounded-lg bg-[#082127] border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#8A8F98] mb-1">Role</label>
+                <label className="block text-xs font-medium text-[#A9BFC5] mb-1">Role</label>
                 <select
                   value={staffForm.role}
                   onChange={(e) => setStaffForm((f) => ({ ...f, role: e.target.value }))}
-                  className="w-full px-3 py-2.5 rounded-lg bg-[#0F0F12] border border-white/10 text-sm text-[#EDEDEF] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                  className="w-full px-3 py-2.5 rounded-lg bg-[#082127] border border-white/10 text-sm text-[#F0FCFF] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 >
                   <option value="doctor">Doctor</option>
                   <option value="receptionist">Receptionist</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#8A8F98] mb-1">WhatsApp number</label>
+                <label className="block text-xs font-medium text-[#A9BFC5] mb-1">WhatsApp number</label>
                 <input
                   value={staffForm.phone}
                   onChange={(e) => setStaffForm((f) => ({ ...f, phone: e.target.value }))}
                   placeholder="+92 300 1234567"
                   required
-                  className="w-full px-3 py-2.5 rounded-lg bg-[#0F0F12] border border-white/10 text-sm text-[#EDEDEF] placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                  className="w-full px-3 py-2.5 rounded-lg bg-[#082127] border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 />
-                <p className="mt-1 text-[11px] text-[#8A8F98]">Include the country code. This must be the number they message from.</p>
+                <p className="mt-1 text-[11px] text-[#A9BFC5]">Include the country code. This must be the number they message from.</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#8A8F98] mb-1">Login code</label>
+                <label className="block text-xs font-medium text-[#A9BFC5] mb-1">Login code</label>
                 <input
                   value={staffForm.code}
                   onChange={(e) => setStaffForm((f) => ({ ...f, code: e.target.value }))}
                   placeholder="4–8 characters"
                   required
                   minLength={4}
-                  className="w-full px-3 py-2.5 rounded-lg bg-[#0F0F12] border border-white/10 text-sm text-[#EDEDEF] placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                  className="w-full px-3 py-2.5 rounded-lg bg-[#082127] border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 />
-                <p className="mt-1 text-[11px] text-[#8A8F98]">Stored encrypted. Share it with them privately.</p>
+                <p className="mt-1 text-[11px] text-[#A9BFC5]">Stored encrypted. Share it with them privately.</p>
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setShowAddStaff(false)}
-                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={savingStaff}
-                className="px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#5058C8] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-[#0891B2] text-white hover:bg-[#5058C8] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
                 {savingStaff ? "Adding…" : "Add staff"}
               </button>
@@ -834,32 +834,32 @@ export default function WhatsAppPortalPage() {
       {/* Reset code modal */}
       {resetCodeFor && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-medium text-[#EDEDEF] flex items-center gap-2">
-              <KeyRound className="h-5 w-5 text-[#5E6AD2]" />
+          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-medium text-[#F0FCFF] flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-[#0891B2]" />
               Reset code
             </h3>
-            <p className="mt-2 text-sm text-[#8A8F98]">
-              Set a new login code for <span className="text-[#EDEDEF]">{resetCodeFor.name}</span>. Their old code stops working.
+            <p className="mt-2 text-sm text-[#A9BFC5]">
+              Set a new login code for <span className="text-[#F0FCFF]">{resetCodeFor.name}</span>. Their old code stops working.
             </p>
             <input
               value={newCode}
               onChange={(e) => setNewCode(e.target.value)}
               placeholder="New code (4–8 chars)"
               autoFocus
-              className="mt-4 w-full px-3 py-2.5 rounded-lg bg-[#0F0F12] border border-white/10 text-sm text-[#EDEDEF] placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+              className="mt-4 w-full px-3 py-2.5 rounded-lg bg-[#082127] border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
             />
             <div className="mt-4 flex justify-end gap-3">
               <button
                 onClick={() => { setResetCodeFor(null); setNewCode("") }}
-                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={submitResetCode}
                 disabled={newCode.trim().length < 4 || busyStaffId === resetCodeFor.id}
-                className="px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#5058C8] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-[#0891B2] text-white hover:bg-[#5058C8] rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
                 {busyStaffId === resetCodeFor.id ? "Saving…" : "Save code"}
               </button>
@@ -871,16 +871,16 @@ export default function WhatsAppPortalPage() {
       {/* Remove staff confirm */}
       {removeStaffMember && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-medium text-[#EDEDEF]">Remove staff access</h3>
-            <p className="mt-2 text-sm text-[#8A8F98]">
-              Remove <span className="text-[#EDEDEF]">{removeStaffMember.name}</span>? They will no longer be able to log in
+          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-medium text-[#F0FCFF]">Remove staff access</h3>
+            <p className="mt-2 text-sm text-[#A9BFC5]">
+              Remove <span className="text-[#F0FCFF]">{removeStaffMember.name}</span>? They will no longer be able to log in
               over WhatsApp.
             </p>
             <div className="mt-4 flex justify-end gap-3">
               <button
                 onClick={() => setRemoveStaffMember(null)}
-                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -902,11 +902,11 @@ export default function WhatsAppPortalPage() {
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-4">
-      <div className="flex items-center gap-1.5 text-[#8A8F98]">
+      <div className="flex items-center gap-1.5 text-[#A9BFC5]">
         {icon}
         <span className="text-xs">{label}</span>
       </div>
-      <p className="text-2xl font-semibold text-[#EDEDEF] mt-1.5">{value}</p>
+      <p className="text-2xl font-semibold text-[#F0FCFF] mt-1.5">{value}</p>
     </div>
   )
 }

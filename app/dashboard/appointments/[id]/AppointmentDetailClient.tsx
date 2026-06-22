@@ -387,7 +387,7 @@ export default function AppointmentDetailClient() {
 
   if (!appointment) {
     return (
-      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)]">
+      <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)]">
         <EmptyState
           icon={CalendarX}
           title="Appointment not found"
@@ -451,13 +451,13 @@ export default function AppointmentDetailClient() {
         {null}
       </Modal>
 
-      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+      <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
         {isEditing ? (
           <div className="px-4 py-5 sm:p-6">
             <form onSubmit={handleUpdate} className="space-y-6">
               <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 <div className="sm:col-span-3">
-                  <label htmlFor="patientName" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="patientName" className="block text-sm font-medium text-[#A9BFC5]">
                     Patient Name *
                   </label>
                   <div className="mt-1 relative">
@@ -469,14 +469,14 @@ export default function AppointmentDetailClient() {
                       id="patientName"
                       value={patientName}
                       onChange={(e) => setPatientName(e.target.value)}
-                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="patientPhone" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="patientPhone" className="block text-sm font-medium text-[#A9BFC5]">
                     Patient Phone
                   </label>
                   <div className="mt-1">
@@ -489,7 +489,7 @@ export default function AppointmentDetailClient() {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="date" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="date" className="block text-sm font-medium text-[#A9BFC5]">
                     Date *
                   </label>
                   <div className="mt-1">
@@ -502,7 +502,7 @@ export default function AppointmentDetailClient() {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="time" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="time" className="block text-sm font-medium text-[#A9BFC5]">
                     Time
                   </label>
                   <div className="mt-1">
@@ -519,9 +519,9 @@ export default function AppointmentDetailClient() {
                         id="onCall"
                         checked={isOnCall}
                         onChange={(e) => setIsOnCall(e.target.checked)}
-                        className="h-4 w-4 text-[#5E6AD2] focus:ring-[#5E6AD2] border-white/10 rounded bg-[#0F0F12]"
+                        className="h-4 w-4 text-[#0891B2] focus:ring-[#0891B2] border-white/10 rounded bg-[#082127]"
                       />
-                      <label htmlFor="onCall" className="ml-2 block text-sm text-[#EDEDEF]">
+                      <label htmlFor="onCall" className="ml-2 block text-sm text-[#F0FCFF]">
                         On Call (No specific time)
                       </label>
                     </div>
@@ -529,7 +529,7 @@ export default function AppointmentDetailClient() {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="status" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="status" className="block text-sm font-medium text-[#A9BFC5]">
                     Status
                   </label>
                   <div className="mt-1 relative">
@@ -540,7 +540,7 @@ export default function AppointmentDetailClient() {
                       id="status"
                       value={status}
                       onChange={(e) => setStatus(e.target.value as AppointmentStatus)}
-                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#082127] border border-white/10 rounded-lg text-gray-100 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                     >
                       <option value="scheduled">Scheduled</option>
                       <option value="confirmed">Confirmed</option>
@@ -552,7 +552,7 @@ export default function AppointmentDetailClient() {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="doctor" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="doctor" className="block text-sm font-medium text-[#A9BFC5]">
                     Assign Doctor
                   </label>
                   <div className="mt-1 relative">
@@ -563,7 +563,7 @@ export default function AppointmentDetailClient() {
                       id="doctor"
                       value={doctorId}
                       onChange={(e) => setDoctorId(e.target.value)}
-                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#082127] border border-white/10 rounded-lg text-gray-100 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                       disabled={userData?.role === "doctor"}
                     >
                       <option value="">Select a doctor</option>
@@ -577,7 +577,7 @@ export default function AppointmentDetailClient() {
                 </div>
 
                 <div className="sm:col-span-6">
-                  <label htmlFor="notes" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="notes" className="block text-sm font-medium text-[#A9BFC5]">
                     Notes
                   </label>
                   <div className="mt-1 relative">
@@ -589,7 +589,7 @@ export default function AppointmentDetailClient() {
                       rows={3}
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                     />
                   </div>
                 </div>
@@ -599,14 +599,14 @@ export default function AppointmentDetailClient() {
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2 px-4 text-sm font-medium transition-colors"
+                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2 px-4 text-sm font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updating}
-                  className="ml-3 inline-flex justify-center py-2 px-4 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50"
+                  className="ml-3 inline-flex justify-center py-2 px-4 bg-[#0891B2] text-white hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50"
                 >
                   {updating ? "Saving..." : "Save Changes"}
                 </button>
@@ -617,20 +617,20 @@ export default function AppointmentDetailClient() {
           <div className="px-4 py-5 sm:p-6">
             <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
               <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
-                  <UserIcon className="h-5 w-5 mr-2 text-[#5E6AD2]" />
+                <h3 className="text-lg font-medium leading-6 text-[#F0FCFF] flex items-center">
+                  <UserIcon className="h-5 w-5 mr-2 text-[#0891B2]" />
                   Patient Information
                 </h3>
                 <div className="mt-5 border-t border-white/[0.06]">
                   <dl className="divide-y divide-white/[0.06]">
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                      <dt className="text-sm font-medium text-[#8A8F98]">Name</dt>
-                      <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">{appointment.patientName}</dd>
+                      <dt className="text-sm font-medium text-[#A9BFC5]">Name</dt>
+                      <dd className="mt-1 text-sm text-[#F0FCFF] sm:mt-0 sm:col-span-2">{appointment.patientName}</dd>
                     </div>
                     {appointment.patientPhone && (
                       <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                        <dt className="text-sm font-medium text-[#8A8F98]">Phone</dt>
-                        <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">
+                        <dt className="text-sm font-medium text-[#A9BFC5]">Phone</dt>
+                        <dd className="mt-1 text-sm text-[#F0FCFF] sm:mt-0 sm:col-span-2">
                           <div className="flex items-center gap-3">
                             <span>{appointment.patientPhone}</span>
                             <CallButton phone={appointment.patientPhone} size="md" />
@@ -639,10 +639,10 @@ export default function AppointmentDetailClient() {
                       </div>
                     )}
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                      <dt className="text-sm font-medium text-[#8A8F98]">Directory</dt>
+                      <dt className="text-sm font-medium text-[#A9BFC5]">Directory</dt>
                       <dd className="mt-1 sm:mt-0 sm:col-span-2">
                         {checkingPatient ? (
-                          <span className="text-xs text-[#8A8F98]">Checking...</span>
+                          <span className="text-xs text-[#A9BFC5]">Checking...</span>
                         ) : registeredPatient ? (
                           <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400">
                             <BadgeCheck className="h-3.5 w-3.5" />
@@ -652,7 +652,7 @@ export default function AppointmentDetailClient() {
                           <button
                             type="button"
                             onClick={handleShowRegisterForm}
-                            className="inline-flex items-center gap-1.5 text-xs text-[#5E6AD2] hover:text-[#6872D9] transition-colors"
+                            className="inline-flex items-center gap-1.5 text-xs text-[#0891B2] hover:text-[#0E7490] transition-colors"
                           >
                             <UserPlus className="h-3.5 w-3.5" />
                             Register this patient
@@ -665,21 +665,21 @@ export default function AppointmentDetailClient() {
               </div>
 
               <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
-                  <Calendar className="h-5 w-5 mr-2 text-[#5E6AD2]" />
+                <h3 className="text-lg font-medium leading-6 text-[#F0FCFF] flex items-center">
+                  <Calendar className="h-5 w-5 mr-2 text-[#0891B2]" />
                   Appointment Details
                 </h3>
                 <div className="mt-5 border-t border-white/[0.06]">
                   <dl className="divide-y divide-white/[0.06]">
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                      <dt className="text-sm font-medium text-[#8A8F98]">Date</dt>
-                      <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">
+                      <dt className="text-sm font-medium text-[#A9BFC5]">Date</dt>
+                      <dd className="mt-1 text-sm text-[#F0FCFF] sm:mt-0 sm:col-span-2">
                         {formatDate(appointment.date)}
                       </dd>
                     </div>
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                      <dt className="text-sm font-medium text-[#8A8F98]">Time</dt>
-                      <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">
+                      <dt className="text-sm font-medium text-[#A9BFC5]">Time</dt>
+                      <dd className="mt-1 text-sm text-[#F0FCFF] sm:mt-0 sm:col-span-2">
                         <div className="flex items-center gap-2 flex-wrap">
                           {formatTime(appointment.time)}
                           {appointment.isLate && appointment.originalTime && (appointment.status === "scheduled" || appointment.status === "confirmed") && (
@@ -699,31 +699,31 @@ export default function AppointmentDetailClient() {
                     </div>
                     {appointment.isLate && appointment.delayReason && (appointment.status === "scheduled" || appointment.status === "confirmed") && (
                       <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                        <dt className="text-sm font-medium text-[#8A8F98]">Delay Reason</dt>
+                        <dt className="text-sm font-medium text-[#A9BFC5]">Delay Reason</dt>
                         <dd className="mt-1 text-sm text-orange-400 sm:mt-0 sm:col-span-2">
                           {appointment.delayReason}
                         </dd>
                       </div>
                     )}
                     <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                      <dt className="text-sm font-medium text-[#8A8F98]">Status</dt>
+                      <dt className="text-sm font-medium text-[#A9BFC5]">Status</dt>
                       <dd className="mt-1 sm:mt-0 sm:col-span-2">
                         <StatusBadge status={appointment.status} />
                       </dd>
                     </div>
                     {appointment.doctorName && (
                       <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                        <dt className="text-sm font-medium text-[#8A8F98]">Doctor</dt>
-                        <dd className="mt-1 text-sm text-[#EDEDEF] sm:mt-0 sm:col-span-2">
+                        <dt className="text-sm font-medium text-[#A9BFC5]">Doctor</dt>
+                        <dd className="mt-1 text-sm text-[#F0FCFF] sm:mt-0 sm:col-span-2">
                           Dr. {appointment.doctorName}
                         </dd>
                       </div>
                     )}
                     {appointment.isFollowUp && (
                       <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                        <dt className="text-sm font-medium text-[#8A8F98]">Type</dt>
+                        <dt className="text-sm font-medium text-[#A9BFC5]">Type</dt>
                         <dd className="mt-1 text-sm sm:mt-0 sm:col-span-2">
-                          <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-[#5E6AD2]/15 text-[#5E6AD2] border border-[#5E6AD2]/30">
+                          <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-[#0891B2]/15 text-[#0891B2] border border-[#0891B2]/30">
                             Follow-up Appointment
                           </span>
                         </dd>
@@ -735,12 +735,12 @@ export default function AppointmentDetailClient() {
 
               {appointment.notes && (
                 <div className="sm:col-span-2 bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-                  <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
-                    <FileText className="h-5 w-5 mr-2 text-[#5E6AD2]" />
+                  <h3 className="text-lg font-medium leading-6 text-[#F0FCFF] flex items-center">
+                    <FileText className="h-5 w-5 mr-2 text-[#0891B2]" />
                     Notes
                   </h3>
                   <div className="mt-5 border-t border-white/[0.06] py-4">
-                    <p className="text-sm text-[#EDEDEF] whitespace-pre-line">{appointment.notes}</p>
+                    <p className="text-sm text-[#F0FCFF] whitespace-pre-line">{appointment.notes}</p>
                   </div>
                 </div>
               )}
@@ -748,70 +748,70 @@ export default function AppointmentDetailClient() {
 
             {showRegisterForm && !registeredPatient && (
               <div ref={registerFormRef} className="mt-6 border-t border-white/[0.06] pt-6">
-                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
-                  <UserPlus className="h-5 w-5 mr-2 text-[#5E6AD2]" />
+                <h3 className="text-lg font-medium leading-6 text-[#F0FCFF] flex items-center">
+                  <UserPlus className="h-5 w-5 mr-2 text-[#0891B2]" />
                   Register Patient to Directory
                 </h3>
-                <p className="mt-1 text-sm text-[#8A8F98]">
-                  Add <strong className="text-[#EDEDEF]">{appointment.patientName}</strong> to the patient directory
+                <p className="mt-1 text-sm text-[#A9BFC5]">
+                  Add <strong className="text-[#F0FCFF]">{appointment.patientName}</strong> to the patient directory
                 </p>
                 <form onSubmit={handleRegisterPatient} className="mt-4 space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium text-[#8A8F98]">Name</label>
+                      <label className="block text-sm font-medium text-[#A9BFC5]">Name</label>
                       <div className="mt-1">
                         <input
                           type="text"
                           value={appointment.patientName}
                           disabled
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-400 block w-full text-sm px-3 py-2.5 min-h-[44px] opacity-60"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-400 block w-full text-sm px-3 py-2.5 min-h-[44px] opacity-60"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[#8A8F98]">Phone</label>
+                      <label className="block text-sm font-medium text-[#A9BFC5]">Phone</label>
                       <div className="mt-1">
                         <input
                           type="text"
                           value={appointment.patientPhone || ""}
                           disabled
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-400 block w-full text-sm px-3 py-2.5 min-h-[44px] opacity-60"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-400 block w-full text-sm px-3 py-2.5 min-h-[44px] opacity-60"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[#8A8F98]">Treatment Required</label>
+                      <label className="block text-sm font-medium text-[#A9BFC5]">Treatment Required</label>
                       <div className="mt-1">
                         <input
                           ref={registerTreatmentInputRef}
                           type="text"
                           value={registerTreatment}
                           onChange={(e) => setRegisterTreatment(e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
                           placeholder="e.g. Consultation, Root Canal"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[#8A8F98]">Address</label>
+                      <label className="block text-sm font-medium text-[#A9BFC5]">Address</label>
                       <div className="mt-1">
                         <input
                           type="text"
                           value={registerAddress}
                           onChange={(e) => setRegisterAddress(e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
                           placeholder="Patient address"
                         />
                       </div>
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium text-[#8A8F98]">Notes</label>
+                      <label className="block text-sm font-medium text-[#A9BFC5]">Notes</label>
                       <div className="mt-1">
                         <textarea
                           rows={2}
                           value={registerNotes}
                           onChange={(e) => setRegisterNotes(e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
                           placeholder="Additional notes about the patient"
                         />
                       </div>
@@ -821,14 +821,14 @@ export default function AppointmentDetailClient() {
                     <button
                       type="button"
                       onClick={() => setShowRegisterForm(false)}
-                      className="px-4 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors min-h-[44px]"
+                      className="px-4 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors min-h-[44px]"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={registering}
-                      className="inline-flex items-center justify-center px-4 py-2.5 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50 min-h-[44px]"
+                      className="inline-flex items-center justify-center px-4 py-2.5 bg-[#0891B2] text-white hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50 min-h-[44px]"
                     >
                       {registering ? "Registering..." : "Register Patient"}
                     </button>
@@ -839,7 +839,7 @@ export default function AppointmentDetailClient() {
 
             {appointment.status === "scheduled" && (
               <div className="mt-6 border-t border-white/[0.06] pt-6">
-                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF]">Appointment Actions</h3>
+                <h3 className="text-lg font-medium leading-6 text-[#F0FCFF]">Appointment Actions</h3>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     onClick={() => handleStatusChange("confirmed")}
@@ -863,7 +863,7 @@ export default function AppointmentDetailClient() {
 
             {(appointment.status === "scheduled" || appointment.status === "confirmed") && (
               <div className="mt-6 border-t border-white/[0.06] pt-6">
-                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF]">Patient Attendance</h3>
+                <h3 className="text-lg font-medium leading-6 text-[#F0FCFF]">Patient Attendance</h3>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     onClick={() => handleStatusChange("completed")}
@@ -887,14 +887,14 @@ export default function AppointmentDetailClient() {
 
             {appointment.status === "missed" && (
               <div className="mt-6 border-t border-white/[0.06] pt-6">
-                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF]">Reschedule Missed Appointment</h3>
+                <h3 className="text-lg font-medium leading-6 text-[#F0FCFF]">Reschedule Missed Appointment</h3>
                 <div className="mt-4">
                   <Link
                     href={{
                       pathname: "/dashboard/appointments/new",
                       query: { patientName: appointment.patientName, patientPhone: appointment.patientPhone },
                     }}
-                    className="inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
+                    className="inline-flex items-center px-4 py-2 bg-[#0891B2] text-white hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
                   >
                     <Calendar className="h-4 w-4 mr-2" />
                     Reschedule Appointment
@@ -906,15 +906,15 @@ export default function AppointmentDetailClient() {
             {/* Invoice Action — admin and receptionist only */}
             {(userData?.role === "admin" || userData?.role === "receptionist") && (
               <div className="mt-6 border-t border-white/[0.06] pt-6">
-                <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-[#5E6AD2]" />
+                <h3 className="text-lg font-medium leading-6 text-[#F0FCFF] flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-[#0891B2]" />
                   Invoice
                 </h3>
                 <div className="mt-4">
                   {linkedInvoice ? (
                     <Link
                       href={`/dashboard/invoices/${linkedInvoice.id}`}
-                      className="inline-flex items-center px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
+                      className="inline-flex items-center px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors"
                     >
                       <Receipt className="h-4 w-4 mr-2" />
                       View Invoice
@@ -929,7 +929,7 @@ export default function AppointmentDetailClient() {
                   ) : (
                     <Link
                       href={`/dashboard/invoices/new?appointmentId=${id}&patientName=${encodeURIComponent(appointment.patientName)}&patientPhone=${encodeURIComponent(appointment.patientPhone || "")}${registeredPatient ? `&patientId=${registeredPatient.id}` : ""}`}
-                      className="inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
+                      className="inline-flex items-center px-4 py-2 bg-[#0891B2] text-white hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors"
                     >
                       <Receipt className="h-4 w-4 mr-2" />
                       Create Invoice
@@ -943,20 +943,20 @@ export default function AppointmentDetailClient() {
       </div>
 
       {showFollowUpForm && (
-        <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+        <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg font-medium leading-6 text-[#EDEDEF] flex items-center">
-              <Calendar className="h-5 w-5 mr-2 text-[#5E6AD2]" />
+            <h3 className="text-lg font-medium leading-6 text-[#F0FCFF] flex items-center">
+              <Calendar className="h-5 w-5 mr-2 text-[#0891B2]" />
               Schedule Follow-up Appointment
             </h3>
-            <div className="mt-2 max-w-xl text-sm text-[#8A8F98]">
+            <div className="mt-2 max-w-xl text-sm text-[#A9BFC5]">
               <p>Create a follow-up appointment for this patient.</p>
             </div>
 
             <form onSubmit={handleCreateFollowUp} className="mt-5 space-y-6">
               <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 <div className="sm:col-span-3">
-                  <label htmlFor="followUpDate" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="followUpDate" className="block text-sm font-medium text-[#A9BFC5]">
                     Follow-up Date *
                   </label>
                   <div className="mt-1">
@@ -969,7 +969,7 @@ export default function AppointmentDetailClient() {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="followUpTime" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="followUpTime" className="block text-sm font-medium text-[#A9BFC5]">
                     Follow-up Time
                   </label>
                   <div className="mt-1">
@@ -986,9 +986,9 @@ export default function AppointmentDetailClient() {
                         id="followUpOnCall"
                         checked={followUpIsOnCall}
                         onChange={(e) => setFollowUpIsOnCall(e.target.checked)}
-                        className="h-4 w-4 text-[#5E6AD2] focus:ring-[#5E6AD2] border-white/10 rounded bg-[#0F0F12]"
+                        className="h-4 w-4 text-[#0891B2] focus:ring-[#0891B2] border-white/10 rounded bg-[#082127]"
                       />
-                      <label htmlFor="followUpOnCall" className="ml-2 block text-sm text-[#EDEDEF]">
+                      <label htmlFor="followUpOnCall" className="ml-2 block text-sm text-[#F0FCFF]">
                         On Call (No specific time)
                       </label>
                     </div>
@@ -996,7 +996,7 @@ export default function AppointmentDetailClient() {
                 </div>
 
                 <div className="sm:col-span-6">
-                  <label htmlFor="followUpNotes" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="followUpNotes" className="block text-sm font-medium text-[#A9BFC5]">
                     Follow-up Notes
                   </label>
                   <div className="mt-1 relative">
@@ -1008,7 +1008,7 @@ export default function AppointmentDetailClient() {
                       rows={3}
                       value={followUpNotes}
                       onChange={(e) => setFollowUpNotes(e.target.value)}
-                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                      className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                       placeholder="Reason for follow-up appointment"
                     />
                   </div>
@@ -1019,14 +1019,14 @@ export default function AppointmentDetailClient() {
                 <button
                   type="button"
                   onClick={() => setShowFollowUpForm(false)}
-                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2 px-4 text-sm font-medium transition-colors"
+                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2 px-4 text-sm font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updating}
-                  className="ml-3 inline-flex justify-center py-2 px-4 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50"
+                  className="ml-3 inline-flex justify-center py-2 px-4 bg-[#0891B2] text-white hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors disabled:opacity-50"
                 >
                   {updating ? "Scheduling..." : "Schedule Follow-up"}
                 </button>

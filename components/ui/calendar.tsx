@@ -23,7 +23,7 @@ function Calendar({
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium text-[#EDEDEF]",
+        caption_label: "text-sm font-medium text-[#F0FCFF]",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -34,22 +34,22 @@ function Calendar({
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
         head_cell:
-          "text-[#8A8F98] rounded-md w-9 font-normal text-[0.8rem]",
+          "text-[#A9BFC5] rounded-md w-9 font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-[#5E6AD2]/20 [&:has([aria-selected])]:bg-[#5E6AD2]/20 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-[#0891B2]/20 [&:has([aria-selected])]:bg-[#0891B2]/20 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 text-[#EDEDEF] hover:bg-white/[0.05] hover:text-[#EDEDEF]"
+          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 text-[#F0FCFF] hover:bg-white/[0.05] hover:text-[#F0FCFF]"
         ),
         day_range_end: "day-range-end",
         day_selected:
-          "bg-[#5E6AD2] text-white hover:bg-[#5E6AD2] hover:text-white focus:bg-[#5E6AD2] focus:text-white",
-        day_today: "bg-white/[0.08] text-[#EDEDEF]",
+          "bg-[#0891B2] text-white hover:bg-[#0891B2] hover:text-white focus:bg-[#0891B2] focus:text-white",
+        day_today: "bg-white/[0.08] text-[#F0FCFF]",
         day_outside:
-          "day-outside text-white/20 aria-selected:bg-[#5E6AD2]/20 aria-selected:text-white/40",
+          "day-outside text-white/20 aria-selected:bg-[#0891B2]/20 aria-selected:text-white/40",
         day_disabled: "text-white/20 opacity-50",
         day_range_middle:
-          "aria-selected:bg-[#5E6AD2]/20 aria-selected:text-[#EDEDEF]",
+          "aria-selected:bg-[#0891B2]/20 aria-selected:text-[#F0FCFF]",
         day_hidden: "invisible",
         ...classNames,
       }}

@@ -147,6 +147,34 @@ export interface WhatsAppMessage {
   via?: "bot" | "staff"
 }
 
+export type AgentIntent =
+  | "clinic_info"
+  | "booking"
+  | "reschedule"
+  | "cancel"
+  | "appointments_lookup"
+  | "billing"
+  | "staff_operations"
+  | "staff_messaging"
+  | "emergency"
+  | "identity_reset"
+  | "smalltalk"
+  | "unclear"
+
+export type AgentRiskLevel = "low" | "medium" | "high"
+
+export interface AgentTurnTrace {
+  at: string
+  intent: AgentIntent
+  risk: AgentRiskLevel
+  routeReason: string
+  needsFreshData: boolean
+  toolsUsed: string[]
+  confirmationRequired: boolean
+  clarificationRequired: boolean
+  sufficiency: "no_tool_needed" | "fresh_data_used" | "needs_clarification" | "blocked"
+}
+
 export interface WhatsAppSession {
   phoneNumber: string
   patientId: string | null
@@ -158,6 +186,9 @@ export interface WhatsAppSession {
   phase: ConversationPhase
   messages: WhatsAppMessage[]
   pendingAction: Record<string, unknown> | null
+  // Last AI turn trace for debugging and clinic audit. It stores route/risk/tool
+  // metadata only, never a full prompt or hidden model reasoning.
+  lastAgentTrace?: AgentTurnTrace | null
   // Count of failed invoice-lookup attempts, used to throttle brute-forcing of
   // short invoice ids within a session.
   invoiceAttempts?: number

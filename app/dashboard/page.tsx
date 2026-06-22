@@ -303,8 +303,8 @@ export default function Dashboard() {
       key: "today",
       label: "Today\u2019s Upcoming",
       count: todayActive.length,
-      iconBg: "bg-[#5E6AD2]/10 border-[#5E6AD2]/20",
-      iconColor: "text-[#5E6AD2]",
+      iconBg: "bg-[#0891B2]/12 border-[#22D3EE]/25",
+      iconColor: "text-[#22D3EE]",
       icon: <Calendar className="h-5 w-5" />,
     },
     {
@@ -312,7 +312,7 @@ export default function Dashboard() {
       label: "This Week",
       count: weekActive.length,
       iconBg: "bg-emerald-500/10 border-emerald-500/20",
-      iconColor: "text-emerald-400",
+      iconColor: "text-emerald-300",
       icon: <Calendar className="h-5 w-5" />,
     },
     {
@@ -320,15 +320,15 @@ export default function Dashboard() {
       label: "This Month",
       count: monthActive.length,
       iconBg: "bg-amber-500/10 border-amber-500/20",
-      iconColor: "text-amber-400",
+      iconColor: "text-amber-300",
       icon: <Calendar className="h-5 w-5" />,
     },
     {
       key: "all",
       label: "All Upcoming",
       count: allActive.length,
-      iconBg: "bg-pink-500/10 border-pink-500/20",
-      iconColor: "text-pink-400",
+      iconBg: "bg-teal-500/10 border-teal-500/20",
+      iconColor: "text-teal-300",
       icon: <Layers className="h-5 w-5" />,
     },
   ]
@@ -342,7 +342,7 @@ export default function Dashboard() {
         </div>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
+            <div key={i} className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 p-5">
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-xl bg-white/[0.06]" />
                 <div className="flex-1 space-y-2">
@@ -353,11 +353,11 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02]">
-          <div className="px-5 py-4 border-b border-white/[0.06]">
+        <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92">
+          <div className="border-b border-white/[0.08] px-5 py-4">
             <div className="h-4 w-40 rounded bg-white/[0.06]" />
           </div>
-          <div className="divide-y divide-white/[0.06]">
+          <div className="divide-y divide-white/[0.08]">
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="px-5 py-4 space-y-2">
                 <div className="h-4 w-48 rounded bg-white/[0.05]" />
@@ -373,8 +373,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-[#EDEDEF] tracking-tight">Dashboard</h1>
-        <p className="mt-1 text-sm text-[#8A8F98]">Welcome back, {userData?.name}!</p>
+        <h1 className="text-2xl font-semibold text-[#F0FCFF] tracking-tight">Dashboard</h1>
+        <p className="mt-1 text-sm leading-6 text-[#A9BFC5]">Welcome back, {userData?.name}. Here is the active appointment workload.</p>
       </div>
 
       {/* Summary Cards — clickable filters */}
@@ -385,10 +385,11 @@ export default function Dashboard() {
             <button
               key={card.key}
               onClick={() => setActiveFilter(card.key)}
-              className={`text-left bg-gradient-to-b from-white/[0.08] to-white/[0.02] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden transition-all duration-200 ${
+              aria-pressed={isActive}
+              className={`overflow-hidden rounded-lg text-left shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]/55 ${
                 isActive
-                  ? "border-2 border-[#5E6AD2] shadow-[0_0_0_1px_rgba(94,106,210,0.4),0_0_20px_rgba(94,106,210,0.15)]"
-                  : "border border-white/[0.06] hover:border-white/[0.12]"
+                  ? "border border-[#22D3EE]/45 bg-[#0E3038]"
+                  : "border border-white/[0.1] bg-[#0A2228]/92 hover:border-white/[0.18] hover:bg-[#0D2A31]"
               }`}
             >
               <div className="px-4 py-4 sm:px-5 sm:py-5">
@@ -397,8 +398,8 @@ export default function Dashboard() {
                     <span className={card.iconColor}>{card.icon}</span>
                   </div>
                   <div className="ml-3 sm:ml-4 w-0 flex-1">
-                    <p className="text-xs sm:text-sm text-[#8A8F98] truncate">{card.label}</p>
-                    <p className="text-xl sm:text-2xl font-semibold text-[#EDEDEF]">{card.count}</p>
+                    <p className="truncate text-xs text-[#A9BFC5] sm:text-sm">{card.label}</p>
+                    <p className="text-xl font-semibold text-[#F0FCFF] sm:text-2xl">{card.count}</p>
                   </div>
                 </div>
               </div>
@@ -408,41 +409,41 @@ export default function Dashboard() {
       </div>
 
       {/* Filtered appointments list */}
-      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)]">
-        <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
-          <h3 className="text-base font-semibold text-[#EDEDEF]">{getListTitle()}</h3>
-          <span className="text-xs text-[#8A8F98] bg-white/[0.05] px-2.5 py-1 rounded-full">
+      <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)]">
+        <div className="flex flex-col gap-2 border-b border-white/[0.08] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-base font-semibold text-[#F0FCFF]">{getListTitle()}</h2>
+          <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-xs text-[#A9BFC5]">
             Scheduled, Confirmed &amp; Late
           </span>
         </div>
         <div>
           {displayedAppointments.length === 0 ? (
-            <div className="text-center py-10 text-[#8A8F98] text-sm">{getEmptyMessage()}</div>
+            <div className="py-10 text-center text-sm text-[#A9BFC5]">{getEmptyMessage()}</div>
           ) : (
-            <ul className="divide-y divide-white/[0.06]">
+            <ul className="divide-y divide-white/[0.08]">
               {displayedAppointments.map((appointment) => {
                 const futureBadge = activeFilter !== "today" ? getFutureBadgeLabel(appointment.date) : null
                 return (
-                  <li key={appointment.id} className="hover:bg-white/[0.03] transition-colors">
+                  <li key={appointment.id} className="transition-colors hover:bg-white/[0.04]">
                     <div className="flex items-stretch">
-                      <Link href={`/dashboard/appointments/${appointment.id}`} className="block flex-1 min-w-0">
+                      <Link href={`/dashboard/appointments/${appointment.id}`} className="block min-w-0 flex-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#22D3EE]/55">
                         <div className="px-5 py-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center flex-wrap gap-2">
-                              <User className="h-4 w-4 text-white/40" />
-                              <p className="text-sm font-medium text-[#5E6AD2] truncate">{appointment.patientName}</p>
+                              <User className="h-4 w-4 text-white/45" />
+                              <p className="truncate text-sm font-medium text-[#22D3EE]">{appointment.patientName}</p>
                               {appointment.isFollowUp && (
-                                <span className="px-2 py-0.5 inline-flex text-xs font-medium rounded-full bg-[#5E6AD2]/15 text-[#5E6AD2] border border-[#5E6AD2]/30">
+                                <span className="inline-flex rounded-full border border-[#22D3EE]/30 bg-[#0891B2]/15 px-2 py-0.5 text-xs font-medium text-[#22D3EE]">
                                   Follow-up
                                 </span>
                               )}
                               {futureBadge && (
                                 <span className={`px-2 py-0.5 inline-flex text-xs font-medium rounded-full ${
                                   futureBadge === "Today"
-                                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                                    ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
                                     : futureBadge === "Tomorrow"
-                                      ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                                      : "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
+                                      ? "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                                      : "bg-cyan-500/15 text-cyan-300 border border-cyan-500/30"
                                 }`}>
                                   {futureBadge}
                                 </span>
@@ -450,7 +451,7 @@ export default function Dashboard() {
                             </div>
                             <div className="ml-2 flex-shrink-0 flex items-center gap-2">
                               {appointment.isLate && (appointment.status === "scheduled" || appointment.status === "confirmed") && (
-                                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full animate-pulse bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                                <span className="hidden items-center gap-1 rounded-full border border-orange-500/30 bg-orange-500/15 px-2 py-0.5 text-xs font-medium text-orange-300 sm:inline-flex">
                                   {calculateDelayMinutes(appointment)}m Late
                                 </span>
                               )}
@@ -459,18 +460,18 @@ export default function Dashboard() {
                           </div>
                           <div className="mt-2 sm:flex sm:justify-between">
                             <div className="sm:flex">
-                              <p className="flex items-center text-sm text-[#8A8F98]">
+                              <p className="flex items-center text-sm text-[#A9BFC5]">
                                 <Clock className="flex-shrink-0 mr-1.5 h-3.5 w-3.5 text-white/30" />
                                 {formatTime(appointment.time)}
                               </p>
                               {appointment.doctorName && (
-                                <p className="mt-2 flex items-center text-sm text-[#8A8F98] sm:mt-0 sm:ml-6">
+                                <p className="mt-2 flex items-center text-sm text-[#A9BFC5] sm:ml-6 sm:mt-0">
                                   <User className="flex-shrink-0 mr-1.5 h-3.5 w-3.5 text-white/30" />
                                   Dr. {appointment.doctorName}
                                 </p>
                               )}
                             </div>
-                            <div className="mt-2 flex items-center text-sm text-[#8A8F98] sm:mt-0">
+                            <div className="mt-2 flex items-center text-sm text-[#A9BFC5] sm:mt-0">
                               <Calendar className="flex-shrink-0 mr-1.5 h-3.5 w-3.5 text-white/30" />
                               <p>{formatDate(appointment.date)}</p>
                             </div>
@@ -478,7 +479,7 @@ export default function Dashboard() {
                           {/* Late badge - full detail on mobile */}
                           {appointment.isLate && (appointment.status === "scheduled" || appointment.status === "confirmed") && (
                             <div className="mt-2">
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full animate-pulse bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/15 px-2.5 py-1 text-xs font-medium text-orange-300">
                                 Running {calculateDelayMinutes(appointment)}m Late (Originally {formatTime(appointment.originalTime || "")})
                               </span>
                             </div>
@@ -508,7 +509,7 @@ export default function Dashboard() {
                               }
                             }}
                             aria-label={`Actions for ${appointment.patientName}`}
-                            className="text-[#8A8F98] hover:text-[#EDEDEF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50"
+                            className="rounded-lg p-2 text-[#A9BFC5] transition-colors hover:bg-white/[0.06] hover:text-[#F0FCFF] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]/55"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
@@ -516,7 +517,7 @@ export default function Dashboard() {
                             <div
                               ref={dropdownRef}
                               style={{ position: "fixed", top: dropdownPosition.top, right: dropdownPosition.right, zIndex: 9999 }}
-                              className="w-52 bg-[#0F0F12] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1"
+                              className="w-52 bg-[#082127] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1"
                             >
                               <button
                                 onClick={(e) => {

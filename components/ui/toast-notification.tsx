@@ -44,7 +44,7 @@ export function ToastContainer() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="pointer-events-auto bg-[#0a0a0c] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] px-4 py-3 flex items-start gap-3 animate-slide-in"
+          className="pointer-events-auto bg-[#061417] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] px-4 py-3 flex items-start gap-3 animate-slide-in"
         >
           <div
             className={`mt-0.5 h-2 w-2 rounded-full flex-shrink-0 ${
@@ -52,13 +52,13 @@ export function ToastContainer() {
                 ? "bg-emerald-400"
                 : toast.type === "warning"
                   ? "bg-amber-400"
-                  : "bg-[#5E6AD2]"
+                  : "bg-[#0891B2]"
             }`}
           />
-          <p className="text-sm text-[#EDEDEF] flex-1">{toast.message}</p>
+          <p className="text-sm text-[#F0FCFF] flex-1">{toast.message}</p>
           <button
             onClick={() => removeToast(toast.id)}
-            className="text-[#8A8F98] hover:text-[#EDEDEF] transition-colors flex-shrink-0"
+            className="text-[#A9BFC5] hover:text-[#F0FCFF] transition-colors flex-shrink-0"
           >
             <X className="h-3.5 w-3.5" />
           </button>

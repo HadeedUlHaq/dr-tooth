@@ -246,7 +246,7 @@ export default function AppointmentsList() {
         }
       />
 
-      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+      <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
         <div className="px-5 py-4 border-b border-white/[0.06]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="relative max-w-xs w-full">
@@ -255,7 +255,7 @@ export default function AppointmentsList() {
               </div>
               <input
                 type="text"
-                className="block w-full pl-10 pr-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                className="block w-full pl-10 pr-3 py-2.5 bg-[#082127] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 placeholder="Search patients..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -263,7 +263,7 @@ export default function AppointmentsList() {
             </div>
             <div className="flex flex-wrap gap-2">
               <select
-                className="block w-full sm:w-auto px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                className="block w-full sm:w-auto px-3 py-2.5 bg-[#082127] border border-white/10 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value as any)}
               >
@@ -273,7 +273,7 @@ export default function AppointmentsList() {
                 <option value="all">All Time</option>
               </select>
               <select
-                className="block w-full sm:w-auto px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                className="block w-full sm:w-auto px-3 py-2.5 bg-[#082127] border border-white/10 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -315,12 +315,12 @@ export default function AppointmentsList() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 flex-wrap">
                             <User className="h-4 w-4 text-white/40" />
-                            <p className="text-sm font-medium text-[#5E6AD2] truncate">{appointment.patientName}</p>
+                            <p className="text-sm font-medium text-[#0891B2] truncate">{appointment.patientName}</p>
                             {appointment.patientPhone && (
                               <CallButton phone={appointment.patientPhone} size="sm" />
                             )}
                             {appointment.isFollowUp && (
-                              <span className="px-2 py-0.5 inline-flex text-xs font-medium rounded-full bg-[#5E6AD2]/15 text-[#5E6AD2] border border-[#5E6AD2]/30">
+                              <span className="px-2 py-0.5 inline-flex text-xs font-medium rounded-full bg-[#0891B2]/15 text-[#0891B2] border border-[#0891B2]/30">
                                 Follow-up
                               </span>
                             )}
@@ -336,18 +336,18 @@ export default function AppointmentsList() {
                         </div>
                         <div className="mt-2 sm:flex sm:justify-between">
                           <div className="sm:flex">
-                            <p className="flex items-center text-sm text-[#8A8F98]">
+                            <p className="flex items-center text-sm text-[#A9BFC5]">
                               <Clock className="flex-shrink-0 mr-1.5 h-3.5 w-3.5 text-white/30" />
                               {formatTime(appointment.time)}
                             </p>
                             {appointment.doctorName && (
-                              <p className="mt-2 flex items-center text-sm text-[#8A8F98] sm:mt-0 sm:ml-6">
+                              <p className="mt-2 flex items-center text-sm text-[#A9BFC5] sm:mt-0 sm:ml-6">
                                 <User className="flex-shrink-0 mr-1.5 h-3.5 w-3.5 text-white/30" />
                                 Dr. {appointment.doctorName}
                               </p>
                             )}
                           </div>
-                          <div className="mt-2 flex items-center text-sm text-[#8A8F98] sm:mt-0">
+                          <div className="mt-2 flex items-center text-sm text-[#A9BFC5] sm:mt-0">
                             <Calendar className="flex-shrink-0 mr-1.5 h-3.5 w-3.5 text-white/30" />
                             <p>{formatDate(appointment.date)}</p>
                           </div>
@@ -385,7 +385,7 @@ export default function AppointmentsList() {
                             }
                           }}
                           aria-label={`Actions for ${appointment.patientName}`}
-                          className="text-[#8A8F98] hover:text-[#EDEDEF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50"
+                          className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/50"
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </button>
@@ -393,7 +393,7 @@ export default function AppointmentsList() {
                           <div
                             ref={dropdownRef}
                             style={{ position: "fixed", top: dropdownPosition.top, right: dropdownPosition.right, zIndex: 9999 }}
-                            className="w-52 bg-[#0F0F12] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1"
+                            className="w-52 bg-[#082127] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1"
                           >
                             <button
                               onClick={(e) => {

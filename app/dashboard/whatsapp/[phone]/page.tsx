@@ -78,7 +78,7 @@ export default function WhatsAppSessionPage() {
   if (fetching) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#0891B2] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -86,26 +86,26 @@ export default function WhatsAppSessionPage() {
   if (!session) {
     return (
       <div className="space-y-4">
-        <Link href="/dashboard/whatsapp" className="inline-flex items-center text-sm text-[#8A8F98] hover:text-[#EDEDEF] transition-colors">
+        <Link href="/dashboard/whatsapp" className="inline-flex items-center text-sm text-[#A9BFC5] hover:text-[#F0FCFF] transition-colors">
           <ArrowLeft className="h-4 w-4 mr-1.5" />
           Back to Portal
         </Link>
-        <p className="text-[#8A8F98] text-sm">Session not found.</p>
+        <p className="text-[#A9BFC5] text-sm">Session not found.</p>
       </div>
     )
   }
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <Link href="/dashboard/whatsapp" className="inline-flex items-center text-sm text-[#8A8F98] hover:text-[#EDEDEF] transition-colors">
+      <Link href="/dashboard/whatsapp" className="inline-flex items-center text-sm text-[#A9BFC5] hover:text-[#F0FCFF] transition-colors">
         <ArrowLeft className="h-4 w-4 mr-1.5" />
         Back
       </Link>
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-[#EDEDEF]">{session.patientName ?? "Guest"}</h1>
-          <p className="text-xs text-[#8A8F98] mt-1">
+          <h1 className="text-xl font-semibold text-[#F0FCFF]">{session.patientName ?? "Guest"}</h1>
+          <p className="text-xs text-[#A9BFC5] mt-1">
             +{session.phoneNumber} · last active {formatTime(session.lastActiveAt)}
           </p>
         </div>
@@ -131,19 +131,19 @@ export default function WhatsAppSessionPage() {
 
       <div className="space-y-3">
         {session.messages.length === 0 ? (
-          <p className="text-[#8A8F98] text-sm">No messages yet.</p>
+          <p className="text-[#A9BFC5] text-sm">No messages yet.</p>
         ) : (
           session.messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
                 className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
                   m.role === "user"
-                    ? "bg-[#5E6AD2] text-white rounded-tr-sm"
-                    : "bg-white/[0.06] text-[#EDEDEF] rounded-tl-sm"
+                    ? "bg-[#0891B2] text-white rounded-tr-sm"
+                    : "bg-white/[0.06] text-[#F0FCFF] rounded-tl-sm"
                 }`}
               >
                 <p className="whitespace-pre-wrap">{m.content}</p>
-                <p className={`text-[10px] mt-1 ${m.role === "user" ? "text-white/60" : "text-[#8A8F98]"}`}>
+                <p className={`text-[10px] mt-1 ${m.role === "user" ? "text-white/60" : "text-[#A9BFC5]"}`}>
                   {m.role === "assistant" && m.via === "staff" ? "Staff · " : m.role === "assistant" ? "Bot · " : ""}
                   {formatTime(m.timestamp)}
                 </p>
@@ -153,17 +153,17 @@ export default function WhatsAppSessionPage() {
         )}
       </div>
 
-      <form onSubmit={sendReply} className="flex gap-2 sticky bottom-0 bg-[#0a0a0c] py-3">
+      <form onSubmit={sendReply} className="flex gap-2 sticky bottom-0 bg-[#061417] py-3">
         <input
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
           placeholder="Type a reply to send manually…"
-          className="flex-1 px-3 py-2 rounded-lg bg-[#111113] border border-white/[0.08] text-sm text-[#EDEDEF] placeholder-[#8A8F98] focus:outline-none focus:border-[#5E6AD2]/50"
+          className="flex-1 px-3 py-2 rounded-lg bg-[#111113] border border-white/[0.08] text-sm text-[#F0FCFF] placeholder-[#A9BFC5] focus:outline-none focus:border-[#0891B2]/50"
         />
         <button
           type="submit"
           disabled={sending || !msg.trim()}
-          className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-[#5E6AD2] text-white hover:bg-[#5058C8] transition-colors disabled:opacity-50"
+          className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-[#0891B2] text-white hover:bg-[#5058C8] transition-colors disabled:opacity-50"
         >
           <Send className="h-4 w-4 mr-1.5" />
           {sending ? "…" : "Send"}

@@ -61,7 +61,7 @@ export function TimePicker({ value, onChange, disabled = false }: TimePickerProp
   }
 
   const selectClass =
-    "bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 px-3 py-2.5 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed appearance-none text-center"
+    "bg-[#082127] border border-white/10 rounded-lg text-sm text-gray-100 px-3 py-2.5 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed appearance-none text-center"
 
   return (
     <div className="flex items-center gap-2">
@@ -79,7 +79,7 @@ export function TimePicker({ value, onChange, disabled = false }: TimePickerProp
           </option>
         ))}
       </select>
-      <span className="text-[#8A8F98] text-sm font-medium">:</span>
+      <span className="text-[#A9BFC5] text-sm font-medium">:</span>
       <select
         value={minute}
         onChange={handleMinuteChange}

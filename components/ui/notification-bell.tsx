@@ -168,7 +168,7 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
   const renderActivityList = (items: ActivityLog[]) => {
     if (items.length === 0) {
       return (
-        <div className="px-4 py-8 text-center text-sm text-[#8A8F98]">
+        <div className="px-4 py-8 text-center text-sm text-[#A9BFC5]">
           No notifications.
         </div>
       )
@@ -181,7 +181,7 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
         <div
           key={activity.id}
           className={`group px-4 py-3 border-b border-white/[0.04] last:border-b-0 ${
-            isUnread ? "bg-[#5E6AD2]/[0.04]" : ""
+            isUnread ? "bg-[#0891B2]/[0.04]" : ""
           }`}
         >
           <div className="flex items-start gap-3">
@@ -189,20 +189,20 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
               {getTypeIcon(activity.type)}
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-[#EDEDEF] leading-snug">
+              <p className="text-sm text-[#F0FCFF] leading-snug">
                 {activity.message}
               </p>
-              <p className="text-xs text-[#8A8F98] mt-1">
+              <p className="text-xs text-[#A9BFC5] mt-1">
                 {timeAgo(activity.createdAt)}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {isUnread && (
-                <span className="mt-1.5 h-2 w-2 rounded-full bg-[#5E6AD2]" />
+                <span className="mt-1.5 h-2 w-2 rounded-full bg-[#0891B2]" />
               )}
               <button
                 onClick={(e) => handleDeleteOne(e, activity.id)}
-                className="mt-0.5 p-1 rounded text-white/0 group-hover:text-[#8A8F98] hover:!text-red-400 hover:bg-white/[0.05] transition-all"
+                className="mt-0.5 p-1 rounded text-white/0 group-hover:text-[#A9BFC5] hover:!text-red-400 hover:bg-white/[0.05] transition-all"
                 title="Remove notification"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -219,7 +219,7 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
       {/* Bell Button */}
       <button
         onClick={handleToggle}
-        className="relative p-2 rounded-lg text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+        className="relative p-2 rounded-lg text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -231,13 +231,13 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#0a0a0c] border border-white/[0.08] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#061417] border border-white/[0.08] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] z-50 overflow-hidden">
           <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-[#EDEDEF]">Notifications</h3>
+            <h3 className="text-sm font-semibold text-[#F0FCFF]">Notifications</h3>
             {activities.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="flex items-center gap-1.5 text-xs text-[#8A8F98] hover:text-red-400 transition-colors"
+                className="flex items-center gap-1.5 text-xs text-[#A9BFC5] hover:text-red-400 transition-colors"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Clear All
@@ -250,20 +250,20 @@ export function NotificationBell({ currentUserId, userRole }: NotificationBellPr
               <TabsList className="w-full bg-white/[0.03] rounded-lg p-0.5 h-auto">
                 <TabsTrigger
                   value="appointments"
-                  className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#5E6AD2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#8A8F98] data-[state=inactive]:bg-transparent rounded-md transition-colors"
+                  className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#0891B2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#A9BFC5] data-[state=inactive]:bg-transparent rounded-md transition-colors"
                 >
                   📅 Appointments
                 </TabsTrigger>
                 <TabsTrigger
                   value="lab"
-                  className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#5E6AD2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#8A8F98] data-[state=inactive]:bg-transparent rounded-md transition-colors"
+                  className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#0891B2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#A9BFC5] data-[state=inactive]:bg-transparent rounded-md transition-colors"
                 >
                   🦷 Lab Cases
                 </TabsTrigger>
                 {userRole !== "doctor" && (
                   <TabsTrigger
                     value="invoices"
-                    className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#5E6AD2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#8A8F98] data-[state=inactive]:bg-transparent rounded-md transition-colors"
+                    className="flex-1 text-xs py-1.5 data-[state=active]:bg-[#0891B2] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[#A9BFC5] data-[state=inactive]:bg-transparent rounded-md transition-colors"
                   >
                     🧾 Invoices
                   </TabsTrigger>

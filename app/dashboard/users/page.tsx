@@ -97,9 +97,9 @@ export default function UsersManagement() {
 
         {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg">{error}</div>}
 
-        <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+        <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
           <div className="px-4 py-5 border-b border-white/[0.06] sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-[#EDEDEF]">Users</h3>
+            <h3 className="text-lg leading-6 font-medium text-[#F0FCFF]">Users</h3>
           </div>
           <div className="overflow-hidden">
             {users.length === 0 ? (
@@ -110,25 +110,25 @@ export default function UsersManagement() {
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider"
                     >
                       Name
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider"
                     >
                       Email
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider"
                     >
                       Role
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-[#8A8F98] uppercase tracking-wider"
+                      className="px-6 py-3 text-right text-xs font-medium text-[#A9BFC5] uppercase tracking-wider"
                     >
                       Actions
                     </th>
@@ -139,23 +139,23 @@ export default function UsersManagement() {
                     <tr key={user.uid} className="hover:bg-white/[0.03] transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 rounded-full">
-                            <UserIcon className="h-5 w-5 text-[#5E6AD2]" />
+                          <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-[#0891B2]/10 border border-[#0891B2]/20 rounded-full">
+                            <UserIcon className="h-5 w-5 text-[#0891B2]" />
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-[#EDEDEF]">{user.name}</div>
+                            <div className="text-sm font-medium text-[#F0FCFF]">{user.name}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-[#8A8F98]">{user.email}</div>
+                        <div className="text-sm text-[#A9BFC5]">{user.email}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {editingUser?.uid === user.uid ? (
                           <select
                             value={editRole}
                             onChange={(e) => setEditRole(e.target.value)}
-                            className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/20 focus:border-[#5E6AD2] block w-full px-3 py-2.5 transition-colors"
+                            className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] block w-full px-3 py-2.5 transition-colors"
                           >
                             <option value="receptionist">Receptionist</option>
                             <option value="doctor">Doctor</option>
@@ -178,10 +178,10 @@ export default function UsersManagement() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         {editingUser?.uid === user.uid ? (
                           <div className="flex justify-end space-x-2">
-                            <button onClick={handleRoleChange} className="text-[#5E6AD2] hover:text-[#6872D9] transition-colors">
+                            <button onClick={handleRoleChange} className="text-[#0891B2] hover:text-[#0E7490] transition-colors">
                               Save
                             </button>
-                            <button onClick={() => setEditingUser(null)} className="text-[#8A8F98] hover:text-[#EDEDEF] transition-colors">
+                            <button onClick={() => setEditingUser(null)} className="text-[#A9BFC5] hover:text-[#F0FCFF] transition-colors">
                               Cancel
                             </button>
                           </div>
@@ -193,7 +193,7 @@ export default function UsersManagement() {
                                 setEditRole(user.role)
                               }}
                               aria-label={`Edit role for ${user.name}`}
-                              className="text-[#8A8F98] hover:text-[#EDEDEF] transition-colors p-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50"
+                              className="text-[#A9BFC5] hover:text-[#F0FCFF] transition-colors p-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/50"
                             >
                               <Edit className="h-4 w-4" />
                             </button>

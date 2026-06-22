@@ -234,7 +234,7 @@ export default function InvoiceDetailPage() {
 
   if (!invoice) {
     return (
-      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)]">
+      <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)]">
         <EmptyState
           icon={Receipt}
           title="Invoice not found"
@@ -260,25 +260,25 @@ export default function InvoiceDetailPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard/invoices" className="p-2 rounded-lg text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors">
+            <Link href="/dashboard/invoices" className="p-2 rounded-lg text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors">
               <ChevronLeft className="h-5 w-5" />
             </Link>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-semibold text-[#EDEDEF] tracking-tight">Invoice</h1>
+                <h1 className="text-2xl font-semibold text-[#F0FCFF] tracking-tight">Invoice</h1>
                 <StatusBadge status={invoice.status} kind="invoice" />
               </div>
-              <p className="mt-1 text-sm text-[#8A8F98]">#{invoice.id.slice(0, 8)} · {formatDate(invoice.date)}</p>
+              <p className="mt-1 text-sm text-[#A9BFC5]">#{invoice.id.slice(0, 8)} · {formatDate(invoice.date)}</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button onClick={handlePrint} className="inline-flex items-center px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors">
+            <button onClick={handlePrint} className="inline-flex items-center px-4 py-2 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg text-sm font-medium transition-colors">
               <Printer className="h-4 w-4 mr-2" />
               Print / PDF
             </button>
             {!isEditing && (
               <>
-                <button onClick={() => setIsEditing(true)} className="inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors">
+                <button onClick={() => setIsEditing(true)} className="inline-flex items-center px-4 py-2 bg-[#0891B2] text-white hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] text-sm font-medium transition-colors">
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
                 </button>
@@ -296,20 +296,20 @@ export default function InvoiceDetailPage() {
         )}
 
         {/* Invoice Content */}
-        <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+        <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
           <div className="px-4 py-5 sm:p-6 space-y-6">
             {/* Patient info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <span className="text-xs font-medium text-[#8A8F98] uppercase tracking-wider">Patient</span>
-                <p className="text-sm text-[#EDEDEF] mt-1 font-medium">{invoice.patientName}</p>
-                {invoice.patientPhone && <p className="text-xs text-[#8A8F98] mt-0.5">{invoice.patientPhone}</p>}
+                <span className="text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">Patient</span>
+                <p className="text-sm text-[#F0FCFF] mt-1 font-medium">{invoice.patientName}</p>
+                {invoice.patientPhone && <p className="text-xs text-[#A9BFC5] mt-0.5">{invoice.patientPhone}</p>}
               </div>
               <div>
-                <span className="text-xs font-medium text-[#8A8F98] uppercase tracking-wider">Date</span>
-                <p className="text-sm text-[#EDEDEF] mt-1">{formatDate(invoice.date)}</p>
+                <span className="text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">Date</span>
+                <p className="text-sm text-[#F0FCFF] mt-1">{formatDate(invoice.date)}</p>
                 {invoice.appointmentId && (
-                  <Link href={`/dashboard/appointments/${invoice.appointmentId}`} className="text-xs text-[#5E6AD2] hover:underline mt-0.5 inline-block">
+                  <Link href={`/dashboard/appointments/${invoice.appointmentId}`} className="text-xs text-[#0891B2] hover:underline mt-0.5 inline-block">
                     View linked appointment
                   </Link>
                 )}
@@ -319,7 +319,7 @@ export default function InvoiceDetailPage() {
             {/* Line items table */}
             {isEditing ? (
               <div>
-                <h3 className="text-sm font-medium text-[#EDEDEF] uppercase tracking-wider mb-3">Services</h3>
+                <h3 className="text-sm font-medium text-[#F0FCFF] uppercase tracking-wider mb-3">Services</h3>
                 <div className="space-y-3">
                   {editItems.map((item, index) => (
                     <div key={index} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
@@ -338,7 +338,7 @@ export default function InvoiceDetailPage() {
                             }
                             setEditItems(updated)
                           }}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                           placeholder="Type or select service..."
                         />
                         <datalist id={`service-list-${index}`}>
@@ -357,7 +357,7 @@ export default function InvoiceDetailPage() {
                             updated[index] = { ...updated[index], quantity: Math.max(1, Number(e.target.value) || 1) }
                             setEditItems(updated)
                           }}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors text-center"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors text-center"
                           placeholder="Qty"
                         />
                       </div>
@@ -371,12 +371,12 @@ export default function InvoiceDetailPage() {
                             updated[index] = { ...updated[index], price: Number(e.target.value) || 0 }
                             setEditItems(updated)
                           }}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                           placeholder="Unit Price"
                         />
                       </div>
                       <div className="hidden sm:flex flex-col justify-end">
-                        <div className="h-[44px] flex items-center px-1 text-sm text-[#8A8F98] whitespace-nowrap">
+                        <div className="h-[44px] flex items-center px-1 text-sm text-[#A9BFC5] whitespace-nowrap">
                           = Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                         </div>
                       </div>
@@ -387,7 +387,7 @@ export default function InvoiceDetailPage() {
                           setEditItems(editItems.filter((_, i) => i !== index))
                         }}
                         disabled={editItems.length === 1}
-                        className="p-2.5 rounded-lg text-[#8A8F98] hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-30 min-h-[44px]"
+                        className="p-2.5 rounded-lg text-[#A9BFC5] hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-30 min-h-[44px]"
                       >
                         <Trash className="h-4 w-4" />
                       </button>
@@ -397,7 +397,7 @@ export default function InvoiceDetailPage() {
                 <button
                   type="button"
                   onClick={() => setEditItems([...editItems, { serviceName: "", price: 0, quantity: 1 }])}
-                  className="mt-3 inline-flex items-center text-sm text-[#5E6AD2] hover:text-[#6872D9] font-medium transition-colors"
+                  className="mt-3 inline-flex items-center text-sm text-[#0891B2] hover:text-[#0E7490] font-medium transition-colors"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Service
@@ -405,15 +405,15 @@ export default function InvoiceDetailPage() {
 
                 {/* Edit discount */}
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium text-[#EDEDEF] uppercase tracking-wider mb-3">Discount</h3>
+                  <h3 className="text-sm font-medium text-[#F0FCFF] uppercase tracking-wider mb-3">Discount</h3>
                   <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
                     <div className="flex rounded-lg border border-white/10 overflow-hidden">
                       <button type="button" onClick={() => setEditDiscountType("percent")}
-                        className={`px-4 py-2.5 text-sm font-medium transition-colors min-h-[44px] ${editDiscountType === "percent" ? "bg-[#5E6AD2] text-white" : "bg-[#0F0F12] text-[#8A8F98]"}`}>
+                        className={`px-4 py-2.5 text-sm font-medium transition-colors min-h-[44px] ${editDiscountType === "percent" ? "bg-[#0891B2] text-white" : "bg-[#082127] text-[#A9BFC5]"}`}>
                         %
                       </button>
                       <button type="button" onClick={() => setEditDiscountType("flat")}
-                        className={`px-4 py-2.5 text-sm font-medium transition-colors min-h-[44px] ${editDiscountType === "flat" ? "bg-[#5E6AD2] text-white" : "bg-[#0F0F12] text-[#8A8F98]"}`}>
+                        className={`px-4 py-2.5 text-sm font-medium transition-colors min-h-[44px] ${editDiscountType === "flat" ? "bg-[#0891B2] text-white" : "bg-[#082127] text-[#A9BFC5]"}`}>
                         Rs.
                       </button>
                     </div>
@@ -421,7 +421,7 @@ export default function InvoiceDetailPage() {
                       type="number" min="0"
                       value={editDiscountValue || ""}
                       onChange={(e) => setEditDiscountValue(Number(e.target.value) || 0)}
-                      className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full sm:w-40 min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                      className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full sm:w-40 min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                       placeholder="0"
                     />
                   </div>
@@ -430,29 +430,29 @@ export default function InvoiceDetailPage() {
                 {/* Edit totals */}
                 <div className="mt-6 border-t border-white/[0.06] pt-4 max-w-xs ml-auto space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#8A8F98]">Subtotal</span>
-                    <span className="text-[#EDEDEF]">Rs. {editSubtotal.toLocaleString()}</span>
+                    <span className="text-[#A9BFC5]">Subtotal</span>
+                    <span className="text-[#F0FCFF]">Rs. {editSubtotal.toLocaleString()}</span>
                   </div>
                   {editDiscountAmount > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-[#8A8F98]">Discount</span>
+                      <span className="text-[#A9BFC5]">Discount</span>
                       <span className="text-red-400">- Rs. {editDiscountAmount.toLocaleString()}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-base font-semibold border-t border-white/[0.06] pt-2">
-                    <span className="text-[#EDEDEF]">Total</span>
-                    <span className="text-[#EDEDEF]">Rs. {editTotal.toLocaleString()}</span>
+                    <span className="text-[#F0FCFF]">Total</span>
+                    <span className="text-[#F0FCFF]">Rs. {editTotal.toLocaleString()}</span>
                   </div>
                 </div>
 
                 {/* Save/Cancel */}
                 <div className="mt-6 flex justify-end gap-3">
                   <button onClick={() => { setIsEditing(false); setEditItems(invoice.lineItems); setEditDiscountType(invoice.discountType); setEditDiscountValue(invoice.discountValue) }}
-                    className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">
+                    className="bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">
                     Cancel
                   </button>
                   <button onClick={handleSaveEdit} disabled={saving}
-                    className="inline-flex items-center justify-center py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] disabled:opacity-50 min-h-[44px] transition-colors">
+                    className="inline-flex items-center justify-center py-2.5 px-4 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] disabled:opacity-50 min-h-[44px] transition-colors">
                     {saving ? "Saving..." : "Save Changes"}
                   </button>
                 </div>
@@ -461,15 +461,15 @@ export default function InvoiceDetailPage() {
               <>
                 {/* Read-only line items */}
                 <div>
-                  <h3 className="text-sm font-medium text-[#8A8F98] uppercase tracking-wider mb-3">Services</h3>
+                  <h3 className="text-sm font-medium text-[#A9BFC5] uppercase tracking-wider mb-3">Services</h3>
                   <div className="border border-white/[0.06] rounded-lg overflow-hidden">
                     <table className="min-w-full divide-y divide-white/[0.06]">
                       <thead className="bg-white/[0.03]">
                         <tr>
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-[#8A8F98] uppercase">Service</th>
-                          <th className="px-4 py-2.5 text-center text-xs font-medium text-[#8A8F98] uppercase w-16">Qty</th>
-                          <th className="px-4 py-2.5 text-right text-xs font-medium text-[#8A8F98] uppercase">Unit Price</th>
-                          <th className="px-4 py-2.5 text-right text-xs font-medium text-[#8A8F98] uppercase">Total</th>
+                          <th className="px-4 py-2.5 text-left text-xs font-medium text-[#A9BFC5] uppercase">Service</th>
+                          <th className="px-4 py-2.5 text-center text-xs font-medium text-[#A9BFC5] uppercase w-16">Qty</th>
+                          <th className="px-4 py-2.5 text-right text-xs font-medium text-[#A9BFC5] uppercase">Unit Price</th>
+                          <th className="px-4 py-2.5 text-right text-xs font-medium text-[#A9BFC5] uppercase">Total</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/[0.06]">
@@ -478,10 +478,10 @@ export default function InvoiceDetailPage() {
                           const rowTotal = item.price * qty
                           return (
                             <tr key={i}>
-                              <td className="px-4 py-3 text-sm text-[#EDEDEF]">{item.serviceName}</td>
-                              <td className="px-4 py-3 text-sm text-[#8A8F98] text-center">{qty}</td>
-                              <td className="px-4 py-3 text-sm text-[#8A8F98] text-right">Rs. {item.price.toLocaleString()}</td>
-                              <td className="px-4 py-3 text-sm text-[#EDEDEF] font-medium text-right">Rs. {rowTotal.toLocaleString()}</td>
+                              <td className="px-4 py-3 text-sm text-[#F0FCFF]">{item.serviceName}</td>
+                              <td className="px-4 py-3 text-sm text-[#A9BFC5] text-center">{qty}</td>
+                              <td className="px-4 py-3 text-sm text-[#A9BFC5] text-right">Rs. {item.price.toLocaleString()}</td>
+                              <td className="px-4 py-3 text-sm text-[#F0FCFF] font-medium text-right">Rs. {rowTotal.toLocaleString()}</td>
                             </tr>
                           )
                         })}
@@ -493,12 +493,12 @@ export default function InvoiceDetailPage() {
                 {/* Totals */}
                 <div className="max-w-xs ml-auto space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#8A8F98]">Subtotal</span>
-                    <span className="text-[#EDEDEF]">Rs. {invoice.subtotal.toLocaleString()}</span>
+                    <span className="text-[#A9BFC5]">Subtotal</span>
+                    <span className="text-[#F0FCFF]">Rs. {invoice.subtotal.toLocaleString()}</span>
                   </div>
                   {invoice.discountValue > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-[#8A8F98]">
+                      <span className="text-[#A9BFC5]">
                         Discount {invoice.discountType === "percent" ? `(${invoice.discountValue}%)` : ""}
                       </span>
                       <span className="text-red-400">
@@ -510,15 +510,15 @@ export default function InvoiceDetailPage() {
                     </div>
                   )}
                   <div className="flex justify-between text-base font-semibold border-t border-white/[0.06] pt-2">
-                    <span className="text-[#EDEDEF]">Total</span>
-                    <span className="text-[#EDEDEF]">Rs. {invoice.total.toLocaleString()}</span>
+                    <span className="text-[#F0FCFF]">Total</span>
+                    <span className="text-[#F0FCFF]">Rs. {invoice.total.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#8A8F98]">Amount Paid</span>
+                    <span className="text-[#A9BFC5]">Amount Paid</span>
                     <span className="text-emerald-400">Rs. {invoice.amountPaid.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-base font-semibold border-t border-white/[0.06] pt-2">
-                    <span className="text-[#EDEDEF]">Balance Due</span>
+                    <span className="text-[#F0FCFF]">Balance Due</span>
                     <span className={invoice.balanceDue > 0 ? "text-red-400" : "text-emerald-400"}>
                       Rs. {invoice.balanceDue.toLocaleString()}
                     </span>
@@ -531,14 +531,14 @@ export default function InvoiceDetailPage() {
 
         {/* Record Payment */}
         {!isEditing && invoice.status !== "paid" && (
-          <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+          <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
             <div className="px-4 py-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h3 className="text-lg font-medium text-[#EDEDEF] flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-[#5E6AD2]" />
+                <h3 className="text-lg font-medium text-[#F0FCFF] flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-[#0891B2]" />
                   Record Payment
                 </h3>
-                <p className="text-sm text-[#8A8F98] mt-1">
+                <p className="text-sm text-[#A9BFC5] mt-1">
                   Balance due: <span className="text-red-400 font-medium">Rs. {invoice.balanceDue.toLocaleString()}</span>
                 </p>
               </div>
@@ -555,10 +555,10 @@ export default function InvoiceDetailPage() {
 
         {/* Payment History */}
         {invoice.payments.length > 0 && (
-          <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+          <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-[#EDEDEF] flex items-center gap-2 mb-4">
-                <Clock className="h-5 w-5 text-[#5E6AD2]" />
+              <h3 className="text-lg font-medium text-[#F0FCFF] flex items-center gap-2 mb-4">
+                <Clock className="h-5 w-5 text-[#0891B2]" />
                 Payment History
               </h3>
               <div className="space-y-3">
@@ -570,11 +570,11 @@ export default function InvoiceDetailPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                         <div>
-                          <span className="text-sm font-medium text-[#EDEDEF]">Rs. {payment.amount.toLocaleString()}</span>
+                          <span className="text-sm font-medium text-[#F0FCFF]">Rs. {payment.amount.toLocaleString()}</span>
                           <span className="mx-2 text-white/20">·</span>
-                          <span className="text-xs px-2 py-0.5 bg-white/[0.05] rounded-full text-[#8A8F98]">{payment.method}</span>
+                          <span className="text-xs px-2 py-0.5 bg-white/[0.05] rounded-full text-[#A9BFC5]">{payment.method}</span>
                         </div>
-                        <div className="text-xs text-[#8A8F98]">
+                        <div className="text-xs text-[#A9BFC5]">
                           {formatDateTime(payment.date)} by {payment.recordedByName}
                         </div>
                       </div>
@@ -626,10 +626,10 @@ export default function InvoiceDetailPage() {
                   key={m}
                   type="button"
                   onClick={() => setPaymentMethod(m)}
-                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50 ${
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/50 ${
                     paymentMethod === m
-                      ? "bg-[#5E6AD2] text-white"
-                      : "bg-white/[0.05] text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.08] border border-white/[0.06]"
+                      ? "bg-[#0891B2] text-white"
+                      : "bg-white/[0.05] text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.08] border border-white/[0.06]"
                   }`}
                 >
                   {m}

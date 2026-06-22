@@ -55,8 +55,8 @@ export function DatePicker({
           type="button"
           disabled={disabled}
           className={cn(
-            "flex items-center w-full px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-left transition-colors",
-            "focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20",
+            "flex items-center w-full px-3 py-2.5 bg-[#082127] border border-white/10 rounded-lg text-sm text-left transition-colors",
+            "focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             value ? "text-gray-100" : "text-gray-500"
           )}
@@ -66,7 +66,7 @@ export function DatePicker({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-auto p-0 bg-[#0a0a0c] border border-white/[0.06] shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)]"
+        className="w-auto p-0 bg-[#061417] border border-white/[0.06] shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)]"
         align="start"
       >
         <Calendar

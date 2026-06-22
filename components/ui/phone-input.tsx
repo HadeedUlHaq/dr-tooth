@@ -58,7 +58,7 @@ export function PhoneInput({
 
   return (
     <div className={`flex ${className}`}>
-      <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-white/10 bg-white/[0.05] text-sm text-[#8A8F98] select-none">
+      <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-white/10 bg-white/[0.05] text-sm text-[#A9BFC5] select-none">
         {COUNTRY_CODE}
       </span>
       <input
@@ -69,7 +69,7 @@ export function PhoneInput({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
-        className="bg-[#0F0F12] border border-white/10 rounded-r-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
+        className="bg-[#082127] border border-white/10 rounded-r-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
       />
     </div>
   )

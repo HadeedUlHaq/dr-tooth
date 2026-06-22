@@ -6,6 +6,7 @@ import { useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import { ToothLogo } from "@/components/ui-kit/ToothLogo"
+import { LockKeyhole, Mail } from "lucide-react"
 
 export default function Login() {
   const [email, setEmail] = useState("")
@@ -34,66 +35,74 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] p-8 rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] w-full max-w-md">
+    <main className="flex min-h-screen items-center justify-center px-4 py-8">
+      <div className="w-full max-w-md rounded-lg border border-white/[0.1] bg-[#0A2228]/92 p-6 shadow-[0_1px_0_rgba(255,255,255,0.06),0_20px_48px_rgba(0,0,0,0.32)] sm:p-8">
         <div className="text-center mb-8">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 shadow-[0_0_30px_rgba(94,106,210,0.18)]">
-            <ToothLogo className="h-8 w-8 text-[#5E6AD2]" />
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-lg border border-[#22D3EE]/25 bg-[#0891B2]/12 shadow-[0_12px_28px_rgba(8,145,178,0.18)]">
+            <ToothLogo className="h-8 w-8 text-[#22D3EE]" />
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight bg-gradient-to-b from-white via-white/95 to-white/70 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-semibold tracking-tight text-[#F0FCFF]">
             Dr Tooth Dental Clinic
           </h1>
-          <p className="text-[#8A8F98] mt-1">Patient Appointment System</p>
+          <p className="mt-2 text-sm leading-6 text-[#A9BFC5]">Secure staff access for appointments, patients, invoices, and clinic operations.</p>
         </div>
 
-        <h2 className="text-2xl font-semibold mb-6 text-center text-[#EDEDEF]">Login</h2>
+        <h2 className="mb-6 text-center text-xl font-semibold text-[#F0FCFF]">Staff login</h2>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 rounded-lg mb-4 text-sm">
+          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-[#8A8F98] mb-1">
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-[#A9BFC5]">
               Email
             </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
-              placeholder="you@example.com"
-              required
-            />
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7E989F]" />
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="min-h-[44px] w-full rounded-lg border border-white/10 bg-[#082127] px-3 py-2.5 pl-10 text-sm text-[#F0FCFF] placeholder:text-[#7E989F] transition-colors focus:border-[#22D3EE] focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/25"
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+              />
+            </div>
           </div>
 
           <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium text-[#8A8F98] mb-1">
+            <label htmlFor="password" className="mb-1 block text-sm font-medium text-[#A9BFC5]">
               Password
             </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
-              placeholder="••••••••"
-              required
-            />
+            <div className="relative">
+              <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7E989F]" />
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="min-h-[44px] w-full rounded-lg border border-white/10 bg-[#082127] px-3 py-2.5 pl-10 text-sm text-[#F0FCFF] placeholder:text-[#7E989F] transition-colors focus:border-[#22D3EE] focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/25"
+                placeholder="••••••••"
+                autoComplete="current-password"
+                required
+              />
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#5E6AD2] text-white py-2.5 px-4 rounded-lg hover:bg-[#6872D9] focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/50 focus:ring-offset-2 focus:ring-offset-[#050506] disabled:opacity-50 transition-colors shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] font-medium"
+            className="min-h-[44px] w-full rounded-lg bg-[#0891B2] px-4 py-2.5 font-medium text-white shadow-[0_0_0_1px_rgba(34,211,238,0.22),0_6px_18px_rgba(8,145,178,0.22),inset_0_1px_0_0_rgba(255,255,255,0.14)] transition-colors hover:bg-[#0E7490] focus:outline-none focus:ring-2 focus:ring-[#22D3EE]/60 focus:ring-offset-2 focus:ring-offset-[#061417] disabled:opacity-50"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>
-    </div>
+    </main>
   )
 }

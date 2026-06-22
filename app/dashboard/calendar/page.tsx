@@ -24,7 +24,7 @@ const localizer = dateFnsLocalizer({
 
 // ── Status colour map ───────────────────────────────────────────────────────
 const STATUS_COLORS: Record<string, { bg: string; border: string; color: string }> = {
-  scheduled:  { bg: "rgba(94,106,210,0.25)",  border: "rgba(94,106,210,0.6)",  color: "#818cf8" },
+  scheduled:  { bg: "rgba(8,145,178,0.25)",  border: "rgba(8,145,178,0.6)",  color: "#22D3EE" },
   confirmed:  { bg: "rgba(34,197,94,0.2)",    border: "rgba(34,197,94,0.5)",   color: "#4ade80" },
   completed:  { bg: "rgba(139,92,246,0.2)",   border: "rgba(139,92,246,0.5)",  color: "#a78bfa" },
   missed:     { bg: "rgba(239,68,68,0.2)",    border: "rgba(239,68,68,0.5)",   color: "#f87171" },
@@ -175,10 +175,10 @@ export default function CalendarPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-[#EDEDEF] tracking-tight">
+          <h1 className="text-2xl font-semibold text-[#F0FCFF] tracking-tight">
             Calendar
           </h1>
-          <p className="text-sm text-[#8A8F98] mt-0.5">
+          <p className="text-sm text-[#A9BFC5] mt-0.5">
             All appointments at a glance
           </p>
         </div>
@@ -191,7 +191,7 @@ export default function CalendarPage() {
                 className="h-2.5 w-2.5 rounded-sm flex-shrink-0"
                 style={{ backgroundColor: colors.border }}
               />
-              <span className="text-[#8A8F98] capitalize">{status}</span>
+              <span className="text-[#A9BFC5] capitalize">{status}</span>
             </span>
           ))}
           <span className="flex items-center gap-1.5 text-xs">
@@ -199,7 +199,7 @@ export default function CalendarPage() {
               className="h-2.5 w-2.5 rounded-sm flex-shrink-0"
               style={{ backgroundColor: LATE_COLORS.border }}
             />
-            <span className="text-[#8A8F98]">Late</span>
+            <span className="text-[#A9BFC5]">Late</span>
           </span>
         </div>
       </div>

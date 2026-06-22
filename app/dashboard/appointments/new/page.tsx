@@ -173,11 +173,11 @@ export default function NewAppointment() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-[#EDEDEF]">New Appointment</h1>
-        <p className="mt-1 text-sm text-[#8A8F98]">Schedule a new appointment for a patient</p>
+        <h1 className="text-2xl font-semibold text-[#F0FCFF]">New Appointment</h1>
+        <p className="mt-1 text-sm text-[#A9BFC5]">Schedule a new appointment for a patient</p>
       </div>
 
-      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+      <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
         <div className="px-4 py-5 sm:p-6">
           {error && (
             <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg px-4 py-3">
@@ -192,9 +192,9 @@ export default function NewAppointment() {
                 id="quickAppointment"
                 checked={isQuickAppointment}
                 onChange={(e) => setIsQuickAppointment(e.target.checked)}
-                className="h-4 w-4 accent-[#5E6AD2] rounded"
+                className="h-4 w-4 accent-[#0891B2] rounded"
               />
-              <label htmlFor="quickAppointment" className="ml-2 block text-sm text-[#EDEDEF]">
+              <label htmlFor="quickAppointment" className="ml-2 block text-sm text-[#F0FCFF]">
                 Quick Appointment (Name, Date, Time only)
               </label>
             </div>
@@ -203,7 +203,7 @@ export default function NewAppointment() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
               <div className="sm:col-span-3">
-                <label htmlFor="patientName" className="block text-sm font-medium text-[#8A8F98]">
+                <label htmlFor="patientName" className="block text-sm font-medium text-[#A9BFC5]">
                   Patient Name *
                 </label>
                 <div className="mt-1">
@@ -225,7 +225,7 @@ export default function NewAppointment() {
 
               {!isQuickAppointment && (
                 <div className="sm:col-span-3">
-                  <label htmlFor="patientPhone" className="block text-sm font-medium text-[#8A8F98]">
+                  <label htmlFor="patientPhone" className="block text-sm font-medium text-[#A9BFC5]">
                     Patient Phone
                   </label>
                   <div className="mt-1">
@@ -239,7 +239,7 @@ export default function NewAppointment() {
               )}
 
               <div className="sm:col-span-3">
-                <label htmlFor="date" className="block text-sm font-medium text-[#8A8F98]">
+                <label htmlFor="date" className="block text-sm font-medium text-[#A9BFC5]">
                   Date *
                 </label>
                 <div className="mt-1">
@@ -253,7 +253,7 @@ export default function NewAppointment() {
               </div>
 
               <div className="sm:col-span-3">
-                <label htmlFor="time" className="block text-sm font-medium text-[#8A8F98]">
+                <label htmlFor="time" className="block text-sm font-medium text-[#A9BFC5]">
                   Time
                 </label>
                 <div className="mt-1">
@@ -270,9 +270,9 @@ export default function NewAppointment() {
                       id="onCall"
                       checked={isOnCall}
                       onChange={(e) => setIsOnCall(e.target.checked)}
-                      className="h-4 w-4 accent-[#5E6AD2] rounded"
+                      className="h-4 w-4 accent-[#0891B2] rounded"
                     />
-                    <label htmlFor="onCall" className="ml-2 block text-sm text-[#EDEDEF]">
+                    <label htmlFor="onCall" className="ml-2 block text-sm text-[#F0FCFF]">
                       On Call (No specific time)
                     </label>
                   </div>
@@ -303,7 +303,7 @@ export default function NewAppointment() {
               {!isQuickAppointment && (
                 <>
                   <div className="sm:col-span-3">
-                    <label htmlFor="doctor" className="block text-sm font-medium text-[#8A8F98]">
+                    <label htmlFor="doctor" className="block text-sm font-medium text-[#A9BFC5]">
                       Assign Doctor
                     </label>
                     <div className="mt-1">
@@ -311,7 +311,7 @@ export default function NewAppointment() {
                         id="doctor"
                         value={doctorId}
                         onChange={(e) => setDoctorId(e.target.value)}
-                        className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                        className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5"
                         disabled={userData?.role === "doctor"}
                       >
                         <option value="">Select a doctor</option>
@@ -325,7 +325,7 @@ export default function NewAppointment() {
                   </div>
 
                   <div className="sm:col-span-6">
-                    <label htmlFor="notes" className="block text-sm font-medium text-[#8A8F98]">
+                    <label htmlFor="notes" className="block text-sm font-medium text-[#A9BFC5]">
                       Notes
                     </label>
                     <div className="mt-1">
@@ -334,7 +334,7 @@ export default function NewAppointment() {
                         rows={3}
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5"
+                        className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5"
                       />
                     </div>
                   </div>
@@ -346,14 +346,14 @@ export default function NewAppointment() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2 px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/20"
+                className="bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2 px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="ml-3 inline-flex justify-center py-2 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/20 disabled:opacity-50"
+                className="ml-3 inline-flex justify-center py-2 px-4 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20 disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

@@ -24,8 +24,8 @@ export function ToothLogo({
 // Wordmark: logo mark + name, for the sidebar/header/login.
 export function BrandWordmark({
   className = "",
-  markClass = "h-6 w-6 text-[#5E6AD2]",
-  textClass = "text-lg font-semibold text-[#EDEDEF] tracking-tight",
+  markClass = "h-6 w-6 text-[#0891B2]",
+  textClass = "text-lg font-semibold text-[#F0FCFF] tracking-tight",
   short = false,
 }: {
   className?: string

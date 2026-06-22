@@ -451,9 +451,9 @@ export default function PatientsPage() {
 
       {/* Quick Add Form */}
       {showForm && (
-        <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+        <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg font-medium text-[#EDEDEF] mb-4">
+            <h3 className="text-lg font-medium text-[#F0FCFF] mb-4">
               Quick Add Patient
             </h3>
 
@@ -466,20 +466,20 @@ export default function PatientsPage() {
             <form onSubmit={handleAddPatient} className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-[#8A8F98] mb-1">
+                  <label className="block text-sm font-medium text-[#A9BFC5] mb-1">
                     Patient Name *
                   </label>
                   <input
                     type="text"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
+                    className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
                     placeholder="Full name"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#8A8F98] mb-1">
+                  <label className="block text-sm font-medium text-[#A9BFC5] mb-1">
                     Phone Number *
                   </label>
                   <PhoneInput
@@ -490,26 +490,26 @@ export default function PatientsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#8A8F98] mb-1">
+                  <label className="block text-sm font-medium text-[#A9BFC5] mb-1">
                     Treatment Required
                   </label>
                   <input
                     type="text"
                     value={formTreatment}
                     onChange={(e) => setFormTreatment(e.target.value)}
-                    className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
+                    className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
                     placeholder="Consultation"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#8A8F98] mb-1">
+                  <label className="block text-sm font-medium text-[#A9BFC5] mb-1">
                     Address
                   </label>
                   <input
                     type="text"
                     value={formAddress}
                     onChange={(e) => setFormAddress(e.target.value)}
-                    className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
+                    className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm px-3 py-2.5 min-h-[44px]"
                     placeholder="Address"
                   />
                 </div>
@@ -519,14 +519,14 @@ export default function PatientsPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
+                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="inline-flex justify-center py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/20 disabled:opacity-50 min-h-[44px]"
+                  className="inline-flex justify-center py-2.5 px-4 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20 disabled:opacity-50 min-h-[44px]"
                 >
                   {formLoading ? (
                     <span className="flex items-center gap-2">
@@ -544,7 +544,7 @@ export default function PatientsPage() {
       )}
 
       {/* Patient List */}
-      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)]">
+      <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)]">
         {/* Search */}
         <div className="px-4 sm:px-5 py-4 border-b border-white/[0.06]">
           <div className="relative w-full sm:max-w-xs">
@@ -553,7 +553,7 @@ export default function PatientsPage() {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2.5 min-h-[44px] bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+              className="block w-full pl-10 pr-3 py-2.5 min-h-[44px] bg-[#082127] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
               placeholder="Search patients..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -566,19 +566,19 @@ export default function PatientsPage() {
           <table className="min-w-full divide-y divide-white/[0.06]">
             <thead className="bg-white/[0.03]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">
                   Patient
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">
                   Phone
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">
                   Treatment
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">
                   Address
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -610,15 +610,15 @@ export default function PatientsPage() {
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                         />
                       ) : (
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 flex items-center justify-center">
-                            <User className="h-4 w-4 text-[#5E6AD2]" />
+                          <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#0891B2]/10 border border-[#0891B2]/20 flex items-center justify-center">
+                            <User className="h-4 w-4 text-[#0891B2]" />
                           </div>
                           <div className="ml-3">
-                            <div className="text-sm font-medium text-[#EDEDEF]">
+                            <div className="text-sm font-medium text-[#F0FCFF]">
                               {patient.name}
                             </div>
                           </div>
@@ -633,7 +633,7 @@ export default function PatientsPage() {
                         />
                       ) : (
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-[#8A8F98]">
+                          <span className="text-sm text-[#A9BFC5]">
                             {patient.phone}
                           </span>
                           <CallButton phone={patient.phone} size="sm" />
@@ -646,10 +646,10 @@ export default function PatientsPage() {
                           type="text"
                           value={editTreatment}
                           onChange={(e) => setEditTreatment(e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                         />
                       ) : (
-                        <span className="px-2.5 py-0.5 inline-flex text-xs font-medium rounded-full bg-[#5E6AD2]/15 text-[#5E6AD2]">
+                        <span className="px-2.5 py-0.5 inline-flex text-xs font-medium rounded-full bg-[#0891B2]/15 text-[#0891B2]">
                           {patient.treatmentRequired}
                         </span>
                       )}
@@ -660,10 +660,10 @@ export default function PatientsPage() {
                           type="text"
                           value={editAddress}
                           onChange={(e) => setEditAddress(e.target.value)}
-                          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                          className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                         />
                       ) : (
-                        <div className="text-sm text-[#8A8F98]">
+                        <div className="text-sm text-[#A9BFC5]">
                           {patient.address || "-"}
                         </div>
                       )}
@@ -679,7 +679,7 @@ export default function PatientsPage() {
                           </button>
                           <button
                             onClick={() => setEditingPatient(null)}
-                            className="text-[#8A8F98] hover:text-[#EDEDEF] text-xs font-medium transition-colors"
+                            className="text-[#A9BFC5] hover:text-[#F0FCFF] text-xs font-medium transition-colors"
                           >
                             Cancel
                           </button>
@@ -689,16 +689,16 @@ export default function PatientsPage() {
                           <button
                             onClick={() => setOpenDropdownId(openDropdownId === patient.id ? null : patient.id)}
                             aria-label={`Actions for ${patient.name}`}
-                            className="text-[#8A8F98] hover:text-[#EDEDEF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50"
+                            className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/50"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
                           {openDropdownId === patient.id && (
-                            <div className="absolute right-0 top-full mt-1 w-48 bg-[#0F0F12] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1 z-20">
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-[#082127] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1 z-20">
                               {(userData?.role === "admin" || userData?.role === "receptionist") && (
                                 <button
                                   onClick={() => { openBillingHistory(patient); setOpenDropdownId(null) }}
-                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
                                 >
                                   <Receipt className="h-4 w-4" />
                                   Billing History
@@ -706,14 +706,14 @@ export default function PatientsPage() {
                               )}
                               <button
                                 onClick={() => { openLabCases(patient); setOpenDropdownId(null) }}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
                               >
                                 <Package className="h-4 w-4" />
                                 Lab Cases
                               </button>
                               <button
                                 onClick={() => { startEdit(patient); setOpenDropdownId(null) }}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
                               >
                                 <Edit className="h-4 w-4" />
                                 Edit Patient
@@ -760,37 +760,37 @@ export default function PatientsPage() {
                   /* Mobile Edit Form */
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-medium text-[#8A8F98] mb-1">Name</label>
+                      <label className="block text-xs font-medium text-[#A9BFC5] mb-1">Name</label>
                       <input
                         type="text"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                        className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#8A8F98] mb-1">Phone</label>
+                      <label className="block text-xs font-medium text-[#A9BFC5] mb-1">Phone</label>
                       <PhoneInput
                         value={editPhone}
                         onChange={setEditPhone}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#8A8F98] mb-1">Treatment</label>
+                      <label className="block text-xs font-medium text-[#A9BFC5] mb-1">Treatment</label>
                       <input
                         type="text"
                         value={editTreatment}
                         onChange={(e) => setEditTreatment(e.target.value)}
-                        className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                        className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#8A8F98] mb-1">Address</label>
+                      <label className="block text-xs font-medium text-[#A9BFC5] mb-1">Address</label>
                       <input
                         type="text"
                         value={editAddress}
                         onChange={(e) => setEditAddress(e.target.value)}
-                        className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+                        className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
                       />
                     </div>
                     <div className="flex gap-3 pt-1">
@@ -803,7 +803,7 @@ export default function PatientsPage() {
                       </button>
                       <button
                         onClick={() => setEditingPatient(null)}
-                        className="flex-1 bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
+                        className="flex-1 bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
                       >
                         Cancel
                       </button>
@@ -814,15 +814,15 @@ export default function PatientsPage() {
                   <div>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 flex items-center justify-center">
-                          <User className="h-5 w-5 text-[#5E6AD2]" />
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#0891B2]/10 border border-[#0891B2]/20 flex items-center justify-center">
+                          <User className="h-5 w-5 text-[#0891B2]" />
                         </div>
                         <div className="min-w-0">
-                          <div className="text-sm font-medium text-[#EDEDEF] truncate">
+                          <div className="text-sm font-medium text-[#F0FCFF] truncate">
                             {patient.name}
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-xs text-[#8A8F98]">
+                            <span className="text-xs text-[#A9BFC5]">
                               {patient.phone}
                             </span>
                             <CallButton phone={patient.phone} size="sm" />
@@ -833,16 +833,16 @@ export default function PatientsPage() {
                         <button
                           onClick={() => setOpenDropdownId(openDropdownId === `mobile-${patient.id}` ? null : `mobile-${patient.id}`)}
                           aria-label={`Actions for ${patient.name}`}
-                          className="text-[#8A8F98] hover:text-[#EDEDEF] p-2 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2]/50"
+                          className="text-[#A9BFC5] hover:text-[#F0FCFF] p-2 rounded-lg hover:bg-white/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2]/50"
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </button>
                         {openDropdownId === `mobile-${patient.id}` && (
-                          <div className="absolute right-0 top-full mt-1 w-48 bg-[#0F0F12] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1 z-20">
+                          <div className="absolute right-0 top-full mt-1 w-48 bg-[#082127] border border-white/[0.1] rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] py-1 z-20">
                             {(userData?.role === "admin" || userData?.role === "receptionist") && (
                               <button
                                 onClick={() => { openBillingHistory(patient); setOpenDropdownId(null) }}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
                               >
                                 <Receipt className="h-4 w-4" />
                                 Billing History
@@ -850,14 +850,14 @@ export default function PatientsPage() {
                             )}
                             <button
                               onClick={() => { openLabCases(patient); setOpenDropdownId(null) }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
                             >
                               <Package className="h-4 w-4" />
                               Lab Cases
                             </button>
                             <button
                               onClick={() => { startEdit(patient); setOpenDropdownId(null) }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] transition-colors"
+                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] transition-colors"
                             >
                               <Edit className="h-4 w-4" />
                               Edit Patient
@@ -875,11 +875,11 @@ export default function PatientsPage() {
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-1 inline-flex text-xs font-medium rounded-full bg-[#5E6AD2]/15 text-[#5E6AD2]">
+                      <span className="px-2.5 py-1 inline-flex text-xs font-medium rounded-full bg-[#0891B2]/15 text-[#0891B2]">
                         {patient.treatmentRequired}
                       </span>
                       {patient.address && (
-                        <span className="text-xs text-[#8A8F98] truncate">
+                        <span className="text-xs text-[#A9BFC5] truncate">
                           {patient.address}
                         </span>
                       )}
@@ -893,7 +893,7 @@ export default function PatientsPage() {
 
         {/* Patient count + Pagination */}
         <div className="px-4 sm:px-5 py-3 border-t border-white/[0.06] flex items-center justify-between">
-          <span className="text-xs text-[#8A8F98]">
+          <span className="text-xs text-[#A9BFC5]">
             {filteredPatients.length === 0
               ? "0 patients"
               : `${(currentPage - 1) * PATIENTS_PER_PAGE + 1}\u2013${Math.min(currentPage * PATIENTS_PER_PAGE, filteredPatients.length)} of ${filteredPatients.length} patient${filteredPatients.length !== 1 ? "s" : ""}`}
@@ -904,7 +904,7 @@ export default function PatientsPage() {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-1.5 rounded-lg text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#8A8F98] transition-colors"
+                className="p-1.5 rounded-lg text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#A9BFC5] transition-colors"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -930,7 +930,7 @@ export default function PatientsPage() {
                 }
                 return pages.map((page) =>
                   typeof page === "string" ? (
-                    <span key={page} className="min-w-[28px] h-7 flex items-center justify-center text-xs text-[#8A8F98]">
+                    <span key={page} className="min-w-[28px] h-7 flex items-center justify-center text-xs text-[#A9BFC5]">
                       …
                     </span>
                   ) : (
@@ -939,8 +939,8 @@ export default function PatientsPage() {
                       onClick={() => setCurrentPage(page)}
                       className={`min-w-[28px] h-7 rounded-lg text-xs font-medium transition-colors ${
                         page === currentPage
-                          ? "bg-[#5E6AD2] text-white"
-                          : "text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05]"
+                          ? "bg-[#0891B2] text-white"
+                          : "text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05]"
                       }`}
                     >
                       {page}
@@ -951,7 +951,7 @@ export default function PatientsPage() {
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="p-1.5 rounded-lg text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#8A8F98] transition-colors"
+                className="p-1.5 rounded-lg text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.05] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#A9BFC5] transition-colors"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -984,24 +984,24 @@ export default function PatientsPage() {
       {/* Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
+          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
 
             {/* Passcode Gate */}
             {!importUnlocked ? (
               <>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 rounded-xl p-2.5">
-                      <Lock className="h-5 w-5 text-[#5E6AD2]" />
+                    <div className="bg-[#0891B2]/10 border border-[#0891B2]/20 rounded-xl p-2.5">
+                      <Lock className="h-5 w-5 text-[#0891B2]" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-[#EDEDEF]">Protected Import</h3>
-                      <p className="text-xs text-[#8A8F98]">Enter system passcode to import contacts</p>
+                      <h3 className="text-lg font-semibold text-[#F0FCFF]">Protected Import</h3>
+                      <p className="text-xs text-[#A9BFC5]">Enter system passcode to import contacts</p>
                     </div>
                   </div>
                   <button
                     onClick={handleCloseImportModal}
-                    className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
+                    className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1 transition-colors"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -1015,14 +1015,14 @@ export default function PatientsPage() {
 
                 <form onSubmit={handleImportPasscode}>
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-[#8A8F98] mb-1">
+                    <label className="block text-sm font-medium text-[#A9BFC5] mb-1">
                       System Passcode
                     </label>
                     <input
                       type="password"
                       value={importPasscode}
                       onChange={(e) => setImportPasscode(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors min-h-[44px]"
+                      className="w-full px-3 py-2.5 bg-[#082127] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors min-h-[44px]"
                       placeholder="Enter passcode..."
                       autoFocus
                       required
@@ -1032,13 +1032,13 @@ export default function PatientsPage() {
                     <button
                       type="button"
                       onClick={handleCloseImportModal}
-                      className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
+                      className="bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] min-h-[44px] transition-colors"
+                      className="inline-flex items-center py-2.5 px-4 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] min-h-[44px] transition-colors"
                     >
                       Unlock
                     </button>
@@ -1050,17 +1050,17 @@ export default function PatientsPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 rounded-xl p-2.5">
-                  <FileSpreadsheet className="h-5 w-5 text-[#5E6AD2]" />
+                <div className="bg-[#0891B2]/10 border border-[#0891B2]/20 rounded-xl p-2.5">
+                  <FileSpreadsheet className="h-5 w-5 text-[#0891B2]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-[#EDEDEF]">Import Patients</h3>
-                  <p className="text-xs text-[#8A8F98]">From CSV or Google Sheets export</p>
+                  <h3 className="text-lg font-semibold text-[#F0FCFF]">Import Patients</h3>
+                  <p className="text-xs text-[#A9BFC5]">From CSV or Google Sheets export</p>
                 </div>
               </div>
               <button
                 onClick={handleCloseImportModal}
-                className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
+                className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1094,12 +1094,12 @@ export default function PatientsPage() {
             {/* File picker — show when no rows parsed and no result */}
             {importRows.length === 0 && !importResult && (
               <div className="flex-1">
-                <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/[0.1] hover:border-[#5E6AD2]/40 rounded-xl p-8 cursor-pointer transition-colors group">
-                  <Upload className="h-10 w-10 text-[#8A8F98] group-hover:text-[#5E6AD2] transition-colors mb-3" />
-                  <span className="text-sm font-medium text-[#EDEDEF]">
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/[0.1] hover:border-[#0891B2]/40 rounded-xl p-8 cursor-pointer transition-colors group">
+                  <Upload className="h-10 w-10 text-[#A9BFC5] group-hover:text-[#0891B2] transition-colors mb-3" />
+                  <span className="text-sm font-medium text-[#F0FCFF]">
                     Choose a file or drag it here
                   </span>
-                  <span className="text-xs text-[#8A8F98] mt-1">
+                  <span className="text-xs text-[#A9BFC5] mt-1">
                     CSV, TSV, or TXT with Name &amp; Phone Number columns
                   </span>
                   <input
@@ -1110,8 +1110,8 @@ export default function PatientsPage() {
                   />
                 </label>
                 <div className="mt-4 bg-white/[0.03] border border-white/[0.06] rounded-lg p-3">
-                  <p className="text-xs text-[#8A8F98] font-medium mb-1.5">Expected format:</p>
-                  <div className="font-mono text-xs text-[#EDEDEF]/60 space-y-0.5">
+                  <p className="text-xs text-[#A9BFC5] font-medium mb-1.5">Expected format:</p>
+                  <div className="font-mono text-xs text-[#F0FCFF]/60 space-y-0.5">
                     <p>Name, Phone Number</p>
                     <p>Misses Arshad, +92 315 5658886</p>
                     <p>Asim, +92 300 0453332</p>
@@ -1123,20 +1123,20 @@ export default function PatientsPage() {
             {/* Preview table — show when rows are parsed */}
             {importRows.length > 0 && (
               <div className="flex-1 overflow-hidden flex flex-col">
-                <p className="text-sm text-[#8A8F98] mb-3">
-                  Found <strong className="text-[#EDEDEF]">{importRows.length}</strong> contact{importRows.length !== 1 ? "s" : ""}. Review and confirm:
+                <p className="text-sm text-[#A9BFC5] mb-3">
+                  Found <strong className="text-[#F0FCFF]">{importRows.length}</strong> contact{importRows.length !== 1 ? "s" : ""}. Review and confirm:
                 </p>
                 <div className="overflow-y-auto flex-1 border border-white/[0.06] rounded-lg">
                   <table className="min-w-full divide-y divide-white/[0.06]">
                     <thead className="bg-white/[0.03] sticky top-0">
                       <tr>
-                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">
                           #
                         </th>
-                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">
                           Name
                         </th>
-                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">
+                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">
                           Phone
                         </th>
                       </tr>
@@ -1144,9 +1144,9 @@ export default function PatientsPage() {
                     <tbody className="divide-y divide-white/[0.06]">
                       {importRows.map((row, idx) => (
                         <tr key={idx} className="hover:bg-white/[0.03]">
-                          <td className="px-4 py-2 text-xs text-[#8A8F98]">{idx + 1}</td>
-                          <td className="px-4 py-2 text-sm text-[#EDEDEF]">{row.name}</td>
-                          <td className="px-4 py-2 text-sm text-[#8A8F98]">{row.phone}</td>
+                          <td className="px-4 py-2 text-xs text-[#A9BFC5]">{idx + 1}</td>
+                          <td className="px-4 py-2 text-sm text-[#F0FCFF]">{row.name}</td>
+                          <td className="px-4 py-2 text-sm text-[#A9BFC5]">{row.phone}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1156,14 +1156,14 @@ export default function PatientsPage() {
                 <div className="flex flex-col sm:flex-row justify-end gap-3 mt-4 pt-4 border-t border-white/[0.06]">
                   <button
                     onClick={() => { setImportRows([]); setImportError("") }}
-                    className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
+                    className="bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]"
                   >
                     Choose Different File
                   </button>
                   <button
                     onClick={handleImportConfirm}
                     disabled={importLoading}
-                    className="inline-flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] disabled:opacity-50 min-h-[44px] transition-colors"
+                    className="inline-flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] disabled:opacity-50 min-h-[44px] transition-colors"
                   >
                     {importLoading ? (
                       <>
@@ -1186,7 +1186,7 @@ export default function PatientsPage() {
               <div className="flex justify-end mt-4 pt-4 border-t border-white/[0.06]">
                 <button
                   onClick={handleCloseImportModal}
-                  className="inline-flex items-center py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] min-h-[44px] transition-colors"
+                  className="inline-flex items-center py-2.5 px-4 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] min-h-[44px] transition-colors"
                 >
                   Done
                 </button>
@@ -1201,20 +1201,20 @@ export default function PatientsPage() {
       {/* Billing History Modal — admin/receptionist only */}
       {billingPatient && (userData?.role === "admin" || userData?.role === "receptionist") && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
+          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 rounded-xl p-2.5">
-                  <Receipt className="h-5 w-5 text-[#5E6AD2]" />
+                <div className="bg-[#0891B2]/10 border border-[#0891B2]/20 rounded-xl p-2.5">
+                  <Receipt className="h-5 w-5 text-[#0891B2]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-[#EDEDEF]">Billing History</h3>
-                  <p className="text-xs text-[#8A8F98]">{billingPatient.name}</p>
+                  <h3 className="text-lg font-semibold text-[#F0FCFF]">Billing History</h3>
+                  <p className="text-xs text-[#A9BFC5]">{billingPatient.name}</p>
                 </div>
               </div>
               <button
                 onClick={() => { setBillingPatient(null); setBillingInvoices([]) }}
-                className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
+                className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1222,14 +1222,14 @@ export default function PatientsPage() {
 
             {billingLoading ? (
               <div className="flex items-center justify-center py-10">
-                <div className="w-8 h-8 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-2 border-[#0891B2] border-t-transparent rounded-full animate-spin"></div>
               </div>
             ) : billingInvoices.length === 0 ? (
               <div className="text-center py-10">
-                <p className="text-sm text-[#8A8F98]">No invoices found for this patient.</p>
+                <p className="text-sm text-[#A9BFC5]">No invoices found for this patient.</p>
                 <Link
                   href={`/dashboard/invoices/new?patientName=${encodeURIComponent(billingPatient.name)}&patientPhone=${encodeURIComponent(billingPatient.phone)}&patientId=${billingPatient.id}`}
-                  className="mt-4 inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg text-sm font-medium transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 bg-[#0891B2] text-white hover:bg-[#0E7490] rounded-lg text-sm font-medium transition-colors"
                   onClick={() => setBillingPatient(null)}
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -1247,10 +1247,10 @@ export default function PatientsPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-sm font-medium text-[#EDEDEF]">
+                        <div className="text-sm font-medium text-[#F0FCFF]">
                           Rs. {inv.total.toLocaleString()}
                         </div>
-                        <div className="text-xs text-[#8A8F98] mt-0.5">
+                        <div className="text-xs text-[#A9BFC5] mt-0.5">
                           {new Date(inv.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                           {" · "}
                           {inv.lineItems.map((li) => li.serviceName).join(", ")}
@@ -1264,7 +1264,7 @@ export default function PatientsPage() {
                         }`}>
                           {inv.status}
                         </span>
-                        <Eye className="h-4 w-4 text-[#8A8F98]" />
+                        <Eye className="h-4 w-4 text-[#A9BFC5]" />
                       </div>
                     </div>
                     {inv.balanceDue > 0 && (
@@ -1278,7 +1278,7 @@ export default function PatientsPage() {
                 <div className="pt-3 border-t border-white/[0.06]">
                   <Link
                     href={`/dashboard/invoices/new?patientName=${encodeURIComponent(billingPatient.name)}&patientPhone=${encodeURIComponent(billingPatient.phone)}&patientId=${billingPatient.id}`}
-                    className="inline-flex items-center text-sm text-[#5E6AD2] hover:text-[#6872D9] font-medium transition-colors"
+                    className="inline-flex items-center text-sm text-[#0891B2] hover:text-[#0E7490] font-medium transition-colors"
                     onClick={() => setBillingPatient(null)}
                   >
                     <Plus className="h-4 w-4 mr-1" />
@@ -1294,20 +1294,20 @@ export default function PatientsPage() {
       {/* Lab Cases Modal — all roles can view */}
       {labPatient && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
+          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 rounded-xl p-2.5">
-                  <Package className="h-5 w-5 text-[#5E6AD2]" />
+                <div className="bg-[#0891B2]/10 border border-[#0891B2]/20 rounded-xl p-2.5">
+                  <Package className="h-5 w-5 text-[#0891B2]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-[#EDEDEF]">Lab Cases</h3>
-                  <p className="text-xs text-[#8A8F98]">{labPatient.name}</p>
+                  <h3 className="text-lg font-semibold text-[#F0FCFF]">Lab Cases</h3>
+                  <p className="text-xs text-[#A9BFC5]">{labPatient.name}</p>
                 </div>
               </div>
               <button
                 onClick={() => { setLabPatient(null); setLabCases([]) }}
-                className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors"
+                className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1315,15 +1315,15 @@ export default function PatientsPage() {
 
             {labLoading ? (
               <div className="flex items-center justify-center py-10">
-                <div className="w-8 h-8 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-2 border-[#0891B2] border-t-transparent rounded-full animate-spin"></div>
               </div>
             ) : labCases.length === 0 ? (
               <div className="text-center py-10">
-                <p className="text-sm text-[#8A8F98]">No lab cases found for this patient.</p>
+                <p className="text-sm text-[#A9BFC5]">No lab cases found for this patient.</p>
                 {(userData?.role === "admin" || userData?.role === "receptionist") && (
                   <Link
                     href="/dashboard/lab-tracking"
-                    className="mt-4 inline-flex items-center px-4 py-2 bg-[#5E6AD2] text-white hover:bg-[#6872D9] rounded-lg text-sm font-medium transition-colors"
+                    className="mt-4 inline-flex items-center px-4 py-2 bg-[#0891B2] text-white hover:bg-[#0E7490] rounded-lg text-sm font-medium transition-colors"
                     onClick={() => setLabPatient(null)}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -1344,14 +1344,14 @@ export default function PatientsPage() {
                     <div key={lc.id} className="p-3 bg-white/[0.03] border border-white/[0.06] rounded-lg">
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-sm font-medium text-[#EDEDEF]">{lc.toothDetails}</div>
-                          <div className="text-xs text-[#8A8F98] mt-0.5">{lc.material} · {lc.labName === "None" ? "No lab" : lc.labName}</div>
+                          <div className="text-sm font-medium text-[#F0FCFF]">{lc.toothDetails}</div>
+                          <div className="text-xs text-[#A9BFC5] mt-0.5">{lc.material} · {lc.labName === "None" ? "No lab" : lc.labName}</div>
                         </div>
                         <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusColor}`}>
                           {lc.status}
                         </span>
                       </div>
-                      <div className="mt-2 flex gap-4 text-xs text-[#8A8F98]">
+                      <div className="mt-2 flex gap-4 text-xs text-[#A9BFC5]">
                         {lc.sentDate && (
                           <span>Sent: {new Date(lc.sentDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
                         )}

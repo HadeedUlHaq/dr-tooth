@@ -142,20 +142,20 @@ export function PatientSearch({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={handleFocus}
-          className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors block w-full text-sm pl-10 pr-3 py-2.5"
+          className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors block w-full text-sm pl-10 pr-3 py-2.5"
           placeholder={placeholder}
           autoComplete="off"
           required
         />
         {isLoading && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-            <div className="h-4 w-4 border-2 border-[#5E6AD2]/40 border-t-transparent rounded-full animate-spin" />
+            <div className="h-4 w-4 border-2 border-[#0891B2]/40 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-[#0F0F12] border border-white/[0.06] rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] overflow-hidden">
+        <div className="absolute z-50 w-full mt-1 bg-[#082127] border border-white/[0.06] rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] overflow-hidden">
           {suggestions.length > 0 ? (
             <ul className="max-h-60 overflow-auto py-1">
               {suggestions.map((patient, index) => (
@@ -168,18 +168,18 @@ export function PatientSearch({
                       : "hover:bg-white/[0.05]"
                   }`}
                 >
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#5E6AD2]/10 flex items-center justify-center">
-                    <User className="h-4 w-4 text-[#5E6AD2]" />
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#0891B2]/10 flex items-center justify-center">
+                    <User className="h-4 w-4 text-[#0891B2]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-[#EDEDEF] truncate">
+                    <p className="text-sm text-[#F0FCFF] truncate">
                       {patient.name}
                     </p>
-                    <p className="text-xs text-[#8A8F98] truncate">
+                    <p className="text-xs text-[#A9BFC5] truncate">
                       {patient.phone}
                     </p>
                   </div>
-                  <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-white/[0.05] text-[#8A8F98]">
+                  <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-white/[0.05] text-[#A9BFC5]">
                     {patient.treatmentRequired}
                   </span>
                 </li>
@@ -188,17 +188,17 @@ export function PatientSearch({
           ) : (
             inputValue.trim().length >= 2 && (
               <div className="py-3 px-3">
-                <p className="text-xs text-[#8A8F98] mb-2">
+                <p className="text-xs text-[#A9BFC5] mb-2">
                   No patients found matching &quot;{inputValue}&quot;
                 </p>
                 {onRegisterNew && (
                   <button
                     type="button"
                     onClick={handleRegisterNew}
-                    className={`flex items-center gap-2 w-full px-3 py-2 text-sm text-[#5E6AD2] rounded-lg transition-colors ${
+                    className={`flex items-center gap-2 w-full px-3 py-2 text-sm text-[#0891B2] rounded-lg transition-colors ${
                       activeIndex === 0
-                        ? "bg-[#5E6AD2]/10"
-                        : "hover:bg-[#5E6AD2]/10"
+                        ? "bg-[#0891B2]/10"
+                        : "hover:bg-[#0891B2]/10"
                     }`}
                   >
                     <UserPlus className="h-4 w-4" />

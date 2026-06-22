@@ -7,35 +7,35 @@
 
 @layer base {
   :root {
-    --background: 240 6% 2%;
-    --foreground: 240 6% 93%;
-    --card: 240 10% 4%;
-    --card-foreground: 240 6% 93%;
-    --popover: 240 10% 4%;
-    --popover-foreground: 240 6% 93%;
-    --primary: 234 53% 60%;
+    --background: 191 54% 7%;
+    --foreground: 192 45% 96%;
+    --card: 190 41% 10%;
+    --card-foreground: 192 45% 96%;
+    --popover: 190 41% 10%;
+    --popover-foreground: 192 45% 96%;
+    --primary: 191 91% 35%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 4% 10%;
-    --secondary-foreground: 240 6% 93%;
-    --muted: 240 4% 10%;
-    --muted-foreground: 220 6% 56%;
-    --accent: 240 4% 10%;
-    --accent-foreground: 240 6% 93%;
+    --secondary: 188 43% 16%;
+    --secondary-foreground: 192 45% 96%;
+    --muted: 188 43% 16%;
+    --muted-foreground: 190 16% 68%;
+    --accent: 160 84% 33%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 240 4% 10%;
     --input: 240 4% 10%;
-    --ring: 234 53% 60%;
-    --radius: 0.75rem;
-    --sidebar-background: 240 10% 4%;
-    --sidebar-foreground: 240 6% 93%;
-    --sidebar-primary: 234 53% 60%;
+    --ring: 191 91% 35%;
+    --radius: 0.5rem;
+    --sidebar-background: 190 45% 8%;
+    --sidebar-foreground: 192 45% 96%;
+    --sidebar-primary: 191 91% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4% 10%;
     --sidebar-accent-foreground: 240 6% 93%;
     --sidebar-border: 240 4% 10%;
-    --sidebar-ring: 234 53% 60%;
-    --chart-1: 234 53% 60%;
+    --sidebar-ring: 191 91% 35%;
+    --chart-1: 191 91% 35%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
@@ -49,11 +49,18 @@
   }
 
   body {
-    @apply bg-[#050506] text-[#EDEDEF] antialiased;
-    background: radial-gradient(ellipse at top, #0a0a0f 0%, #050506 50%, #020203 100%);
+    @apply bg-[#061417] text-[#F0FCFF] antialiased;
+    background:
+      linear-gradient(180deg, rgba(8, 145, 178, 0.08) 0%, rgba(6, 20, 23, 0) 260px),
+      #061417;
     background-attachment: fixed;
     min-height: 100vh;
     color-scheme: dark;
+  }
+
+  :focus-visible {
+    outline: 3px solid rgba(34, 211, 238, 0.65);
+    outline-offset: 2px;
   }
 
   /* Subtle scrollbar styling */
@@ -93,8 +100,8 @@
 
   /* Consistent select option styling */
   select option {
-    background-color: #0F0F12;
-    color: #EDEDEF;
+    background-color: #082127;
+    color: #F0FCFF;
     padding: 8px 12px;
   }
 }
@@ -102,6 +109,10 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1000] focus:rounded-lg focus:bg-[#0891B2] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white;
   }
 }
 
@@ -174,7 +185,7 @@
 
 .rbc-calendar {
   background: transparent;
-  color: #EDEDEF;
+  color: #F0FCFF;
   font-family: inherit;
   font-size: 13px;
 }
@@ -189,7 +200,7 @@
 .rbc-toolbar button {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #8A8F98;
+  color: #A9BFC5;
   border-radius: 8px;
   padding: 6px 14px;
   font-size: 12px;
@@ -200,15 +211,15 @@
 
 .rbc-toolbar button:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #EDEDEF;
+  color: #F0FCFF;
 }
 
 .rbc-toolbar button.rbc-active,
 .rbc-toolbar button.rbc-active:hover,
 .rbc-toolbar button.rbc-active:focus {
-  background: rgba(94, 106, 210, 0.2);
-  border-color: rgba(94, 106, 210, 0.4);
-  color: #818cf8;
+  background: rgba(8, 145, 178, 0.2);
+  border-color: rgba(8, 145, 178, 0.4);
+  color: #22D3EE;
   box-shadow: none;
 }
 
@@ -220,7 +231,7 @@
 .rbc-toolbar-label {
   font-size: 16px;
   font-weight: 600;
-  color: #EDEDEF;
+  color: #F0FCFF;
   flex-grow: 1;
   text-align: center;
 }
@@ -241,7 +252,7 @@
   padding: 8px 4px;
   font-size: 11px;
   font-weight: 600;
-  color: #8A8F98;
+  color: #A9BFC5;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   background: rgba(255, 255, 255, 0.02);
@@ -265,7 +276,7 @@
 }
 
 .rbc-day-bg.rbc-today {
-  background: rgba(94, 106, 210, 0.07);
+  background: rgba(8, 145, 178, 0.07);
 }
 
 .rbc-day-bg.rbc-off-range-bg {
@@ -275,13 +286,13 @@
 /* Date number cells */
 .rbc-date-cell {
   padding: 4px 8px;
-  color: #8A8F98;
+  color: #A9BFC5;
   font-size: 12px;
   text-align: right;
 }
 
 .rbc-date-cell.rbc-now .rbc-button-link {
-  color: #818cf8;
+  color: #22D3EE;
   font-weight: 700;
 }
 
@@ -298,7 +309,7 @@
 }
 
 .rbc-button-link:hover {
-  color: #EDEDEF;
+  color: #F0FCFF;
 }
 
 /* Events */
@@ -315,7 +326,7 @@
 .rbc-event:focus,
 .rbc-event.rbc-selected {
   outline: none !important;
-  box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.5);
+  box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.5);
 }
 
 .rbc-event-content {
@@ -327,7 +338,7 @@
 
 /* "X more" link */
 .rbc-show-more {
-  color: #5E6AD2;
+  color: #0891B2;
   font-size: 11px;
   font-weight: 500;
   background: transparent;
@@ -337,7 +348,7 @@
 }
 
 .rbc-show-more:hover {
-  color: #818cf8;
+  color: #22D3EE;
 }
 
 /* Time / Week view */
@@ -371,13 +382,13 @@
 }
 
 .rbc-label {
-  color: #8A8F98;
+  color: #A9BFC5;
   font-size: 11px;
   padding: 0 8px;
 }
 
 .rbc-current-time-indicator {
-  background-color: rgba(94, 106, 210, 0.9);
+  background-color: rgba(8, 145, 178, 0.9);
   height: 2px;
 }
 
@@ -387,13 +398,13 @@
 
 /* Today column in week/day views */
 .rbc-today {
-  background: rgba(94, 106, 210, 0.05);
+  background: rgba(8, 145, 178, 0.05);
 }
 
 /* Agenda view */
 .rbc-agenda-view table.rbc-agenda-table {
   border: none;
-  color: #EDEDEF;
+  color: #F0FCFF;
 }
 
 .rbc-agenda-view table.rbc-agenda-table thead {
@@ -402,7 +413,7 @@
 }
 
 .rbc-agenda-view table.rbc-agenda-table thead th {
-  color: #8A8F98;
+  color: #A9BFC5;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -414,7 +425,7 @@
 .rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
   padding: 10px 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
-  color: #EDEDEF;
+  color: #F0FCFF;
   font-size: 13px;
 }
 
@@ -424,13 +435,13 @@
 
 .rbc-agenda-view table.rbc-agenda-table .rbc-agenda-date-cell,
 .rbc-agenda-view table.rbc-agenda-table .rbc-agenda-time-cell {
-  color: #8A8F98;
+  color: #A9BFC5;
   font-size: 12px;
   white-space: nowrap;
 }
 
 .rbc-agenda-empty {
-  color: #8A8F98;
+  color: #A9BFC5;
   padding: 32px;
   text-align: center;
   font-size: 13px;
@@ -438,7 +449,7 @@
 
 /* Popup overlay ("+X more") */
 .rbc-overlay {
-  background: #0a0a0c;
+  background: #061417;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
@@ -447,7 +458,7 @@
 }
 
 .rbc-overlay-header {
-  color: #8A8F98;
+  color: #A9BFC5;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;

@@ -1,6 +1,6 @@
 // Single source of truth for the appointment / invoice status → colour map.
 // Previously this switch was copy-pasted into the dashboard, appointments list,
-// invoices, etc. Keep the same pill look (rounded-full, /15 bg, 400 text).
+// invoices, etc. Keep the same pill look with accessible clinical tones.
 
 type StatusTone = {
   bg: string
@@ -9,11 +9,11 @@ type StatusTone = {
 }
 
 const APPOINTMENT_STATUS: Record<string, StatusTone> = {
-  scheduled: { bg: "bg-blue-500/15", text: "text-blue-400" },
-  confirmed: { bg: "bg-green-500/15", text: "text-green-400" },
-  completed: { bg: "bg-purple-500/15", text: "text-purple-400" },
+  scheduled: { bg: "bg-cyan-500/15", text: "text-cyan-300" },
+  confirmed: { bg: "bg-emerald-500/15", text: "text-emerald-300" },
+  completed: { bg: "bg-teal-500/15", text: "text-teal-300" },
   missed: { bg: "bg-red-500/15", text: "text-red-400" },
-  cancelled: { bg: "bg-white/[0.05]", text: "text-[#8A8F98]" },
+  cancelled: { bg: "bg-white/[0.06]", text: "text-[#A9BFC5]" },
 }
 
 const INVOICE_STATUS: Record<string, StatusTone> = {
@@ -22,10 +22,10 @@ const INVOICE_STATUS: Record<string, StatusTone> = {
   unpaid: { bg: "bg-red-500/15", text: "text-red-400" },
   pending: { bg: "bg-amber-500/15", text: "text-amber-400" },
   overdue: { bg: "bg-red-500/15", text: "text-red-400" },
-  cancelled: { bg: "bg-white/[0.05]", text: "text-[#8A8F98]" },
+  cancelled: { bg: "bg-white/[0.06]", text: "text-[#A9BFC5]" },
 }
 
-const FALLBACK: StatusTone = { bg: "bg-white/[0.05]", text: "text-[#8A8F98]" }
+const FALLBACK: StatusTone = { bg: "bg-white/[0.06]", text: "text-[#A9BFC5]" }
 
 function toneFor(status: string, kind: "appointment" | "invoice"): StatusTone {
   const key = status?.toLowerCase?.() ?? ""
@@ -49,7 +49,7 @@ export function StatusBadge({
   const tone = toneFor(status, kind)
   return (
     <span
-      className={`px-2.5 py-0.5 inline-flex text-xs font-medium rounded-full ${tone.bg} ${tone.text} ${className}`}
+      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${tone.bg} ${tone.text} ${className}`}
     >
       {titleCase(status)}
     </span>

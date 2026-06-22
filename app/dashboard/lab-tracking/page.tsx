@@ -278,7 +278,7 @@ export default function LabTrackingPage() {
       case "Sent to Lab": return "bg-amber-500/15 text-amber-400"
       case "Received from Lab": return "bg-cyan-500/15 text-cyan-400"
       case "Fitted/Completed": return "bg-emerald-500/15 text-emerald-400"
-      default: return "bg-white/[0.05] text-[#8A8F98]"
+      default: return "bg-white/[0.05] text-[#A9BFC5]"
     }
   }
 
@@ -316,7 +316,7 @@ export default function LabTrackingPage() {
       />
 
       {/* Filters */}
-      <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_2px_20px_rgba(0,0,0,0.4)] overflow-hidden">
+      <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
         <div className="px-4 sm:px-5 py-4 border-b border-white/[0.06] flex flex-col sm:flex-row gap-3">
           <div className="relative w-full sm:max-w-xs">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -324,7 +324,7 @@ export default function LabTrackingPage() {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2.5 min-h-[44px] bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+              className="block w-full pl-10 pr-3 py-2.5 min-h-[44px] bg-[#082127] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
               placeholder="Search patient, material, tooth..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -337,8 +337,8 @@ export default function LabTrackingPage() {
                 onClick={() => setStatusFilter(s)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
                   statusFilter === s
-                    ? "bg-[#5E6AD2] text-white"
-                    : "bg-white/[0.05] text-[#8A8F98] hover:text-[#EDEDEF] hover:bg-white/[0.08]"
+                    ? "bg-[#0891B2] text-white"
+                    : "bg-white/[0.05] text-[#A9BFC5] hover:text-[#F0FCFF] hover:bg-white/[0.08]"
                 }`}
               >
                 {s === "active" ? "Active" : s === "all" ? "All" : s}
@@ -352,14 +352,14 @@ export default function LabTrackingPage() {
           <table className="min-w-full divide-y divide-white/[0.06]">
             <thead className="bg-white/[0.03]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">Patient</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">Tooth & Material</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">Lab</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">Sent</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#8A8F98] uppercase tracking-wider">Received</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">Patient</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">Tooth & Material</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">Lab</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">Sent</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">Received</th>
                 {canEdit && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-[#8A8F98] uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-[#A9BFC5] uppercase tracking-wider">Actions</th>
                 )}
               </tr>
             </thead>
@@ -383,39 +383,39 @@ export default function LabTrackingPage() {
                   <tr key={c.id} className="hover:bg-white/[0.03] transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 flex items-center justify-center">
-                          <User className="h-4 w-4 text-[#5E6AD2]" />
+                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#0891B2]/10 border border-[#0891B2]/20 flex items-center justify-center">
+                          <User className="h-4 w-4 text-[#0891B2]" />
                         </div>
                         <div className="ml-3">
-                          <div className="text-sm font-medium text-[#EDEDEF]">{c.patientName}</div>
+                          <div className="text-sm font-medium text-[#F0FCFF]">{c.patientName}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-[#EDEDEF]">{c.toothDetails}</div>
-                      <div className="text-xs text-[#8A8F98]">{c.material}</div>
+                      <div className="text-sm text-[#F0FCFF]">{c.toothDetails}</div>
+                      <div className="text-xs text-[#A9BFC5]">{c.material}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#8A8F98]">{c.labName === "None" ? "—" : c.labName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#A9BFC5]">{c.labName === "None" ? "—" : c.labName}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2.5 py-0.5 inline-flex text-xs font-semibold rounded-full ${getStatusColor(c.status)}`}>
                         {c.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#8A8F98]">{formatDate(c.sentDate)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#8A8F98]">{formatDate(c.receivedDate)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#A9BFC5]">{formatDate(c.sentDate)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#A9BFC5]">{formatDate(c.receivedDate)}</td>
                     {canEdit && (
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => openUpdateModal(c)}
-                            className="inline-flex items-center text-[#5E6AD2] hover:text-[#6872D9] text-xs font-medium transition-colors"
+                            className="inline-flex items-center text-[#0891B2] hover:text-[#0E7490] text-xs font-medium transition-colors"
                           >
                             <RefreshCw className="h-3.5 w-3.5 mr-1" />
                             Update
                           </button>
                           <button
                             onClick={() => setDeleteId(c.id)}
-                            className="text-[#8A8F98] hover:text-red-400 p-1 transition-colors"
+                            className="text-[#A9BFC5] hover:text-red-400 p-1 transition-colors"
                           >
                             <Trash className="h-3.5 w-3.5" />
                           </button>
@@ -446,19 +446,19 @@ export default function LabTrackingPage() {
               <div key={c.id} className="p-4 hover:bg-white/[0.03] transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#5E6AD2]/10 border border-[#5E6AD2]/20 flex items-center justify-center">
-                      <Package className="h-5 w-5 text-[#5E6AD2]" />
+                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#0891B2]/10 border border-[#0891B2]/20 flex items-center justify-center">
+                      <Package className="h-5 w-5 text-[#0891B2]" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-[#EDEDEF] truncate">{c.patientName}</div>
-                      <div className="text-xs text-[#8A8F98]">{c.toothDetails} · {c.material}</div>
+                      <div className="text-sm font-medium text-[#F0FCFF] truncate">{c.patientName}</div>
+                      <div className="text-xs text-[#A9BFC5]">{c.toothDetails} · {c.material}</div>
                     </div>
                   </div>
                   <span className={`px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0 ${getStatusColor(c.status)}`}>
                     {c.status}
                   </span>
                 </div>
-                <div className="mt-3 flex items-center gap-4 text-xs text-[#8A8F98]">
+                <div className="mt-3 flex items-center gap-4 text-xs text-[#A9BFC5]">
                   <span>Lab: {c.labName === "None" ? "—" : c.labName}</span>
                   {c.sentDate && <span>Sent: {formatDate(c.sentDate)}</span>}
                   {c.receivedDate && <span>Recv: {formatDate(c.receivedDate)}</span>}
@@ -467,7 +467,7 @@ export default function LabTrackingPage() {
                   <div className="mt-3 flex gap-2">
                     <button
                       onClick={() => openUpdateModal(c)}
-                      className="inline-flex items-center px-3 py-1.5 bg-[#5E6AD2]/15 text-[#5E6AD2] rounded-lg text-xs font-medium transition-colors hover:bg-[#5E6AD2]/25"
+                      className="inline-flex items-center px-3 py-1.5 bg-[#0891B2]/15 text-[#0891B2] rounded-lg text-xs font-medium transition-colors hover:bg-[#0891B2]/25"
                     >
                       <RefreshCw className="h-3 w-3 mr-1" />
                       Update Status
@@ -488,7 +488,7 @@ export default function LabTrackingPage() {
 
         {/* Count */}
         <div className="px-4 sm:px-5 py-3 border-t border-white/[0.06]">
-          <span className="text-xs text-[#8A8F98]">
+          <span className="text-xs text-[#A9BFC5]">
             {filtered.length} lab case{filtered.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -497,10 +497,10 @@ export default function LabTrackingPage() {
       {/* ═══ Create Modal ═══ */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#0a0a0c] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#061417] border border-white/[0.06] rounded-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_40px_rgba(0,0,0,0.5)] p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[#EDEDEF]">New Lab Case</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-[#8A8F98] hover:text-[#EDEDEF] p-1 transition-colors">
+              <h3 className="text-lg font-semibold text-[#F0FCFF]">New Lab Case</h3>
+              <button onClick={() => setShowCreateModal(false)} className="text-[#A9BFC5] hover:text-[#F0FCFF] p-1 transition-colors">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -512,11 +512,11 @@ export default function LabTrackingPage() {
             <form onSubmit={handleCreate} className="space-y-4">
               {/* Patient search */}
               <div className="relative">
-                <label className="block text-sm font-medium text-[#8A8F98] mb-1">Patient *</label>
+                <label className="block text-sm font-medium text-[#A9BFC5] mb-1">Patient *</label>
                 {selectedPatient ? (
-                  <div className="flex items-center justify-between bg-[#0F0F12] border border-white/10 rounded-lg px-3 py-2.5 min-h-[44px]">
-                    <span className="text-sm text-[#EDEDEF]">{selectedPatient.name} <span className="text-[#8A8F98]">{selectedPatient.phone}</span></span>
-                    <button type="button" onClick={() => { setSelectedPatient(null); setPatientSearch("") }} className="text-[#8A8F98] hover:text-red-400">
+                  <div className="flex items-center justify-between bg-[#082127] border border-white/10 rounded-lg px-3 py-2.5 min-h-[44px]">
+                    <span className="text-sm text-[#F0FCFF]">{selectedPatient.name} <span className="text-[#A9BFC5]">{selectedPatient.phone}</span></span>
+                    <button type="button" onClick={() => { setSelectedPatient(null); setPatientSearch("") }} className="text-[#A9BFC5] hover:text-red-400">
                       <X className="h-4 w-4" />
                     </button>
                   </div>
@@ -530,18 +530,18 @@ export default function LabTrackingPage() {
                         type="text"
                         value={patientSearch}
                         onChange={(e) => setPatientSearch(e.target.value)}
-                        className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors min-h-[44px]"
+                        className="pl-10 pr-3 py-2.5 block w-full text-sm bg-[#082127] border border-white/10 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors min-h-[44px]"
                         placeholder="Search registered patients..."
                       />
                     </div>
                     {showPatientDropdown && patientResults.length > 0 && (
-                      <div className="absolute z-10 mt-1 w-full bg-[#0a0a0c] border border-white/[0.1] rounded-lg shadow-lg overflow-hidden">
+                      <div className="absolute z-10 mt-1 w-full bg-[#061417] border border-white/[0.1] rounded-lg shadow-lg overflow-hidden">
                         {patientResults.map((p) => (
                           <button key={p.id} type="button"
                             onClick={() => { setSelectedPatient(p); setPatientSearch(""); setShowPatientDropdown(false) }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-[#EDEDEF] hover:bg-white/[0.05] transition-colors">
+                            className="w-full text-left px-4 py-2.5 text-sm text-[#F0FCFF] hover:bg-white/[0.05] transition-colors">
                             <div className="font-medium">{p.name}</div>
-                            <div className="text-xs text-[#8A8F98]">{p.phone}</div>
+                            <div className="text-xs text-[#A9BFC5]">{p.phone}</div>
                           </button>
                         ))}
                       </div>
@@ -552,48 +552,48 @@ export default function LabTrackingPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#8A8F98] mb-1">Material *</label>
+                  <label className="block text-sm font-medium text-[#A9BFC5] mb-1">Material *</label>
                   <select value={newMaterial} onChange={(e) => setNewMaterial(e.target.value)}
-                    className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors">
+                    className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors">
                     {MATERIALS.map((m) => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#8A8F98] mb-1">Tooth Details *</label>
+                  <label className="block text-sm font-medium text-[#A9BFC5] mb-1">Tooth Details *</label>
                   <input type="text" value={newTooth} onChange={(e) => setNewTooth(e.target.value)}
-                    className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors placeholder-gray-500"
+                    className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors placeholder-gray-500"
                     placeholder="e.g. Upper Right Molar / 16" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#8A8F98] mb-1">Lab</label>
+                  <label className="block text-sm font-medium text-[#A9BFC5] mb-1">Lab</label>
                   <select value={newLabName} onChange={(e) => setNewLabName(e.target.value as LabName)}
-                    className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors">
+                    className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors">
                     {LAB_NAMES.map((l) => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#8A8F98] mb-1">Status</label>
+                  <label className="block text-sm font-medium text-[#A9BFC5] mb-1">Status</label>
                   <select value={newStatus} onChange={(e) => setNewStatus(e.target.value as LabCaseStatus)}
-                    className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors">
+                    className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full min-h-[44px] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors">
                     {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#8A8F98] mb-1">Notes</label>
+                <label className="block text-sm font-medium text-[#A9BFC5] mb-1">Notes</label>
                 <textarea rows={2} value={newNotes} onChange={(e) => setNewNotes(e.target.value)}
-                  className="bg-[#0F0F12] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors placeholder-gray-500"
+                  className="bg-[#082127] border border-white/10 rounded-lg text-gray-100 text-sm px-3 py-2.5 w-full focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors placeholder-gray-500"
                   placeholder="Additional notes..." />
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowCreateModal(false)}
-                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#EDEDEF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">
+                  className="bg-white/[0.05] hover:bg-white/[0.08] text-[#F0FCFF] border border-white/[0.06] rounded-lg py-2.5 px-4 text-sm font-medium transition-colors min-h-[44px]">
                   Cancel
                 </button>
                 <button type="submit" disabled={creating}
-                  className="inline-flex items-center justify-center py-2.5 px-4 text-sm font-medium text-white bg-[#5E6AD2] hover:bg-[#6872D9] rounded-lg shadow-[0_0_0_1px_rgba(94,106,210,0.5),0_4px_12px_rgba(94,106,210,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] disabled:opacity-50 min-h-[44px] transition-colors">
+                  className="inline-flex items-center justify-center py-2.5 px-4 text-sm font-medium text-white bg-[#0891B2] hover:bg-[#0E7490] rounded-lg shadow-[0_0_0_1px_rgba(8,145,178,0.5),0_4px_12px_rgba(8,145,178,0.25),inset_0_1px_0_0_rgba(255,255,255,0.1)] disabled:opacity-50 min-h-[44px] transition-colors">
                   {creating ? "Creating..." : "Create Lab Case"}
                 </button>
               </div>

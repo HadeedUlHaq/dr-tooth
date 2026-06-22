@@ -16,8 +16,8 @@ export function PageHeader({
   return (
     <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${className}`}>
       <div>
-        <h1 className="text-2xl font-semibold text-[#EDEDEF] tracking-tight">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-[#8A8F98]">{subtitle}</p>}
+        <h1 className="text-2xl font-semibold text-[#F0FCFF] tracking-tight">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm leading-6 text-[#A9BFC5]">{subtitle}</p>}
       </div>
       {actions && <div className="flex-shrink-0">{actions}</div>}
     </div>

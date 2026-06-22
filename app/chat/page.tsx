@@ -24,7 +24,7 @@ const markdownComponents: Components = {
   ),
   thead: ({ children }) => <thead className="bg-white/[0.06]">{children}</thead>,
   th: ({ children }) => (
-    <th className="border-b border-white/10 px-3 py-2 text-left font-semibold text-[#EDEDEF]">
+    <th className="border-b border-white/10 px-3 py-2 text-left font-semibold text-[#F0FCFF]">
       {children}
     </th>
   ),
@@ -131,17 +131,17 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#0a0a0c]">
+    <div className="flex flex-col h-screen bg-[#061417]">
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] bg-[#0a0a0c]/80 backdrop-blur-sm">
-        <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-[#5E6AD2]/10 border border-[#5E6AD2]/20">
-          <Stethoscope className="h-5 w-5 text-[#5E6AD2]" />
+      <header className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] bg-[#061417]/80 backdrop-blur-sm">
+        <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-[#0891B2]/10 border border-[#0891B2]/20">
+          <Stethoscope className="h-5 w-5 text-[#0891B2]" />
         </div>
         <div>
-          <h1 className="text-base font-semibold text-[#EDEDEF] leading-tight">
+          <h1 className="text-base font-semibold text-[#F0FCFF] leading-tight">
             Dr Tooth Dental Clinic
           </h1>
-          <p className="text-xs text-[#8A8F98] flex items-center gap-1.5">
+          <p className="text-xs text-[#A9BFC5] flex items-center gap-1.5">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
             Virtual Receptionist · Online
           </p>
@@ -159,8 +159,8 @@ export default function ChatPage() {
               <div
                 className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                   msg.role === "user"
-                    ? "bg-[#5E6AD2] text-white rounded-tr-sm"
-                    : "bg-white/[0.06] text-[#EDEDEF] rounded-tl-sm"
+                    ? "bg-[#0891B2] text-white rounded-tr-sm"
+                    : "bg-white/[0.06] text-[#F0FCFF] rounded-tl-sm"
                 }`}
               >
                 {msg.role === "user" ? (
@@ -178,9 +178,9 @@ export default function ChatPage() {
             <div className="flex justify-start">
               <div className="bg-white/[0.06] rounded-2xl rounded-tl-sm px-4 py-3">
                 <div className="flex gap-1">
-                  <span className="h-2 w-2 rounded-full bg-[#8A8F98] animate-bounce [animation-delay:-0.3s]" />
-                  <span className="h-2 w-2 rounded-full bg-[#8A8F98] animate-bounce [animation-delay:-0.15s]" />
-                  <span className="h-2 w-2 rounded-full bg-[#8A8F98] animate-bounce" />
+                  <span className="h-2 w-2 rounded-full bg-[#A9BFC5] animate-bounce [animation-delay:-0.3s]" />
+                  <span className="h-2 w-2 rounded-full bg-[#A9BFC5] animate-bounce [animation-delay:-0.15s]" />
+                  <span className="h-2 w-2 rounded-full bg-[#A9BFC5] animate-bounce" />
                 </div>
               </div>
             </div>
@@ -189,7 +189,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-white/[0.06] bg-[#0a0a0c] px-4 py-3">
+      <div className="border-t border-white/[0.06] bg-[#061417] px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-end gap-2">
           <textarea
             value={input}
@@ -197,17 +197,17 @@ export default function ChatPage() {
             onKeyDown={handleKeyDown}
             placeholder="Type your message…"
             rows={1}
-            className="flex-1 resize-none rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-[#EDEDEF] placeholder:text-[#8A8F98] focus:outline-none focus:border-[#5E6AD2]/50 max-h-32"
+            className="flex-1 resize-none rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-[#F0FCFF] placeholder:text-[#A9BFC5] focus:outline-none focus:border-[#0891B2]/50 max-h-32"
           />
           <button
             onClick={handleSend}
             disabled={sending || !input.trim()}
-            className="flex items-center justify-center h-11 w-11 rounded-xl bg-[#5E6AD2] text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#5E6AD2]/90 transition-colors shrink-0"
+            className="flex items-center justify-center h-11 w-11 rounded-xl bg-[#0891B2] text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#0891B2]/90 transition-colors shrink-0"
           >
             <Send className="h-5 w-5" />
           </button>
         </div>
-        <p className="max-w-2xl mx-auto text-[10px] text-[#8A8F98] mt-2 text-center">
+        <p className="max-w-2xl mx-auto text-[10px] text-[#A9BFC5] mt-2 text-center">
           AI assistant — for emergencies, please call the clinic directly.
         </p>
       </div>

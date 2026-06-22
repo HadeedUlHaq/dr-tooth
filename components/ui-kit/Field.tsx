@@ -1,10 +1,10 @@
 import type React from "react"
 
-// Form primitives wrapping the `bg-[#0F0F12] … focus:ring-[#5E6AD2]/20` style.
+// Form primitives wrapping the clinical dark input style.
 // Field provides the label + spacing; Input/Textarea/Select are the controls.
 
 const CONTROL =
-  "block w-full px-3 py-2.5 bg-[#0F0F12] border border-white/10 rounded-lg text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20 transition-colors"
+  "block w-full px-3 py-2.5 bg-[#082127] border border-white/10 rounded-lg text-sm text-[#F0FCFF] placeholder:text-[#7E989F] focus:outline-none focus:border-[#22D3EE] focus:ring-2 focus:ring-[#22D3EE]/25 transition-colors"
 
 export function Field({
   label,
@@ -22,12 +22,12 @@ export function Field({
   return (
     <div className={className}>
       {label && (
-        <label htmlFor={htmlFor} className="block text-sm font-medium text-[#8A8F98] mb-1">
+        <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-[#A9BFC5]">
           {label}
         </label>
       )}
       {children}
-      {hint && <p className="mt-1 text-xs text-[#8A8F98]">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-[#A9BFC5]">{hint}</p>}
     </div>
   )
 }

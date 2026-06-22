@@ -2,7 +2,7 @@ import OpenAI from "openai"
 import { AGENT_TOOLS, STAFF_TOOLS, executeTool } from "./tools"
 import { updateSession } from "./sessionService"
 import { isStaffElevated } from "./staffAuth"
-import type { WhatsAppSession } from "../types"
+import type { AgentIntent, AgentRiskLevel, AgentTurnTrace, WhatsAppSession } from "../types"
 
 // OpenAI Chat Completions API.
 // Instantiate lazily — constructing the client at module load throws "Missing
@@ -16,6 +16,215 @@ function getClient(): OpenAI {
 
 // Override in .env.local with another model if desired.
 const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini"
+
+type AgentRoute = {
+  intent: AgentIntent
+  risk: AgentRiskLevel
+  needsFreshData: boolean
+  reason: string
+}
+
+const HIGH_RISK_TOOLS = new Set([
+  "cancel_appointment",
+  "reschedule_appointment",
+  "staff_cancel_appointment",
+  "staff_reschedule_appointment",
+  "staff_block_time",
+  "staff_broadcast",
+  "staff_message_patient",
+])
+
+const TOOL_PENDING_TYPE: Record<string, string> = {
+  cancel_appointment: "cancel_appointment",
+  reschedule_appointment: "reschedule_appointment",
+  staff_cancel_appointment: "staff_cancel_appointment",
+  staff_reschedule_appointment: "staff_reschedule_appointment",
+  staff_block_time: "staff_block_time",
+  staff_broadcast: "staff_broadcast",
+  staff_message_patient: "staff_message_patient",
+}
+
+function includesAny(text: string, terms: string[]): boolean {
+  return terms.some((term) => text.includes(term))
+}
+
+function classifyAgentRoute(session: WhatsAppSession, incomingMessage: string): AgentRoute {
+  const text = incomingMessage.toLowerCase()
+  const staff = isStaffElevated(session)
+
+  if (isConfirmationReply(incomingMessage) && session.pendingAction?.type) {
+    const type = String(session.pendingAction.type)
+    const intent: AgentIntent = type.includes("message")
+      ? "staff_messaging"
+      : type.includes("cancel")
+        ? "cancel"
+        : type.includes("reschedule")
+          ? "reschedule"
+          : "staff_operations"
+    return {
+      intent,
+      risk: "high",
+      needsFreshData: true,
+      reason: `confirmation for pending ${type}`,
+    }
+  }
+
+  if (includesAny(text, ["emergency", "severe pain", "bleeding", "swelling", "infection", "trauma", "can't breathe", "cant breathe"])) {
+    return { intent: "emergency", risk: "high", needsFreshData: true, reason: "possible urgent dental issue" }
+  }
+
+  if (includesAny(text, ["start over", "new patient", "not me", "different patient", "reset"])) {
+    return { intent: "identity_reset", risk: "medium", needsFreshData: false, reason: "identity or memory reset request" }
+  }
+
+  if (staff && includesAny(text, ["broadcast", "message all", "send to all", "tell all", "whatsapp everyone"])) {
+    return { intent: "staff_messaging", risk: "high", needsFreshData: true, reason: "staff broadcast or bulk patient messaging" }
+  }
+
+  if (staff && includesAny(text, ["message", "tell ", "remind", "send ", "running late"])) {
+    return { intent: "staff_messaging", risk: "high", needsFreshData: true, reason: "staff-to-patient message relay" }
+  }
+
+  if (staff && includesAny(text, ["revenue", "outstanding", "balance", "patients today", "schedule", "next patient", "block", "unblock", "closed", "appointment list"])) {
+    return { intent: "staff_operations", risk: includesAny(text, ["block", "unblock", "closed"]) ? "high" : "medium", needsFreshData: true, reason: "staff operational data or action" }
+  }
+
+  if (includesAny(text, ["cancel", "delete appointment", "can't come", "cant come"])) {
+    return { intent: "cancel", risk: "high", needsFreshData: true, reason: "appointment cancellation" }
+  }
+
+  if (includesAny(text, ["reschedule", "move", "change time", "change date", "shift appointment"])) {
+    return { intent: "reschedule", risk: "high", needsFreshData: true, reason: "appointment reschedule" }
+  }
+
+  if (includesAny(text, ["book", "appointment", "available", "slot", "free time", "tomorrow", "today"])) {
+    return { intent: "booking", risk: "medium", needsFreshData: true, reason: "appointment booking or availability" }
+  }
+
+  if (includesAny(text, ["invoice", "bill", "payment", "paid", "due", "owe", "balance", "receipt"])) {
+    return { intent: "billing", risk: "medium", needsFreshData: true, reason: "billing or invoice data" }
+  }
+
+  if (includesAny(text, ["my appointment", "when is", "upcoming", "schedule"])) {
+    return { intent: "appointments_lookup", risk: "medium", needsFreshData: true, reason: "appointment lookup" }
+  }
+
+  if (includesAny(text, ["hours", "open", "location", "address", "price", "cost", "service", "services"])) {
+    return { intent: "clinic_info", risk: "low", needsFreshData: true, reason: "clinic facts request" }
+  }
+
+  if (includesAny(text, ["hi", "hello", "salam", "thanks", "thank you"])) {
+    return { intent: "smalltalk", risk: "low", needsFreshData: false, reason: "smalltalk or greeting" }
+  }
+
+  return { intent: "unclear", risk: "low", needsFreshData: false, reason: "no clear tool-backed intent detected" }
+}
+
+function buildRoutePrompt(route: AgentRoute): string {
+  return `AGENT ROUTE FOR THIS TURN:
+- Intent: ${route.intent}
+- Risk: ${route.risk}
+- Fresh data required: ${route.needsFreshData ? "yes" : "no"}
+- Reason: ${route.reason}
+
+Use this route to choose tools. If fresh data is required, do not answer factual clinic, appointment, invoice, schedule, patient, availability, or money questions without a fresh tool result from this turn. For high-risk actions, stage the action first and ask for explicit confirmation unless a matching pending action is already being confirmed. If tool results show multiple possible patients/appointments, ask the user to choose; do not infer.`
+}
+
+function toolRisk(toolName: string): AgentRiskLevel {
+  if (HIGH_RISK_TOOLS.has(toolName)) return "high"
+  if (
+    toolName.includes("invoice") ||
+    toolName.includes("appointment") ||
+    toolName.startsWith("staff_") ||
+    toolName === "search_patient"
+  ) {
+    return "medium"
+  }
+  return "low"
+}
+
+function isMatchingPendingConfirmation(
+  session: WhatsAppSession,
+  toolName: string,
+  incomingMessage: string
+): boolean {
+  if (!isConfirmationReply(incomingMessage)) return false
+  const expected = TOOL_PENDING_TYPE[toolName]
+  return !!expected && session.pendingAction?.type === expected
+}
+
+function guardToolInputForRisk(
+  session: WhatsAppSession,
+  toolName: string,
+  input: Record<string, unknown>,
+  incomingMessage: string
+): Record<string, unknown> {
+  if (!HIGH_RISK_TOOLS.has(toolName)) return input
+  if (input.confirmed !== true) return input
+  if (isMatchingPendingConfirmation(session, toolName, incomingMessage)) return input
+
+  return {
+    ...input,
+    confirmed: false,
+    _riskGateNote:
+      "confirmed:true was removed because there is no matching pending confirmation for this turn.",
+  }
+}
+
+function parseToolResult(result: string): Record<string, unknown> | null {
+  try {
+    const parsed = JSON.parse(result)
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null
+  } catch {
+    return null
+  }
+}
+
+function analyzeToolTrace(route: AgentRoute, toolTrace: { name: string; result: string }[]): Pick<
+  AgentTurnTrace,
+  "confirmationRequired" | "clarificationRequired" | "sufficiency"
+> {
+  let confirmationRequired = false
+  let clarificationRequired = false
+  let blocked = false
+
+  for (const t of toolTrace) {
+    const parsed = parseToolResult(t.result)
+    if (!parsed) continue
+    confirmationRequired ||= parsed.needsConfirmation === true
+    clarificationRequired ||= parsed.needsClarification === true
+    blocked ||= parsed.error === "not_authorized" || parsed.error === "validation" || parsed.success === false
+  }
+
+  const sufficiency: AgentTurnTrace["sufficiency"] =
+    toolTrace.length > 0
+      ? clarificationRequired
+        ? "needs_clarification"
+        : blocked
+          ? "blocked"
+          : "fresh_data_used"
+      : route.needsFreshData
+        ? "blocked"
+        : "no_tool_needed"
+
+  return { confirmationRequired, clarificationRequired, sufficiency }
+}
+
+function buildAgentTrace(
+  route: AgentRoute,
+  toolTrace: { name: string; result: string }[]
+): AgentTurnTrace {
+  const analysis = analyzeToolTrace(route, toolTrace)
+  return {
+    at: new Date().toISOString(),
+    intent: route.intent,
+    risk: route.risk,
+    routeReason: route.reason,
+    needsFreshData: route.needsFreshData,
+    toolsUsed: toolTrace.map((t) => t.name),
+    ...analysis,
+  }
+}
 
 // Staff/doctor assistant prompt — used only for an authenticated staff session.
 // It is allowed to surface clinic-wide and patient data because the caller has
@@ -263,6 +472,7 @@ async function persistSessionState(session: WhatsAppSession): Promise<void> {
       patientPhone: session.patientPhone ?? null,
       phase: session.phase,
       pendingAction: session.pendingAction ?? null,
+      lastAgentTrace: session.lastAgentTrace ?? null,
       invoiceAttempts: session.invoiceAttempts ?? 0,
       chatId: session.chatId,
     })
@@ -366,11 +576,27 @@ async function runPendingConfirmation(
 }
 
 export async function runAgent(session: WhatsAppSession, incomingMessage: string): Promise<string> {
+  const route = classifyAgentRoute(session, incomingMessage)
   const confirmedPending = await runPendingConfirmation(session, incomingMessage)
-  if (confirmedPending) return confirmedPending
+  if (confirmedPending) {
+    session.lastAgentTrace = {
+      at: new Date().toISOString(),
+      intent: route.intent,
+      risk: "high",
+      routeReason: route.reason,
+      needsFreshData: true,
+      toolsUsed: ["staff_message_patient"],
+      confirmationRequired: false,
+      clarificationRequired: false,
+      sufficiency: "fresh_data_used",
+    }
+    await persistSessionState(session)
+    return confirmedPending
+  }
 
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
     { role: "system", content: buildSystemPrompt(session) },
+    { role: "system", content: buildRoutePrompt(route) },
     ...session.messages.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
@@ -410,7 +636,19 @@ export async function runAgent(session: WhatsAppSession, incomingMessage: string
         if (toolCall.type !== "function") continue
         let result: string
         try {
-          const input = JSON.parse(toolCall.function.arguments) as Record<string, unknown>
+          const rawInput = JSON.parse(toolCall.function.arguments) as Record<string, unknown>
+          const input = guardToolInputForRisk(
+            session,
+            toolCall.function.name,
+            rawInput,
+            incomingMessage
+          )
+          const risk = toolRisk(toolCall.function.name)
+          if (risk === "high" && rawInput.confirmed === true && input.confirmed !== true) {
+            console.warn(
+              `[Agent risk gate] stripped premature confirmation for ${toolCall.function.name}`
+            )
+          }
           result = await executeTool(toolCall.function.name, input, ctx)
         } catch (toolErr) {
           // Keep the conversation alive — hand the error back to the model so it
@@ -443,8 +681,16 @@ export async function runAgent(session: WhatsAppSession, incomingMessage: string
     } catch (err) {
       console.error("[grounded compose failed, using loop reply]", String(err))
     }
+  } else if (route.needsFreshData) {
+    reply =
+      route.intent === "emergency"
+        ? "If this is severe pain, swelling, bleeding, trauma, or trouble breathing, please call the clinic directly now so staff can guide you urgently. If you want, share your name and phone number and I can request a callback."
+        : route.intent === "unclear"
+        ? "I need a little more detail before I can help with that. Please tell me what you want to check or change."
+        : "I need to check the clinic records before answering that. Please share the missing detail, such as the patient phone number, invoice number, date, or appointment time."
   }
 
+  session.lastAgentTrace = buildAgentTrace(route, toolTrace)
   await persistSessionState(session)
   return reply
 }
