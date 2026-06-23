@@ -24,6 +24,7 @@ import {
 import type { WhatsAppSession, StaffMember } from "@/lib/types"
 import { authedFetch } from "@/lib/authedFetch"
 import { useAuth } from "@/contexts/AuthContext"
+import { ButtonLink, PageHeader } from "@/components/ui-kit"
 
 interface Connection {
   status: string
@@ -41,6 +42,10 @@ interface Stats {
 }
 
 const CONNECTED = new Set(["connected", "ready"])
+const SURFACE =
+  "rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)]"
+const SUBTLE_SURFACE = "rounded-lg border border-white/[0.06] bg-white/[0.03]"
+const SECTION_LABEL = "text-xs font-medium uppercase tracking-wide text-[#A9BFC5]"
 
 export default function WhatsAppPortalPage() {
   const { userData } = useAuth()
@@ -270,14 +275,14 @@ export default function WhatsAppPortalPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setSendResult("✓ Sent")
+        setSendResult("Sent")
         setMsg("")
         loadAll()
       } else {
-        setSendResult(`✗ ${data.reason || data.message || "Failed"}`)
+        setSendResult(data.reason || data.message || "Failed to send")
       }
     } catch (err) {
-      setSendResult(`✗ ${String(err)}`)
+      setSendResult(String(err))
     } finally {
       setSending(false)
     }
@@ -320,25 +325,22 @@ export default function WhatsAppPortalPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#F0FCFF]">WhatsApp Portal</h1>
-          <p className="text-sm text-[#A9BFC5] mt-1">Gateway, bot, and conversations</p>
-        </div>
-        <Link
-          href="/dashboard/whatsapp/connect"
-          className="inline-flex min-h-[44px] w-full items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm font-medium text-[#F0FCFF] transition-colors hover:bg-white/[0.08] sm:w-auto"
-        >
+      <PageHeader
+        title="WhatsApp Portal"
+        subtitle="Monitor the gateway, staff access, reminders, and patient conversations"
+        actions={
+          <ButtonLink href="/dashboard/whatsapp/connect" variant="secondary" size="sm">
           <Smartphone className="h-4 w-4 mr-1.5" />
           QR / Pairing
-        </Link>
-      </div>
+          </ButtonLink>
+        }
+      />
 
       {/* Connection + bot controls */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
+      <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className={`${SURFACE} p-4 sm:p-5`}>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#A9BFC5] uppercase tracking-wide">Connection</span>
+            <span className={SECTION_LABEL}>Connection</span>
             {isConnected ? (
               <CheckCircle2 className="h-5 w-5 text-emerald-400" />
             ) : (
@@ -350,7 +352,7 @@ export default function WhatsAppPortalPage() {
           </p>
           <p className="text-sm text-[#A9BFC5] mt-1">
             {isConnected && conn?.phoneNumber
-              ? `${conn.pushName ? conn.pushName + " · " : ""}+${conn.phoneNumber}`
+              ? `${conn.pushName ? conn.pushName + " - " : ""}+${conn.phoneNumber}`
               : isError
               ? conn?.message?.slice(0, 80)
               : "Scan the QR to link a number"}
@@ -359,7 +361,7 @@ export default function WhatsAppPortalPage() {
             <button
               onClick={reconnect}
               disabled={reconnecting}
-              className="inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm bg-white/[0.04] border border-white/[0.08] text-[#F0FCFF] hover:bg-white/[0.08] transition-colors disabled:opacity-50"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 py-2 text-sm text-[#F0FCFF] transition-colors hover:bg-white/[0.08] disabled:opacity-50"
             >
               <RefreshCw className={`h-4 w-4 mr-1.5 ${reconnecting ? "animate-spin" : ""}`} />
               Reconnect
@@ -367,7 +369,7 @@ export default function WhatsAppPortalPage() {
             {!isConnected && (
               <Link
                 href="/dashboard/whatsapp/connect"
-                className="inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm bg-[#0891B2]/10 border border-[#0891B2]/20 text-[#0891B2] hover:bg-[#0891B2]/20 transition-colors"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-[#0891B2]/20 bg-[#0891B2]/10 px-3 py-2 text-sm text-[#0891B2] transition-colors hover:bg-[#0891B2]/20"
               >
                 <Smartphone className="h-4 w-4 mr-1.5" />
                 Show QR
@@ -376,9 +378,9 @@ export default function WhatsAppPortalPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
+        <div className={`${SURFACE} p-4 sm:p-5`}>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#A9BFC5] uppercase tracking-wide">AI Bot</span>
+            <span className={SECTION_LABEL}>AI Bot</span>
             <Power className={`h-5 w-5 ${stats?.globalPaused ? "text-amber-400" : "text-emerald-400"}`} />
           </div>
           <p className={`text-lg font-medium mt-2 ${stats?.globalPaused ? "text-amber-400" : "text-emerald-400"}`}>
@@ -386,13 +388,13 @@ export default function WhatsAppPortalPage() {
           </p>
           <p className="text-sm text-[#A9BFC5] mt-1">
             {stats?.globalPaused
-              ? "Auto-replies are off — staff handle chats manually."
+              ? "Auto-replies are off - staff handle chats manually."
               : "Auto-replying to incoming messages."}
           </p>
           <button
             onClick={toggleBot}
             disabled={togglingBot}
-            className={`inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm mt-4 transition-colors disabled:opacity-50 ${
+            className={`mt-4 inline-flex min-h-[44px] w-full items-center justify-center rounded-lg px-3 py-2 text-sm transition-colors disabled:opacity-50 sm:w-auto ${
               stats?.globalPaused
                 ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
                 : "bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20"
@@ -404,10 +406,22 @@ export default function WhatsAppPortalPage() {
         </div>
       </div>
 
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard icon={<MessageSquare className="h-4 w-4" />} label="Conversations" value={stats?.activeConversations ?? 0} />
+        <StatCard icon={<Activity className="h-4 w-4" />} label="Messages today" value={stats?.messagesToday ?? 0} />
+        <StatCard
+          icon={<Send className="h-4 w-4" />}
+          label="Sent today"
+          value={`${stats?.sentToday ?? 0} / ${stats?.dailyCap ?? 0}`}
+        />
+        <StatCard icon={<Pause className="h-4 w-4" />} label="Paused chats" value={stats?.pausedConversations ?? 0} />
+      </div>
+
       {/* Appointment reminders */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
+      <div className={`${SURFACE} p-4 sm:p-5`}>
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-[#A9BFC5] uppercase tracking-wide">Appointment Reminders</span>
+          <span className={SECTION_LABEL}>Appointment Reminders</span>
           <Bell className="h-5 w-5 text-[#0891B2]" />
         </div>
         <p className="text-sm text-[#A9BFC5] mt-2">
@@ -420,7 +434,7 @@ export default function WhatsAppPortalPage() {
           ]).map((row) => (
             <div
               key={row.k}
-              className="flex items-center justify-between rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2.5"
+              className={`${SUBTLE_SURFACE} flex items-center justify-between px-3 py-2.5`}
             >
               <span className="text-sm text-[#F0FCFF]">{row.label}</span>
               <button
@@ -439,22 +453,22 @@ export default function WhatsAppPortalPage() {
         </div>
         <p className="text-xs text-[#A9BFC5] mt-3">
           {!reminders
-            ? "Loading…"
+            ? "Loading..."
             : reminders.dayBefore && reminders.hourBefore
-              ? "✅ Reminders are ON — patients get one a day before and an hour before."
+              ? "Reminders are on: patients get one a day before and one an hour before."
               : !reminders.dayBefore && !reminders.hourBefore
-                ? "🔕 Reminders are OFF — no automatic messages are sent."
+                ? "Reminders are off: no automatic messages are sent."
                 : reminders.dayBefore
                   ? "Only the 1-day-before reminder is on."
                   : "Only the 1-hour-before reminder is on."}
         </p>
       </div>
 
-      {/* Staff WhatsApp access (admin only) — double-verified login */}
+      {/* Staff WhatsApp access (admin only) - double-verified login */}
       {canManageStaff && (
-        <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-5">
+        <div className={`${SURFACE} p-4 sm:p-5`}>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#A9BFC5] uppercase tracking-wide">Staff WhatsApp Access</span>
+            <span className={SECTION_LABEL}>Staff WhatsApp Access</span>
             <ShieldCheck className="h-5 w-5 text-[#0891B2]" />
           </div>
           <p className="text-sm text-[#A9BFC5] mt-2">
@@ -464,14 +478,14 @@ export default function WhatsAppPortalPage() {
 
           <div className="mt-4 space-y-2">
             {staff.length === 0 ? (
-              <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-4 text-center text-sm text-[#A9BFC5]">
+              <div className={`${SUBTLE_SURFACE} px-3 py-4 text-center text-sm text-[#A9BFC5]`}>
                 No staff registered yet. Add a doctor or receptionist to let them log in over WhatsApp.
               </div>
             ) : (
               staff.map((m) => (
                 <div
                   key={m.id}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2.5"
+                  className={`${SUBTLE_SURFACE} flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between`}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -489,9 +503,9 @@ export default function WhatsAppPortalPage() {
                         {m.active ? "Active" : "Disabled"}
                       </span>
                     </div>
-                    <div className="text-[11px] text-[#A9BFC5] mt-0.5">+{String(m.phone).replace(/^\+/, "")} · code set 🔒</div>
+                    <div className="mt-0.5 text-[11px] text-[#A9BFC5]">+{String(m.phone).replace(/^\+/, "")} - Code set</div>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-shrink-0 sm:items-center">
                     <button
                       onClick={() => { setResetCodeFor(m); setNewCode("") }}
                       disabled={busyStaffId === m.id}
@@ -528,7 +542,7 @@ export default function WhatsAppPortalPage() {
 
           <button
             onClick={() => { setShowAddStaff(true); setStaffError(null); setStaffForm({ name: "", role: "doctor", phone: "", code: "" }) }}
-            className="inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg text-sm mt-4 bg-[#0891B2]/10 border border-[#0891B2]/20 text-[#0891B2] hover:bg-[#0891B2]/20 transition-colors"
+            className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center rounded-lg border border-[#0891B2]/20 bg-[#0891B2]/10 px-3 py-2 text-sm text-[#0891B2] transition-colors hover:bg-[#0891B2]/20 sm:w-auto"
           >
             <UserPlus className="h-4 w-4 mr-1.5" />
             Add staff
@@ -536,161 +550,245 @@ export default function WhatsAppPortalPage() {
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<MessageSquare className="h-4 w-4" />} label="Conversations" value={stats?.activeConversations ?? 0} />
-        <StatCard icon={<Activity className="h-4 w-4" />} label="Messages today" value={stats?.messagesToday ?? 0} />
-        <StatCard
-          icon={<Send className="h-4 w-4" />}
-          label="Sent today"
-          value={`${stats?.sentToday ?? 0} / ${stats?.dailyCap ?? 0}`}
-        />
-        <StatCard icon={<Pause className="h-4 w-4" />} label="Paused chats" value={stats?.pausedConversations ?? 0} />
-      </div>
-
       {/* Manual send */}
-      <form onSubmit={sendManual} className="rounded-xl border border-white/[0.06] bg-[#111113] p-5 space-y-3">
-        <h2 className="text-sm font-medium text-[#F0FCFF]">Send a message</h2>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            value={toPhone}
-            onChange={(e) => setToPhone(e.target.value)}
-            placeholder="Phone e.g. 923001234567"
-            className="sm:w-56 px-3 py-2 rounded-lg bg-[#061417] border border-white/[0.08] text-sm text-[#F0FCFF] placeholder-[#A9BFC5] focus:outline-none focus:border-[#0891B2]/50"
-          />
-          <input
-            value={msg}
-            onChange={(e) => setMsg(e.target.value)}
-            placeholder="Message"
-            className="flex-1 px-3 py-2 rounded-lg bg-[#061417] border border-white/[0.08] text-sm text-[#F0FCFF] placeholder-[#A9BFC5] focus:outline-none focus:border-[#0891B2]/50"
-          />
+      <form onSubmit={sendManual} className={`${SURFACE} space-y-4 p-4 sm:p-5`}>
+        <div>
+          <h2 className="text-sm font-medium text-[#F0FCFF]">Send a message</h2>
+          <p className="mt-1 text-xs text-[#A9BFC5]">Use this for staff-initiated confirmations or follow-ups.</p>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-[14rem_1fr_auto]">
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-[#A9BFC5]">Phone</span>
+            <input
+              value={toPhone}
+              onChange={(e) => setToPhone(e.target.value)}
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="923001234567"
+              className="min-h-[44px] w-full rounded-lg border border-white/10 bg-[#082127] px-3 py-2.5 text-sm text-[#F0FCFF] placeholder-gray-500 transition-colors focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-[#A9BFC5]">Message</span>
+            <input
+              value={msg}
+              onChange={(e) => setMsg(e.target.value)}
+              placeholder="Message"
+              className="min-h-[44px] w-full rounded-lg border border-white/10 bg-[#082127] px-3 py-2.5 text-sm text-[#F0FCFF] placeholder-gray-500 transition-colors focus:border-[#0891B2] focus:outline-none focus:ring-2 focus:ring-[#0891B2]/20"
+            />
+          </label>
           <button
             type="submit"
             disabled={sending || !toPhone.trim() || !msg.trim() || !isConnected}
-            className="inline-flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-lg text-sm font-medium bg-[#0891B2] text-white hover:bg-[#5058C8] transition-colors disabled:opacity-50"
+            className="inline-flex min-h-[44px] w-full items-center justify-center self-end rounded-lg bg-[#0891B2] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0E7490] disabled:opacity-50 lg:w-auto"
           >
             <Send className="h-4 w-4 mr-1.5" />
-            {sending ? "Sending…" : "Send"}
+            {sending ? "Sending..." : "Send"}
           </button>
         </div>
         {!isConnected && <p className="text-xs text-amber-400">Connect WhatsApp first to send.</p>}
         {sendResult && (
-          <p className={`text-xs ${sendResult.startsWith("✓") ? "text-emerald-400" : "text-red-400"}`}>{sendResult}</p>
+          <p className={`text-xs ${sendResult === "Sent" ? "text-emerald-400" : "text-red-400"}`}>{sendResult}</p>
         )}
       </form>
 
       {/* Conversations */}
       <div>
-        <h2 className="text-sm font-medium text-[#F0FCFF] mb-3">
-          Conversations <span className="text-[#A9BFC5]">({sessions.length})</span>
-        </h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-medium text-[#F0FCFF]">
+            Conversations <span className="text-[#A9BFC5]">({sessions.length})</span>
+          </h2>
+          {pageCount > 1 && (
+            <span className="text-xs text-[#A9BFC5]">
+              Page {safePage + 1} of {pageCount}
+            </span>
+          )}
+        </div>
         {sessions.length === 0 ? (
-          <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-12 text-center">
+          <div className={`${SURFACE} p-12 text-center`}>
             <p className="text-[#A9BFC5] text-sm">No conversations yet.</p>
           </div>
         ) : (
-          <div className="rounded-xl border border-white/[0.06] bg-[#111113] overflow-hidden">
-            <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-                  <th className="text-left px-4 py-3 text-[#A9BFC5] font-medium">Customer</th>
-                  <th className="text-left px-4 py-3 text-[#A9BFC5] font-medium hidden md:table-cell">Phase</th>
-                  <th className="text-left px-4 py-3 text-[#A9BFC5] font-medium">Bot</th>
-                  <th className="text-center px-4 py-3 text-[#A9BFC5] font-medium hidden sm:table-cell">Msgs</th>
-                  <th className="text-left px-4 py-3 text-[#A9BFC5] font-medium hidden md:table-cell">Last Active</th>
-                  <th className="px-4 py-3 w-px"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageSessions.map((s) => (
-                  <tr
-                    key={s.phoneNumber}
-                    className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          title={
-                            s.blocked
-                              ? "Blocked"
-                              : s.flaggedReason
-                                ? `Flagged: ${s.flaggedReason}`
-                                : `Health: ${s.health ?? "green"}`
-                          }
-                          className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                            s.blocked || s.health === "red"
-                              ? "bg-red-400"
-                              : s.health === "yellow"
-                                ? "bg-amber-400"
-                                : "bg-emerald-400"
-                          }`}
-                        />
-                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#0891B2]/15 border border-[#0891B2]/20 flex items-center justify-center text-xs font-medium text-[#0891B2]">
-                          {(s.patientName ?? "G").charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <span className="inline-flex items-center gap-1.5">
-                            <Link
-                              href={`/dashboard/whatsapp/${encodeURIComponent(s.phoneNumber)}`}
-                              className="text-[#F0FCFF] hover:text-[#0891B2] transition-colors font-medium"
+          <div className={`${SURFACE} overflow-hidden`}>
+            <div className="divide-y divide-white/[0.06] md:hidden">
+              {pageSessions.map((s) => (
+                <div key={s.phoneNumber} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <Link
+                      href={`/dashboard/whatsapp/${encodeURIComponent(s.phoneNumber)}`}
+                      className="flex min-w-0 flex-1 items-center gap-3"
+                    >
+                      <span
+                        title={
+                          s.blocked
+                            ? "Blocked"
+                            : s.flaggedReason
+                              ? `Flagged: ${s.flaggedReason}`
+                              : `Health: ${s.health ?? "green"}`
+                        }
+                        className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${
+                          s.blocked || s.health === "red"
+                            ? "bg-red-400"
+                            : s.health === "yellow"
+                              ? "bg-amber-400"
+                              : "bg-emerald-400"
+                        }`}
+                      />
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#0891B2]/20 bg-[#0891B2]/15 text-sm font-medium text-[#0891B2]">
+                        {(s.patientName ?? "G").charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                          <span className="truncate text-sm font-medium text-[#F0FCFF]">{s.patientName ?? "Guest"}</span>
+                          {s.optedOut && (
+                            <span
+                              title="Unsubscribed from reminders (replied STOP)"
+                              className="inline-flex items-center rounded border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400"
                             >
-                              {s.patientName ?? "Guest"}
-                            </Link>
-                            {s.optedOut && (
-                              <span
-                                title="Unsubscribed from reminders (replied STOP)"
-                                className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                              >
-                                🔕 opted out
-                              </span>
-                            )}
-                          </span>
-                          <div className="text-[10px] text-[#A9BFC5]">+{s.realPhone || s.phoneNumber}</div>
+                              Opted out
+                            </span>
+                          )}
                         </div>
+                        <div className="text-xs text-[#A9BFC5]">+{s.realPhone || s.phoneNumber}</div>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-white/[0.06] text-[#A9BFC5]">
-                        {phaseLabel[s.phase] ?? s.phase}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {s.botPaused ? (
-                        <span className="text-xs text-amber-400">Manual</span>
-                      ) : (
-                        <span className="text-xs text-emerald-400">Auto</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center text-[#A9BFC5] hidden sm:table-cell">{s.messages.length}</td>
-                    <td className="px-4 py-3 text-[#A9BFC5] whitespace-nowrap hidden md:table-cell">{formatTime(s.lastActiveAt)}</td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => toggleBlock(s.phoneNumber, !s.blocked)}
-                          disabled={blockingPhone === s.phoneNumber}
-                          title={s.blocked ? "Unblock" : "Block"}
-                          className={`inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-md transition-colors disabled:opacity-50 ${
-                            s.blocked
-                              ? "text-red-400 bg-red-500/10 hover:bg-red-500/20"
-                              : "text-[#A9BFC5] hover:text-amber-400 hover:bg-amber-500/10"
-                          }`}
-                        >
-                          <Ban className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => setConfirmDelete({ phone: s.phoneNumber, name: s.patientName ?? "Guest" })}
-                          className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-md text-[#A9BFC5] hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                          title="Delete conversation"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
+                    </Link>
+                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${s.botPaused ? "bg-amber-500/10 text-amber-400" : "bg-emerald-500/10 text-emerald-400"}`}>
+                      {s.botPaused ? "Manual" : "Auto"}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#A9BFC5]">
+                    <span className="rounded-md bg-white/[0.05] px-2 py-1">{phaseLabel[s.phase] ?? s.phase}</span>
+                    <span className="rounded-md bg-white/[0.05] px-2 py-1">{s.messages.length} msgs</span>
+                    <span className="rounded-md bg-white/[0.05] px-2 py-1">{formatTime(s.lastActiveAt)}</span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => toggleBlock(s.phoneNumber, !s.blocked)}
+                      disabled={blockingPhone === s.phoneNumber}
+                      className={`inline-flex min-h-[44px] items-center justify-center rounded-lg px-3 py-2 text-sm transition-colors disabled:opacity-50 ${
+                        s.blocked
+                          ? "border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                          : "border border-white/[0.08] bg-white/[0.04] text-[#A9BFC5] hover:bg-amber-500/10 hover:text-amber-400"
+                      }`}
+                    >
+                      <Ban className="mr-1.5 h-4 w-4" />
+                      {s.blocked ? "Unblock" : "Block"}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete({ phone: s.phoneNumber, name: s.patientName ?? "Guest" })}
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-[#A9BFC5] transition-colors hover:bg-red-500/10 hover:text-red-400"
+                    >
+                      <Trash2 className="mr-1.5 h-4 w-4" />
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.06] bg-white/[0.03]">
+                    <th className="px-4 py-3 text-left font-medium text-[#A9BFC5]">Customer</th>
+                    <th className="px-4 py-3 text-left font-medium text-[#A9BFC5]">Phase</th>
+                    <th className="px-4 py-3 text-left font-medium text-[#A9BFC5]">Bot</th>
+                    <th className="px-4 py-3 text-center font-medium text-[#A9BFC5]">Msgs</th>
+                    <th className="px-4 py-3 text-left font-medium text-[#A9BFC5]">Last Active</th>
+                    <th className="w-px px-4 py-3"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {pageSessions.map((s) => (
+                    <tr
+                      key={s.phoneNumber}
+                      className="border-b border-white/[0.04] transition-colors last:border-0 hover:bg-white/[0.03]"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <span
+                            title={
+                              s.blocked
+                                ? "Blocked"
+                                : s.flaggedReason
+                                  ? `Flagged: ${s.flaggedReason}`
+                                  : `Health: ${s.health ?? "green"}`
+                            }
+                            className={`h-2 w-2 flex-shrink-0 rounded-full ${
+                              s.blocked || s.health === "red"
+                                ? "bg-red-400"
+                                : s.health === "yellow"
+                                  ? "bg-amber-400"
+                                  : "bg-emerald-400"
+                            }`}
+                          />
+                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#0891B2]/20 bg-[#0891B2]/15 text-xs font-medium text-[#0891B2]">
+                            {(s.patientName ?? "G").charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="inline-flex items-center gap-1.5">
+                              <Link
+                                href={`/dashboard/whatsapp/${encodeURIComponent(s.phoneNumber)}`}
+                                className="font-medium text-[#F0FCFF] transition-colors hover:text-[#0891B2]"
+                              >
+                                {s.patientName ?? "Guest"}
+                              </Link>
+                              {s.optedOut && (
+                                <span
+                                  title="Unsubscribed from reminders (replied STOP)"
+                                  className="inline-flex items-center rounded border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400"
+                                >
+                                  Opted out
+                                </span>
+                              )}
+                            </span>
+                            <div className="text-[10px] text-[#A9BFC5]">+{s.realPhone || s.phoneNumber}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center rounded-md bg-white/[0.06] px-2 py-0.5 text-xs text-[#A9BFC5]">
+                          {phaseLabel[s.phase] ?? s.phase}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {s.botPaused ? (
+                          <span className="text-xs text-amber-400">Manual</span>
+                        ) : (
+                          <span className="text-xs text-emerald-400">Auto</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-center text-[#A9BFC5]">{s.messages.length}</td>
+                      <td className="whitespace-nowrap px-4 py-3 text-[#A9BFC5]">{formatTime(s.lastActiveAt)}</td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => toggleBlock(s.phoneNumber, !s.blocked)}
+                            disabled={blockingPhone === s.phoneNumber}
+                            title={s.blocked ? "Unblock" : "Block"}
+                            aria-label={s.blocked ? "Unblock conversation" : "Block conversation"}
+                            className={`inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md p-2 transition-colors disabled:opacity-50 ${
+                              s.blocked
+                                ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                                : "text-[#A9BFC5] hover:bg-amber-500/10 hover:text-amber-400"
+                            }`}
+                          >
+                            <Ban className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setConfirmDelete({ phone: s.phoneNumber, name: s.patientName ?? "Guest" })}
+                            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md p-2 text-[#A9BFC5] transition-colors hover:bg-red-500/10 hover:text-red-400"
+                            title="Delete conversation"
+                            aria-label="Delete conversation"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
             {pageCount > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06]">
@@ -722,7 +820,7 @@ export default function WhatsAppPortalPage() {
       {/* Delete conversation confirm */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
-          <div className="bg-[#061417] border border-white/[0.06] rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
+          <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-lg border border-white/[0.1] bg-[#0A2228] p-4 shadow-[0_1px_0_rgba(255,255,255,0.06),0_20px_48px_rgba(0,0,0,0.42)] sm:p-6">
             <h3 className="text-lg font-medium text-[#F0FCFF]">Delete conversation</h3>
             <p className="mt-2 text-sm text-[#A9BFC5]">
               Delete the conversation with <span className="text-[#F0FCFF]">{confirmDelete.name}</span> (+
@@ -742,7 +840,7 @@ export default function WhatsAppPortalPage() {
                 disabled={deletingPhone === confirmDelete.phone}
                 className="min-h-[44px] w-full rounded-lg border border-red-500/30 bg-red-500/20 px-4 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/30 sm:w-auto disabled:opacity-50"
               >
-                {deletingPhone === confirmDelete.phone ? "Deleting…" : "Delete"}
+                {deletingPhone === confirmDelete.phone ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>
@@ -752,7 +850,7 @@ export default function WhatsAppPortalPage() {
       {/* Add staff modal */}
       {showAddStaff && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
-          <form onSubmit={addStaff} className="bg-[#061417] border border-white/[0.06] rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
+          <form onSubmit={addStaff} className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-lg border border-white/[0.1] bg-[#0A2228] p-4 shadow-[0_1px_0_rgba(255,255,255,0.06),0_20px_48px_rgba(0,0,0,0.42)] sm:p-6">
             <h3 className="text-lg font-medium text-[#F0FCFF] flex items-center gap-2">
               <UserPlus className="h-5 w-5 text-[#0891B2]" />
               Add staff WhatsApp access
@@ -803,7 +901,7 @@ export default function WhatsAppPortalPage() {
                 <input
                   value={staffForm.code}
                   onChange={(e) => setStaffForm((f) => ({ ...f, code: e.target.value }))}
-                  placeholder="4–8 characters"
+                  placeholder="4-8 characters"
                   required
                   minLength={4}
                   className="min-h-[44px] w-full rounded-lg bg-[#082127] px-3 py-2.5 border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
@@ -824,7 +922,7 @@ export default function WhatsAppPortalPage() {
                 disabled={savingStaff}
                 className="min-h-[44px] w-full rounded-lg bg-[#0891B2] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0E7490] sm:w-auto disabled:opacity-50"
               >
-                {savingStaff ? "Adding…" : "Add staff"}
+                {savingStaff ? "Adding..." : "Add staff"}
               </button>
             </div>
           </form>
@@ -834,7 +932,7 @@ export default function WhatsAppPortalPage() {
       {/* Reset code modal */}
       {resetCodeFor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
-          <div className="bg-[#061417] border border-white/[0.06] rounded-lg p-4 sm:p-6 max-w-sm w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
+          <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-sm overflow-y-auto rounded-lg border border-white/[0.1] bg-[#0A2228] p-4 shadow-[0_1px_0_rgba(255,255,255,0.06),0_20px_48px_rgba(0,0,0,0.42)] sm:p-6">
             <h3 className="text-lg font-medium text-[#F0FCFF] flex items-center gap-2">
               <KeyRound className="h-5 w-5 text-[#0891B2]" />
               Reset code
@@ -845,7 +943,7 @@ export default function WhatsAppPortalPage() {
             <input
               value={newCode}
               onChange={(e) => setNewCode(e.target.value)}
-              placeholder="New code (4–8 chars)"
+              placeholder="New code (4-8 chars)"
               autoFocus
               className="mt-4 min-h-[44px] w-full rounded-lg bg-[#082127] px-3 py-2.5 border border-white/10 text-sm text-[#F0FCFF] placeholder-gray-500 focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 transition-colors"
             />
@@ -861,7 +959,7 @@ export default function WhatsAppPortalPage() {
                 disabled={newCode.trim().length < 4 || busyStaffId === resetCodeFor.id}
                 className="min-h-[44px] w-full rounded-lg bg-[#0891B2] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0E7490] sm:w-auto disabled:opacity-50"
               >
-                {busyStaffId === resetCodeFor.id ? "Saving…" : "Save code"}
+                {busyStaffId === resetCodeFor.id ? "Saving..." : "Save code"}
               </button>
             </div>
           </div>
@@ -871,7 +969,7 @@ export default function WhatsAppPortalPage() {
       {/* Remove staff confirm */}
       {removeStaffMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
-          <div className="bg-[#061417] border border-white/[0.06] rounded-lg p-4 sm:p-6 max-w-sm w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
+          <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-sm overflow-y-auto rounded-lg border border-white/[0.1] bg-[#0A2228] p-4 shadow-[0_1px_0_rgba(255,255,255,0.06),0_20px_48px_rgba(0,0,0,0.42)] sm:p-6">
             <h3 className="text-lg font-medium text-[#F0FCFF]">Remove staff access</h3>
             <p className="mt-2 text-sm text-[#A9BFC5]">
               Remove <span className="text-[#F0FCFF]">{removeStaffMember.name}</span>? They will no longer be able to log in
@@ -889,7 +987,7 @@ export default function WhatsAppPortalPage() {
                 disabled={busyStaffId === removeStaffMember.id}
                 className="min-h-[44px] w-full rounded-lg border border-red-500/30 bg-red-500/20 px-4 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/30 sm:w-auto disabled:opacity-50"
               >
-                {busyStaffId === removeStaffMember.id ? "Removing…" : "Remove"}
+                {busyStaffId === removeStaffMember.id ? "Removing..." : "Remove"}
               </button>
             </div>
           </div>
@@ -901,7 +999,7 @@ export default function WhatsAppPortalPage() {
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#111113] p-4">
+    <div className={`${SURFACE} p-4`}>
       <div className="flex items-center gap-1.5 text-[#A9BFC5]">
         {icon}
         <span className="text-xs">{label}</span>
