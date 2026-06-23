@@ -13,6 +13,14 @@ import {
 } from "firebase/firestore"
 import { db } from "./firebase"
 import type { ActivityLog } from "./types"
+import {
+  dashboardUsesSupabase,
+  sbInsert,
+  sbQuery,
+  sbDelete,
+  sbDeleteAll,
+  sbSubscribe,
+} from "./dashboardRepo"
 
 const COLLECTION_NAME = "activity_logs"
 
@@ -20,6 +28,10 @@ export const logActivity = async (
   data: Omit<ActivityLog, "id" | "createdAt">
 ): Promise<void> => {
   try {
+    if (dashboardUsesSupabase) {
+      await sbInsert(COLLECTION_NAME, data as Record<string, any>)
+      return
+    }
     await addDoc(collection(db, COLLECTION_NAME), {
       ...data,
       createdAt: serverTimestamp(),
@@ -33,6 +45,20 @@ export const subscribeToActivities = (
   callback: (activities: ActivityLog[]) => void,
   maxItems = 20
 ): Unsubscribe => {
+  if (dashboardUsesSupabase) {
+    const refetch = async () => {
+      try {
+        const rows = await sbQuery<ActivityLog>(COLLECTION_NAME, (q) =>
+          q.order("created_at_iso", { ascending: false }).limit(maxItems)
+        )
+        callback(rows)
+      } catch (err) {
+        console.error("Error fetching activities:", err)
+      }
+    }
+    void refetch()
+    return sbSubscribe(COLLECTION_NAME, refetch) as unknown as Unsubscribe
+  }
   const q = query(
     collection(db, COLLECTION_NAME),
     orderBy("createdAt", "desc"),
@@ -58,6 +84,10 @@ export const subscribeToActivities = (
 
 export const deleteActivity = async (activityId: string): Promise<void> => {
   try {
+    if (dashboardUsesSupabase) {
+      await sbDelete(COLLECTION_NAME, activityId)
+      return
+    }
     await deleteDoc(doc(db, COLLECTION_NAME, activityId))
   } catch (error) {
     console.error("Error deleting activity:", error)
@@ -66,6 +96,10 @@ export const deleteActivity = async (activityId: string): Promise<void> => {
 
 export const clearAllActivities = async (): Promise<void> => {
   try {
+    if (dashboardUsesSupabase) {
+      await sbDeleteAll(COLLECTION_NAME)
+      return
+    }
     const q = query(collection(db, COLLECTION_NAME))
     const snapshot = await getDocs(q)
     const deletePromises = snapshot.docs.map((docSnap) =>
@@ -82,6 +116,9 @@ export const subscribeToCollection = (
   collectionName: string,
   callback: () => void
 ): Unsubscribe => {
+  if (dashboardUsesSupabase) {
+    return sbSubscribe(collectionName, callback) as unknown as Unsubscribe
+  }
   return onSnapshot(collection(db, collectionName), () => {
     callback()
   })

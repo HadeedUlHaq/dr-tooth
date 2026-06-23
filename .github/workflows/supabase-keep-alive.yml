@@ -1,0 +1,48 @@
+name: Supabase Keep Alive
+
+# Free Supabase projects pause after ~7 days with no activity. This pings the DB
+# twice a week so it never sleeps. Times are UTC; 20:00 UTC = 01:00 Asia/Karachi.
+# Mondays and Thursdays => ~1 AM Tue & Fri in Karachi (never more than ~3-4 days idle).
+on:
+  schedule:
+    - cron: '0 20 * * 1,4'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+
+    steps:
+      - name: Validate required secrets
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_PUBLISHABLE_KEY"
+
+      - name: Query keep-alive table
+        run: |
+          response_file="$(mktemp)"
+          status="$(
+            curl --silent --show-error --output "$response_file" --write-out "%{http_code}" \
+              --get "$SUPABASE_URL/rest/v1/keep_alive_checks" \
+              --data-urlencode "select=id" \
+              --data-urlencode "id=eq.1" \
+              -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+              -H "Authorization: Bearer $SUPABASE_PUBLISHABLE_KEY"
+          )"
+
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "Supabase keep-alive request failed with HTTP $status."
+            cat "$response_file"
+            exit 1
+          fi
+
+          echo "Supabase keep-alive request succeeded (HTTP $status)."
+          cat "$response_file"

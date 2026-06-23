@@ -14,8 +14,19 @@ import {
 } from "firebase/firestore"
 import { db } from "./firebase"
 import type { Appointment } from "./types"
+import { dashboardUsesSupabase, sbSelectAll, sbGetById, sbQuery, sbInsert, sbUpdate, sbDelete } from "./dashboardRepo"
 
 const COLLECTION_NAME = "appointments"
+
+// Shared in-memory sort (matches the Firestore paths): by date, then time, "on-call" last.
+const sortAppts = (appointments: Appointment[], dir: "asc" | "desc" = "asc"): Appointment[] =>
+  appointments.sort((a, b) => {
+    const dateCmp = dir === "asc" ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)
+    if (dateCmp !== 0) return dateCmp
+    if (a.time === "on-call") return 1
+    if (b.time === "on-call") return -1
+    return a.time.localeCompare(b.time)
+  })
 
 // Format a Date as YYYY-MM-DD in the user's LOCAL timezone (not UTC).
 // Using toISOString().split("T")[0] converts to UTC first, which shifts
@@ -28,6 +39,7 @@ const toLocalDateString = (date: Date): string => {
 }
 
 export const createAppointment = async (appointmentData: Omit<Appointment, "id" | "createdAt">): Promise<string> => {
+  if (dashboardUsesSupabase) return sbInsert(COLLECTION_NAME, appointmentData as Record<string, any>)
   try {
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
       ...appointmentData,
@@ -41,6 +53,7 @@ export const createAppointment = async (appointmentData: Omit<Appointment, "id" 
 }
 
 export const updateAppointment = async (id: string, appointmentData: Partial<Appointment>): Promise<void> => {
+  if (dashboardUsesSupabase) return sbUpdate(COLLECTION_NAME, id, appointmentData as Record<string, any>)
   try {
     const appointmentRef = doc(db, COLLECTION_NAME, id)
     await updateDoc(appointmentRef, {
@@ -55,6 +68,9 @@ export const updateAppointment = async (id: string, appointmentData: Partial<App
 
 // Reverts isLate, originalTime and delayReason by hard-deleting them from Firestore
 export const removeLateStatus = async (id: string, originalTime: string, updatedBy: string): Promise<void> => {
+  if (dashboardUsesSupabase) {
+    return sbUpdate(COLLECTION_NAME, id, { time: originalTime, updatedBy }, ["isLate", "originalTime", "delayReason"])
+  }
   try {
     const appointmentRef = doc(db, COLLECTION_NAME, id)
     await updateDoc(appointmentRef, {
@@ -72,6 +88,7 @@ export const removeLateStatus = async (id: string, originalTime: string, updated
 }
 
 export const deleteAppointment = async (id: string): Promise<void> => {
+  if (dashboardUsesSupabase) return sbDelete(COLLECTION_NAME, id)
   try {
     const appointmentRef = doc(db, COLLECTION_NAME, id)
     await deleteDoc(appointmentRef)
@@ -82,6 +99,7 @@ export const deleteAppointment = async (id: string): Promise<void> => {
 }
 
 export const getAppointment = async (id: string): Promise<Appointment | null> => {
+  if (dashboardUsesSupabase) return sbGetById<Appointment>(COLLECTION_NAME, id)
   try {
     const appointmentRef = doc(db, COLLECTION_NAME, id)
     const appointmentSnap = await getDoc(appointmentRef)
@@ -110,6 +128,8 @@ export const getTodayAppointments = async (): Promise<Appointment[]> => {
     today.setHours(0, 0, 0, 0)
     const todayStr = toLocalDateString(today)
 
+    if (dashboardUsesSupabase)
+      return sortAppts(await sbQuery<Appointment>(COLLECTION_NAME, (q) => q.eq("date", todayStr)))
     const appointmentsRef = collection(db, COLLECTION_NAME)
     // Simplified query - only filter by date without ordering
     const q = query(appointmentsRef, where("date", "==", todayStr))
@@ -156,6 +176,10 @@ export const getWeeklyAppointments = async (): Promise<Appointment[]> => {
     nextWeek.setDate(nextWeek.getDate() + 7)
     const nextWeekStr = toLocalDateString(nextWeek)
 
+    if (dashboardUsesSupabase)
+      return sortAppts(
+        await sbQuery<Appointment>(COLLECTION_NAME, (q) => q.gte("date", todayStr).lt("date", nextWeekStr))
+      )
     const appointmentsRef = collection(db, COLLECTION_NAME)
     // Use a simpler query that doesn't require a composite index
     const q = query(appointmentsRef, where("date", ">=", todayStr), where("date", "<", nextWeekStr))
@@ -202,6 +226,10 @@ export const getMonthlyAppointments = async (): Promise<Appointment[]> => {
     nextMonth.setMonth(nextMonth.getMonth() + 1)
     const nextMonthStr = toLocalDateString(nextMonth)
 
+    if (dashboardUsesSupabase)
+      return sortAppts(
+        await sbQuery<Appointment>(COLLECTION_NAME, (q) => q.gte("date", todayStr).lt("date", nextMonthStr))
+      )
     const appointmentsRef = collection(db, COLLECTION_NAME)
     // Use a simpler query that doesn't require a composite index
     const q = query(appointmentsRef, where("date", ">=", todayStr), where("date", "<", nextMonthStr))
@@ -239,6 +267,7 @@ export const getMonthlyAppointments = async (): Promise<Appointment[]> => {
 
 export const getAllAppointments = async (): Promise<Appointment[]> => {
   try {
+    if (dashboardUsesSupabase) return sortAppts(await sbSelectAll<Appointment>(COLLECTION_NAME), "desc")
     const appointmentsRef = collection(db, COLLECTION_NAME)
     const q = query(appointmentsRef, orderBy("date", "desc"))
 
@@ -277,6 +306,12 @@ export const checkOverlappingAppointments = async (
   if (time === "on-call") return null
 
   try {
+    if (dashboardUsesSupabase) {
+      const rows = await sbQuery<Appointment>(COLLECTION_NAME, (q) =>
+        q.eq("date", date).eq("time", time).in("status", ["scheduled", "confirmed"])
+      )
+      return rows.find((a) => !(excludeId && a.id === excludeId)) || null
+    }
     const appointmentsRef = collection(db, COLLECTION_NAME)
     const q = query(
       appointmentsRef,
@@ -313,6 +348,16 @@ export const getUpcomingAppointments = async (minutesThreshold: number): Promise
     const now = new Date()
     const today = toLocalDateString(now)
 
+    if (dashboardUsesSupabase) {
+      const rows = await sbQuery<Appointment>(COLLECTION_NAME, (q) =>
+        q.eq("date", today).in("status", ["scheduled", "confirmed"])
+      )
+      return rows.filter((a) => {
+        if (a.time === "on-call") return false
+        const diff = (new Date(`${today}T${a.time}`).getTime() - now.getTime()) / (1000 * 60)
+        return diff > 0 && diff <= minutesThreshold
+      })
+    }
     const appointmentsRef = collection(db, COLLECTION_NAME)
     const q = query(appointmentsRef, where("date", "==", today), where("status", "in", ["scheduled", "confirmed"]))
 
@@ -349,6 +394,16 @@ export const getAppointmentsNeedingConfirmation = async (): Promise<Appointment[
     const now = new Date()
     const today = toLocalDateString(now)
 
+    if (dashboardUsesSupabase) {
+      const rows = await sbQuery<Appointment>(COLLECTION_NAME, (q) =>
+        q.eq("date", today).eq("status", "scheduled")
+      )
+      return rows.filter((a) => {
+        if (a.time === "on-call") return false
+        const diff = (new Date(`${today}T${a.time}`).getTime() - now.getTime()) / (1000 * 60)
+        return diff > 0 && diff <= 60
+      })
+    }
     const appointmentsRef = collection(db, COLLECTION_NAME)
     const q = query(appointmentsRef, where("date", "==", today), where("status", "==", "scheduled"))
 
@@ -382,6 +437,8 @@ export const getAppointmentsNeedingConfirmation = async (): Promise<Appointment[
 // Modified to avoid requiring composite index
 export const getDoctorAppointments = async (doctorId: string): Promise<Appointment[]> => {
   try {
+    if (dashboardUsesSupabase)
+      return sortAppts(await sbQuery<Appointment>(COLLECTION_NAME, (q) => q.eq("doctor_id", doctorId)))
     const appointmentsRef = collection(db, COLLECTION_NAME)
     const q = query(appointmentsRef, where("doctorId", "==", doctorId))
 

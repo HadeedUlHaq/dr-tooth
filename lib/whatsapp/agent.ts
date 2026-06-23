@@ -16,6 +16,7 @@ function getClient(): OpenAI {
 
 // Override in .env.local with another model if desired.
 const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini"
+const MAX_AGENT_CONTEXT_MESSAGES = 20
 
 type AgentRoute = {
   intent: AgentIntent
@@ -641,7 +642,7 @@ export async function runAgent(session: WhatsAppSession, incomingMessage: string
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
     { role: "system", content: buildSystemPrompt(session) },
     { role: "system", content: buildRoutePrompt(route) },
-    ...session.messages.map((m) => ({
+    ...session.messages.slice(-MAX_AGENT_CONTEXT_MESSAGES).map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     })),

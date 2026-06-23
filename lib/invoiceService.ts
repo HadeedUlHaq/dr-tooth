@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore"
 import { db } from "./firebase"
 import type { Invoice, PaymentLog } from "./types"
+import { dashboardUsesSupabase, sbSelectAll, sbGetById, sbQuery, sbInsert, sbUpdate, sbDelete } from "./dashboardRepo"
 
 const COLLECTION_NAME = "invoices"
 
@@ -50,6 +51,7 @@ const parseInvoiceDoc = (docSnap: any): Invoice => {
 export const createInvoice = async (
   invoiceData: Omit<Invoice, "id" | "createdAt" | "updatedAt">
 ): Promise<string> => {
+  if (dashboardUsesSupabase) return sbInsert(COLLECTION_NAME, invoiceData as Record<string, any>)
   try {
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
       ...stripUndefined(invoiceData),
@@ -63,6 +65,8 @@ export const createInvoice = async (
 }
 
 export const getInvoices = async (): Promise<Invoice[]> => {
+  if (dashboardUsesSupabase)
+    return sbQuery<Invoice>(COLLECTION_NAME, (q) => q.order("created_at_iso", { ascending: false }))
   try {
     const q = query(
       collection(db, COLLECTION_NAME),
@@ -81,6 +85,7 @@ export const getInvoices = async (): Promise<Invoice[]> => {
 }
 
 export const getInvoice = async (id: string): Promise<Invoice | null> => {
+  if (dashboardUsesSupabase) return sbGetById<Invoice>(COLLECTION_NAME, id)
   try {
     const docSnap = await getDoc(doc(db, COLLECTION_NAME, id))
     if (docSnap.exists()) {
@@ -97,6 +102,7 @@ export const updateInvoice = async (
   id: string,
   data: Partial<Omit<Invoice, "id" | "createdAt">>
 ): Promise<void> => {
+  if (dashboardUsesSupabase) return sbUpdate(COLLECTION_NAME, id, data as Record<string, any>)
   try {
     await updateDoc(doc(db, COLLECTION_NAME, id), {
       ...stripUndefined(data),
@@ -109,6 +115,7 @@ export const updateInvoice = async (
 }
 
 export const deleteInvoice = async (id: string): Promise<void> => {
+  if (dashboardUsesSupabase) return sbDelete(COLLECTION_NAME, id)
   try {
     await deleteDoc(doc(db, COLLECTION_NAME, id))
   } catch (error) {
@@ -120,6 +127,10 @@ export const deleteInvoice = async (id: string): Promise<void> => {
 export const getInvoicesByPatient = async (
   patientName: string
 ): Promise<Invoice[]> => {
+  if (dashboardUsesSupabase)
+    return sbQuery<Invoice>(COLLECTION_NAME, (q) =>
+      q.eq("patient_name", patientName).order("created_at_iso", { ascending: false })
+    )
   try {
     const q = query(
       collection(db, COLLECTION_NAME),
@@ -141,6 +152,10 @@ export const getInvoicesByPatient = async (
 export const getInvoicesByPatientId = async (
   patientId: string
 ): Promise<Invoice[]> => {
+  if (dashboardUsesSupabase) {
+    const invoices = await sbQuery<Invoice>(COLLECTION_NAME, (q) => q.eq("patient_id", patientId))
+    return invoices.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  }
   try {
     const q = query(
       collection(db, COLLECTION_NAME),
@@ -163,6 +178,10 @@ export const getInvoicesByPatientId = async (
 export const getInvoiceByAppointment = async (
   appointmentId: string
 ): Promise<Invoice | null> => {
+  if (dashboardUsesSupabase) {
+    const rows = await sbQuery<Invoice>(COLLECTION_NAME, (q) => q.eq("appointment_id", appointmentId))
+    return rows[0] || null
+  }
   try {
     const q = query(
       collection(db, COLLECTION_NAME),

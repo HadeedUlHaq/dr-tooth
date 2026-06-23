@@ -1,9 +1,10 @@
 import { getAdminDb } from "./firebaseAdmin"
+import { supabaseEnabled, rpcCheckRateLimit } from "./supabaseAdmin"
 import { normalizePhone, samePhone } from "./phone"
 import type { WhatsAppSession, WhatsAppMessage } from "../types"
 
 const COLLECTION = "whatsapp_sessions"
-const MAX_MESSAGES = 20
+const MAX_MESSAGES = 200
 
 export async function getSession(phoneNumber: string): Promise<WhatsAppSession> {
   const ref = getAdminDb().collection(COLLECTION).doc(phoneNumber)
@@ -59,6 +60,14 @@ const RATE_MAX_PER_WINDOW = 15
 
 // Returns true if the request is allowed, false if the caller is over the limit.
 export async function checkRateLimit(sessionId: string): Promise<boolean> {
+  if (supabaseEnabled("counters")) {
+    try {
+      return await rpcCheckRateLimit(sessionId)
+    } catch (err) {
+      console.error("[Rate limit check failed - supabase]", String(err))
+      return true // fail open
+    }
+  }
   const ref = getAdminDb().collection(RATE_LIMIT_COLLECTION).doc(sessionId)
   try {
     return await getAdminDb().runTransaction(async (tx) => {

@@ -1,4 +1,11 @@
 import { getAdminDb } from "./firebaseAdmin"
+import {
+  supabaseEnabled,
+  rpcAlreadyHandled,
+  rpcWithinSendBudget,
+  rpcAssessInbound,
+  rpcWithinAiBudget,
+} from "./supabaseAdmin"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Anti-ban controls for the (unofficial, Baileys-based) WhatsApp gateway.
@@ -46,6 +53,14 @@ export async function humanDelay(text: string): Promise<void> {
 const DELIVERY_COLLECTION = "whatsapp_deliveries"
 export async function alreadyHandled(deliveryId: string): Promise<boolean> {
   if (!deliveryId) return false
+  if (supabaseEnabled("counters")) {
+    try {
+      return await rpcAlreadyHandled(deliveryId)
+    } catch (err) {
+      console.error("[WA DEDUP supabase] failing open:", String(err))
+      return false // fail open
+    }
+  }
   const db = getAdminDb()
   const ref = db.collection(DELIVERY_COLLECTION).doc(deliveryId)
   try {
@@ -70,6 +85,13 @@ const GLOBAL_DAILY_MAX = 300 // total outbound replies per day
 export async function withinSendBudget(
   contactKey: string
 ): Promise<{ ok: boolean; reason?: string }> {
+  if (supabaseEnabled("counters")) {
+    try {
+      return await rpcWithinSendBudget(contactKey)
+    } catch {
+      return { ok: true } // fail open
+    }
+  }
   const db = getAdminDb()
   const now = Date.now()
   const day = new Date().toISOString().slice(0, 10)
@@ -127,6 +149,14 @@ function norm(s: string): string {
 // Record an inbound message and assess it. Fails OPEN (treats as green/allowed) on
 // any infra error so a Firestore blip never blocks a real patient.
 export async function assessInbound(sessionKey: string, text: string): Promise<InboundAssessment> {
+  if (supabaseEnabled("counters")) {
+    try {
+      return await rpcAssessInbound(sessionKey, text)
+    } catch (err) {
+      console.error("[assessInbound supabase] failed (fail-open):", String(err))
+      return { allow: true, health: "green", strikes: 0, reason: null }
+    }
+  }
   const db = getAdminDb()
   const ref = db.collection(ABUSE_COLLECTION).doc(sessionKey)
   const now = Date.now()
@@ -182,6 +212,13 @@ const AI_BUDGET_COLLECTION = "whatsapp_ai_budget"
 const AI_DAILY_MAX = 2000
 
 export async function withinAiBudget(): Promise<boolean> {
+  if (supabaseEnabled("counters")) {
+    try {
+      return await rpcWithinAiBudget()
+    } catch {
+      return true // fail open
+    }
+  }
   const db = getAdminDb()
   const day = new Date().toISOString().slice(0, 10)
   const ref = db.collection(AI_BUDGET_COLLECTION).doc(`global_${day}`)

@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore"
 import { db } from "./firebase"
 import type { Patient } from "./types"
+import { dashboardUsesSupabase, sbSelectAll, sbGetById, sbInsert, sbUpdate, sbDelete } from "./dashboardRepo"
 
 const COLLECTION_NAME = "patients"
 
@@ -23,6 +24,7 @@ const stripUndefined = (obj: Record<string, any>): Record<string, any> => {
 export const createPatient = async (
   patientData: Omit<Patient, "id" | "createdAt">
 ): Promise<string> => {
+  if (dashboardUsesSupabase) return sbInsert(COLLECTION_NAME, patientData as Record<string, any>)
   try {
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
       ...stripUndefined(patientData),
@@ -36,6 +38,10 @@ export const createPatient = async (
 }
 
 export const getPatients = async (): Promise<Patient[]> => {
+  if (dashboardUsesSupabase) {
+    const patients = await sbSelectAll<Patient>(COLLECTION_NAME)
+    return patients.sort((a, b) => a.name.localeCompare(b.name))
+  }
   try {
     const patientsRef = collection(db, COLLECTION_NAME)
     const querySnapshot = await getDocs(patientsRef)
@@ -62,6 +68,7 @@ export const getPatients = async (): Promise<Patient[]> => {
 }
 
 export const getPatient = async (id: string): Promise<Patient | null> => {
+  if (dashboardUsesSupabase) return sbGetById<Patient>(COLLECTION_NAME, id)
   try {
     const patientRef = doc(db, COLLECTION_NAME, id)
     const patientSnap = await getDoc(patientRef)
@@ -88,6 +95,7 @@ export const updatePatient = async (
   id: string,
   patientData: Partial<Patient>
 ): Promise<void> => {
+  if (dashboardUsesSupabase) return sbUpdate(COLLECTION_NAME, id, patientData as Record<string, any>)
   try {
     const patientRef = doc(db, COLLECTION_NAME, id)
     await updateDoc(patientRef, {
@@ -101,6 +109,7 @@ export const updatePatient = async (
 }
 
 export const deletePatient = async (id: string): Promise<void> => {
+  if (dashboardUsesSupabase) return sbDelete(COLLECTION_NAME, id)
   try {
     const patientRef = doc(db, COLLECTION_NAME, id)
     await deleteDoc(patientRef)

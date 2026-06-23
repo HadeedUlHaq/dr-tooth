@@ -1,3 +1,6 @@
+import { supabaseCollectionEnabled } from "./supabaseAdmin"
+import { getSupabaseDb } from "./supabaseDb"
+
 // Firestore access for the WhatsApp/chat agent, implemented against the Firestore
 // REST API rather than `firebase-admin`.
 //
@@ -138,7 +141,9 @@ async function fsJson(url: string, init: RequestInit = {}): Promise<any> {
 // Sentinel returned by FieldValue.serverTimestamp(). We encode it as the current
 // time as a real Firestore timestamp, which keeps the stored type identical to
 // what the rest of the app (which uses serverTimestamp) writes.
-const SERVER_TIMESTAMP = Symbol("serverTimestamp")
+// Shared sentinel (Symbol.for) so the Supabase adapter recognises the same
+// serverTimestamp() value and materialises it to an ISO string on write.
+const SERVER_TIMESTAMP = Symbol.for("drtooth.serverTimestamp")
 
 export const FieldValue = {
   serverTimestamp: () => SERVER_TIMESTAMP as unknown,
@@ -459,6 +464,11 @@ export class Transaction {
 
 export class Firestore {
   collection(name: string): CollectionReference {
+    // Per-collection routing: when a collection's migration area is enabled, serve
+    // it from Supabase via the structurally-compatible adapter. Otherwise Firestore.
+    if (supabaseCollectionEnabled(name)) {
+      return getSupabaseDb().collection(name) as unknown as CollectionReference
+    }
     return new CollectionReference(name)
   }
 
