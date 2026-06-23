@@ -10,12 +10,15 @@ import { collection, getDocs, query, where } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import type { User } from "@/lib/types"
 import { AlertTriangle, CheckCircle } from "lucide-react"
+import { Modal } from "@/components/ui-kit/Modal"
+import { Button } from "@/components/ui-kit/Button"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { DatePicker } from "@/components/ui/date-picker"
 import { TimePicker } from "@/components/ui/time-picker"
 import { PatientSearch } from "@/components/ui/patient-search"
 import { logActivity } from "@/lib/activityService"
 import type { Patient } from "@/lib/types"
+import { authedFetch } from "@/lib/authedFetch"
 
 export default function NewAppointment() {
   const { user, userData } = useAuth()
@@ -34,6 +37,17 @@ export default function NewAppointment() {
   const [overlappingAppointment, setOverlappingAppointment] = useState<any>(null)
   const [isQuickAppointment, setIsQuickAppointment] = useState(false)
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+
+  // Notification popup after booking
+  const [bookedAppt, setBookedAppt] = useState<{
+    patientName: string
+    patientPhone: string
+    date: string
+    time: string
+  } | null>(null)
+  const [sendingNotif, setSendingNotif] = useState(false)
+  const [notifSent, setNotifSent] = useState(false)
+  const [notifError, setNotifError] = useState("")
 
   const handlePatientSelect = (patient: Patient) => {
     setPatientName(patient.name)
@@ -162,7 +176,14 @@ export default function NewAppointment() {
         actorName: userData?.name || "Unknown",
         actorId: user?.uid || "",
       })
-      router.push("/dashboard/appointments")
+
+      // Show notification popup — redirect happens after send/skip
+      setBookedAppt({
+        patientName,
+        patientPhone: isQuickAppointment ? "" : patientPhone,
+        date,
+        time: isOnCall ? "on-call" : time,
+      })
     } catch (error: any) {
       setError(error.message || "Failed to create appointment")
     } finally {
@@ -170,8 +191,71 @@ export default function NewAppointment() {
     }
   }
 
+  const handleSendBookingNotif = async () => {
+    if (!bookedAppt) return
+    setSendingNotif(true)
+    setNotifError("")
+    try {
+      const res = await authedFetch("/api/whatsapp/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "booked", ...bookedAppt }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || "Failed to send notification")
+      }
+      setNotifSent(true)
+    } catch (err: any) {
+      setNotifError(err.message || "Failed to send notification")
+    } finally {
+      setSendingNotif(false)
+    }
+  }
+
+  const closeBookingNotif = () => {
+    setBookedAppt(null)
+    setNotifSent(false)
+    setNotifError("")
+    router.push("/dashboard/appointments")
+  }
+
   return (
     <div className="space-y-6">
+      {/* Notification popup after booking */}
+      <Modal
+        open={!!bookedAppt}
+        onClose={closeBookingNotif}
+        title="Appointment Booked"
+        description={
+          notifSent
+            ? `WhatsApp notification sent to ${bookedAppt?.patientName}.`
+            : bookedAppt?.patientPhone
+            ? `Send a WhatsApp notification to ${bookedAppt?.patientName}?`
+            : "No phone number on file for this patient."
+        }
+        footer={
+          notifSent ? (
+            <Button onClick={closeBookingNotif}>Done</Button>
+          ) : bookedAppt?.patientPhone ? (
+            <>
+              <Button variant="secondary" onClick={closeBookingNotif}>
+                Skip
+              </Button>
+              <Button onClick={handleSendBookingNotif} disabled={sendingNotif}>
+                {sendingNotif ? "Sending..." : "Send Notification"}
+              </Button>
+            </>
+          ) : (
+            <Button onClick={closeBookingNotif}>OK</Button>
+          )
+        }
+      >
+        {notifError && (
+          <div className="text-sm text-red-400 mb-2">{notifError}</div>
+        )}
+      </Modal>
+
       <div>
         <h1 className="text-2xl font-semibold text-[#F0FCFF]">New Appointment</h1>
         <p className="mt-1 text-sm text-[#A9BFC5]">Schedule a new appointment for a patient</p>

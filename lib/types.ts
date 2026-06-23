@@ -142,9 +142,10 @@ export interface WhatsAppMessage {
   role: "user" | "assistant"
   content: string
   timestamp: string
-  // For assistant messages: was it the AI bot or a human staff member (manual
-  // take-over from the portal)? Absent on older messages.
-  via?: "bot" | "staff"
+  // For assistant messages: was it the AI bot, a human staff member (manual
+  // take-over from the portal), or a proactive dashboard notification? Absent on
+  // older messages.
+  via?: "bot" | "staff" | "notification"
 }
 
 export type AgentIntent =

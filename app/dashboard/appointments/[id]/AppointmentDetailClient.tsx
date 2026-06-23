@@ -20,6 +20,7 @@ import { getInvoiceByAppointment } from "@/lib/invoiceService"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { CallButton } from "@/components/ui/call-button"
 import type { Patient, Invoice } from "@/lib/types"
+import { authedFetch } from "@/lib/authedFetch"
 
 export default function AppointmentDetailClient() {
   const params = useParams()
@@ -57,6 +58,18 @@ export default function AppointmentDetailClient() {
   const [linkedInvoice, setLinkedInvoice] = useState<Invoice | null>(null)
   const registerFormRef = useRef<HTMLDivElement>(null)
   const registerTreatmentInputRef = useRef<HTMLInputElement>(null)
+
+  // Notification popup after appointment actions
+  const [notifyPopup, setNotifyPopup] = useState<{
+    type: "cancelled" | "confirmed" | "rescheduled"
+    patientName: string
+    patientPhone: string
+    date: string
+    time: string
+  } | null>(null)
+  const [sendingNotif, setSendingNotif] = useState(false)
+  const [notifSent, setNotifSent] = useState(false)
+  const [notifError, setNotifError] = useState("")
 
   const handleShowRegisterForm = () => {
     setShowRegisterForm(true)
@@ -272,6 +285,19 @@ export default function AppointmentDetailClient() {
       const updatedAppointment = await getAppointment(id)
       setAppointment(updatedAppointment)
 
+      // If date or time changed, offer to send a reschedule notification
+      const oldDate = appointment?.date
+      const oldTime = appointment?.time
+      if ((date !== oldDate || time !== oldTime) && patientPhone) {
+        setNotifyPopup({
+          type: "rescheduled",
+          patientName,
+          patientPhone,
+          date,
+          time: isOnCall ? "on-call" : time,
+        })
+      }
+
       setIsEditing(false)
     } catch (error: any) {
       setError(error.message || "Failed to update appointment")
@@ -299,6 +325,16 @@ export default function AppointmentDetailClient() {
       const updatedAppointment = await getAppointment(id)
       setAppointment(updatedAppointment)
       setStatus(newStatus)
+
+      if (newStatus === "cancelled" || newStatus === "confirmed") {
+        setNotifyPopup({
+          type: newStatus,
+          patientName: updatedAppointment?.patientName || "",
+          patientPhone: updatedAppointment?.patientPhone || "",
+          date: updatedAppointment?.date || "",
+          time: updatedAppointment?.time || "",
+        })
+      }
 
       if (newStatus === "completed") {
         setShowFollowUpForm(true)
@@ -376,6 +412,34 @@ export default function AppointmentDetailClient() {
     }
   }
 
+  const handleSendNotification = async () => {
+    if (!notifyPopup) return
+    setSendingNotif(true)
+    setNotifError("")
+    try {
+      const res = await authedFetch("/api/whatsapp/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notifyPopup),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || "Failed to send notification")
+      }
+      setNotifSent(true)
+    } catch (err: any) {
+      setNotifError(err.message || "Failed to send notification")
+    } finally {
+      setSendingNotif(false)
+    }
+  }
+
+  const resetNotifyPopup = () => {
+    setNotifyPopup(null)
+    setNotifSent(false)
+    setNotifError("")
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -449,6 +513,46 @@ export default function AppointmentDetailClient() {
         }
       >
         {null}
+      </Modal>
+
+      {/* Notification popup after cancel/confirm/reschedule */}
+      <Modal
+        open={!!notifyPopup}
+        onClose={resetNotifyPopup}
+        title={
+          notifyPopup?.type === "cancelled"
+            ? "Appointment Cancelled"
+            : notifyPopup?.type === "confirmed"
+            ? "Appointment Confirmed"
+            : "Appointment Rescheduled"
+        }
+        description={
+          notifSent
+            ? `WhatsApp notification sent to ${notifyPopup?.patientName}.`
+            : notifyPopup?.patientPhone
+            ? `Send a WhatsApp notification to ${notifyPopup?.patientName}?`
+            : "No phone number on file for this patient."
+        }
+        footer={
+          notifSent ? (
+            <Button onClick={resetNotifyPopup}>Done</Button>
+          ) : notifyPopup?.patientPhone ? (
+            <>
+              <Button variant="secondary" onClick={resetNotifyPopup}>
+                Skip
+              </Button>
+              <Button onClick={handleSendNotification} disabled={sendingNotif}>
+                {sendingNotif ? "Sending..." : "Send Notification"}
+              </Button>
+            </>
+          ) : (
+            <Button onClick={resetNotifyPopup}>OK</Button>
+          )
+        }
+      >
+        {notifError && (
+          <div className="text-sm text-red-400 mb-2">{notifError}</div>
+        )}
       </Modal>
 
       <div className="rounded-lg border border-white/[0.1] bg-[#0A2228]/92 shadow-[0_1px_0_rgba(255,255,255,0.06),0_12px_28px_rgba(0,0,0,0.22)] overflow-hidden">
