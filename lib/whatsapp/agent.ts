@@ -226,6 +226,47 @@ function buildAgentTrace(
   }
 }
 
+function hasInvoiceReference(text: string): boolean {
+  return /(?:invoice|inv|receipt|#)\s*#?\s*[a-z0-9]{5,}/i.test(text)
+}
+
+function looksLikeBillingQuestion(text: string): boolean {
+  const t = text.toLowerCase()
+  return (
+    /\b(balance|bill|billing|invoice|payment|paid|owe|owing|due|remaining|receipt)\b/.test(t) ||
+    /\b(paisa|paise|rupees|rs\.?|rupay|adaigi|payment)\b/.test(t)
+  )
+}
+
+function looksLikeStaffOnlyRequest(text: string): boolean {
+  const t = text.toLowerCase()
+  const asksOwnAppointment =
+    /\b(my|mine)\b.*\bappointments?\b/.test(t) ||
+    /\bappointments?\b.*\b(my|mine)\b/.test(t) ||
+    /\b(mera|meri|mujhe)\b.*\bappointment\b/.test(t)
+  if (asksOwnAppointment) return false
+
+  return (
+    /\b(today'?s revenue|revenue today|daily revenue|collection today|payments collected)\b/.test(t) ||
+    /\b(how many patients|patient count|patients today|all patients|patient list)\b/.test(t) ||
+    /\b(today'?s appointments|clinic schedule|doctor schedule|day overview)\b/.test(t) ||
+    /\b(broadcast|message all|send to all|whatsapp everyone)\b/.test(t) ||
+    /\b(block time|block slot|unblock|time off|doctor on leave)\b/.test(t)
+  )
+}
+
+function deterministicPolicyReply(session: WhatsAppSession, incomingMessage: string): string | null {
+  if (!isStaffElevated(session) && looksLikeStaffOnlyRequest(incomingMessage)) {
+    return "I can only help patients with their own appointments, invoices, clinic information, and callback requests here. If you are clinic staff, please log in from your registered WhatsApp number by sending `staff <code>`."
+  }
+
+  if (!isStaffElevated(session) && looksLikeBillingQuestion(incomingMessage) && !hasInvoiceReference(incomingMessage)) {
+    return "Please send your invoice number from the receipt first, for example `#kyVSrAbw`. I will use that to check the exact bill safely."
+  }
+
+  return null
+}
+
 // Staff/doctor assistant prompt — used only for an authenticated staff session.
 // It is allowed to surface clinic-wide and patient data because the caller has
 // proven they are staff (registered WhatsApp number + login code). The staff
@@ -576,6 +617,9 @@ async function runPendingConfirmation(
 }
 
 export async function runAgent(session: WhatsAppSession, incomingMessage: string): Promise<string> {
+  const policyReply = deterministicPolicyReply(session, incomingMessage)
+  if (policyReply) return policyReply
+
   const route = classifyAgentRoute(session, incomingMessage)
   const confirmedPending = await runPendingConfirmation(session, incomingMessage)
   if (confirmedPending) {
