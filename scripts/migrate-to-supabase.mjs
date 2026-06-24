@@ -45,7 +45,11 @@ const ALL_COLLECTIONS = [
   "whatsapp_blocks",
   "callback_requests",
 ]
-const collections = process.argv.slice(2).length ? process.argv.slice(2) : ALL_COLLECTIONS
+const args = process.argv.slice(2)
+const fresh = args.includes("--fresh") // exact mirror: delete rows absent from Firestore
+const collections = args.filter((a) => a !== "--fresh").length
+  ? args.filter((a) => a !== "--fresh")
+  : ALL_COLLECTIONS
 
 // ── Init Firebase Admin ──
 initializeApp({
@@ -80,6 +84,20 @@ async function migrate(name) {
   const snap = await fs.collection(name).get()
   const rows = snap.docs.map((d) => ({ id: d.id, data: normalize(d.data()) }))
   const fsCount = rows.length
+
+  // Exact mirror: remove any Supabase rows whose id no longer exists in Firestore
+  // (handles deletions since a prior export). Done before the upsert.
+  if (fresh) {
+    const ids = new Set(rows.map((r) => r.id))
+    const { data: existing } = await sb.from(name).select("id")
+    const stale = (existing || []).map((r) => r.id).filter((id) => !ids.has(id))
+    for (let i = 0; i < stale.length; i += 500) {
+      const chunk = stale.slice(i, i + 500)
+      const { error } = await sb.from(name).delete().in("id", chunk)
+      if (error) throw new Error(`delete stale ${name}: ${error.message}`)
+    }
+    if (stale.length) console.log(`   (${name}: removed ${stale.length} stale row(s))`)
+  }
 
   // Upsert in batches.
   const BATCH = 500
