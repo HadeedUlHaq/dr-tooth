@@ -16,16 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
+    # These are PUBLIC values (publishable key + project URL ship in the browser bundle),
+    # so they're inlined here — no GitHub secrets needed. RLS protects the actual data.
     env:
-      SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_URL: 'https://cflrtbpmujrsvruncqwj.supabase.co'
+      SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_ZE-3RHcmoqjIuUwP8yesyg_RtA7NAzX'
 
     steps:
-      - name: Validate required secrets
-        run: |
-          test -n "$SUPABASE_URL"
-          test -n "$SUPABASE_PUBLISHABLE_KEY"
-
       - name: Query keep-alive table
         run: |
           response_file="$(mktemp)"
