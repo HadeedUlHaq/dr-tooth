@@ -96,11 +96,32 @@ export async function sbDeleteAll(table: string): Promise<void> {
 // change). Returns an unsubscribe fn. Realtime auth rides the Firebase-token bridge.
 export function sbSubscribe(table: string, cb: () => void): () => void {
   const sb = getDashboardSupabase()
-  const ch = sb
-    .channel(`rt_${table}_${Math.random().toString(36).slice(2)}`)
-    .on("postgres_changes", { event: "*", schema: "public", table }, () => cb())
-    .subscribe()
+  let cancelled = false
+  let ch: ReturnType<typeof sb.channel> | null = null
+
+  const start = async () => {
+    try {
+      // Supabase Realtime reads the token from the socket when the channel joins.
+      // With Firebase Third-Party Auth, force a fresh token onto the socket first.
+      await sb.realtime.setAuth()
+      if (cancelled) return
+
+      ch = sb
+        .channel(`rt_${table}_${Math.random().toString(36).slice(2)}`)
+        .on("postgres_changes", { event: "*", schema: "public", table }, () => cb())
+        .subscribe((status, err) => {
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            console.error(`[Supabase realtime] ${table} subscription ${status}`, err)
+          }
+        })
+    } catch (err) {
+      console.error(`[Supabase realtime] failed to subscribe to ${table}`, err)
+    }
+  }
+
+  void start()
   return () => {
-    sb.removeChannel(ch)
+    cancelled = true
+    if (ch) void sb.removeChannel(ch)
   }
 }

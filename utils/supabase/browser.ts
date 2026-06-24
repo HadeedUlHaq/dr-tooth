@@ -2,6 +2,7 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 import { auth } from "@/lib/firebase"
+import { getSupabasePublishableKey, getSupabaseUrl } from "./env"
 
 // Dashboard Supabase client that authenticates with the signed-in user's FIREBASE
 // ID token (Third-Party Auth). Supabase validates the token against Firebase's
@@ -17,15 +18,21 @@ import { auth } from "@/lib/firebase"
 // socket, so live subscriptions stay authenticated as the Firebase user.
 let _client: SupabaseClient | null = null
 
+async function getFirebaseIdToken(): Promise<string | null> {
+  if (!auth) return null
+  await auth.authStateReady()
+  const user = auth.currentUser
+  return user ? await user.getIdToken() : null
+}
+
 export function getDashboardSupabase(): SupabaseClient {
   if (_client) return _client
   _client = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    getSupabaseUrl(),
+    getSupabasePublishableKey(),
     {
       accessToken: async () => {
-        const user = auth?.currentUser
-        return user ? await user.getIdToken() : null
+        return getFirebaseIdToken()
       },
     }
   )

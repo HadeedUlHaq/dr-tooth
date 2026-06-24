@@ -1,4 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr"
+import { getSupabasePublishableKey, getSupabaseUrl } from "./env"
 
 // Browser-side Supabase client for the dashboard (client components / effects).
 // Uses ONLY the publishable (anon) key — safe to ship to the browser. All access
@@ -10,7 +11,7 @@ import { createBrowserClient } from "@supabase/ssr"
 // effect on the running (Firebase) app.
 export function createClient() {
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+    getSupabaseUrl(),
+    getSupabasePublishableKey()
   )
 }
