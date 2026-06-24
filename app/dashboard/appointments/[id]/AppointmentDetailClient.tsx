@@ -21,6 +21,7 @@ import { PhoneInput } from "@/components/ui/phone-input"
 import { CallButton } from "@/components/ui/call-button"
 import type { Patient, Invoice } from "@/lib/types"
 import { authedFetch } from "@/lib/authedFetch"
+import { NotificationProgress } from "@/components/ui-kit/NotificationProgress"
 
 export default function AppointmentDetailClient() {
   const params = useParams()
@@ -550,8 +551,13 @@ export default function AppointmentDetailClient() {
           )
         }
       >
+        <NotificationProgress
+          sending={sendingNotif}
+          done={notifSent}
+          error={notifError}
+        />
         {notifError && (
-          <div className="text-sm text-red-400 mb-2">{notifError}</div>
+          <div className="text-sm text-red-400">{notifError}</div>
         )}
       </Modal>
 

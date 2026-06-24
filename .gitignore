@@ -39,3 +39,6 @@ dctail.txt
 
 # private operator context — infra topology + secret locations; never push (public repo)
 AI_CONTEXT.md
+
+# Command Code taste preferences (auto-generated, per-dev)
+taste.md

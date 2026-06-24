@@ -19,6 +19,7 @@ import { PatientSearch } from "@/components/ui/patient-search"
 import { logActivity } from "@/lib/activityService"
 import type { Patient } from "@/lib/types"
 import { authedFetch } from "@/lib/authedFetch"
+import { NotificationProgress } from "@/components/ui-kit/NotificationProgress"
 
 export default function NewAppointment() {
   const { user, userData } = useAuth()
@@ -251,8 +252,13 @@ export default function NewAppointment() {
           )
         }
       >
+        <NotificationProgress
+          sending={sendingNotif}
+          done={notifSent}
+          error={notifError}
+        />
         {notifError && (
-          <div className="text-sm text-red-400 mb-2">{notifError}</div>
+          <div className="text-sm text-red-400">{notifError}</div>
         )}
       </Modal>
 

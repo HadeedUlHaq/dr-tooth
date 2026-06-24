@@ -9,6 +9,11 @@ visible behaviour change**. Each slice is gated by an env flag and fails safely.
 > lab/activity) is **built, data-migrated, and verified in a preview** — awaiting the
 > final production flip. **Firebase Auth (login) is unchanged.**
 
+> **Current status (2026-06-24):** Counters + WhatsApp/bot state are on Supabase,
+> and the dashboard domain data path is Supabase-only in the current codebase.
+> Firebase Auth/login remains unchanged. Dashboard live notifications now use
+> Supabase Broadcast, not Firebase realtime and not `postgres_changes`.
+
 ---
 
 ## 1. What we kept on Firebase (and why)
@@ -66,6 +71,19 @@ token and checks `isAuthorizedStaff` for `/api/whatsapp/*`. Only the data that l
 reads can move backends; the auth mechanism is the same.
 
 ## 4. What happened to real-time (`onSnapshot`)
+
+**Current implementation (2026-06-24): dashboard live refresh uses Supabase
+Realtime Broadcast.** `lib/dashboardRepo.ts -> sbSubscribe(table, cb)` listens on
+the `dashboard_table_changes` Broadcast channel. `sbInsert`, `sbUpdate`,
+`sbDelete`, and `sbDeleteAll` publish a `table_changed` event after a successful
+Supabase write, then notify same-tab listeners locally. `utils/supabase/realtime.ts`
+creates a separate public Realtime client with no Firebase-token bridge, so the
+notification path is not coupled to Firebase realtime, Supabase DB publication
+settings, or Firebase Third-Party Auth socket joins. A 20-second polling fallback
+keeps active dashboard subscriptions fresh if a Broadcast is missed or a server-side
+write occurs.
+
+The older `postgres_changes` notes below are retained as migration history only.
 
 **We kept true real-time.** Firestore's `onSnapshot` (which re-fired the dashboard's
 refetch on any change) is replaced by **Supabase Realtime** (`postgres_changes`):
@@ -137,6 +155,9 @@ redeploy** — instantly back on Firestore.
 ## 7. Files added / changed
 
 **New (Supabase):**
+- `utils/supabase/env.ts` - shared public Supabase env lookup. Accepts either
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+- `utils/supabase/realtime.ts` - dashboard Broadcast client with no Firebase-token bridge.
 - `utils/supabase/client.ts`, `server.ts`, `middleware.ts` — SSR/admin helper clients
 - `utils/supabase/browser.ts` — dashboard client with the Firebase-token bridge
 - `lib/whatsapp/supabaseAdmin.ts` — service-role client, counter RPC wrappers, area routing
@@ -176,7 +197,8 @@ Third-Party Auth RLS + Realtime · `0005` keep-alive table · `0006` TPA role fi
 Supabase free projects pause after ~7 days idle. `.github/workflows/supabase-keep-alive.yml`
 pings the DB twice a week (`cron '0 20 * * 1,4'` = ~01:00 Asia/Karachi Tue & Fri) against
 the `keep_alive_checks` table (migration `0005`). **To activate:** add GitHub repo secrets
-`NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and run `0005`.
+`NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`) and run `0005`.
 
 ---
 
