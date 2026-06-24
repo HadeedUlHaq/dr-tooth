@@ -57,10 +57,17 @@ const r = await fetch(`${SUPA_URL}/rest/v1/patients?select=id,data&limit=2`, {
 console.log("SUPABASE patients STATUS:", r.status)
 console.log("SUPABASE patients BODY:", (await r.text()).slice(0, 300))
 
-// Diagnostic: what does Supabase see for this token? (needs 0006 applied)
-const w = await fetch(`${SUPA_URL}/rest/v1/rpc/debug_whoami`, {
+// Write round-trip: insert a throwaway patient as this staff user (tests RLS
+// with-check), then delete it. Proves writes work through the bridge post-strip.
+const testId = "ZZ_STRIP_TEST_" + Date.now()
+const ins = await fetch(`${SUPA_URL}/rest/v1/patients`, {
   method: "POST",
-  headers: { apikey: SUPA_PUB, Authorization: `Bearer ${idToken}`, "Content-Type": "application/json" },
-  body: "{}",
+  headers: { apikey: SUPA_PUB, Authorization: `Bearer ${idToken}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+  body: JSON.stringify({ id: testId, data: { name: "ZZ Strip Test", phone: "+920000000000", createdAt: new Date().toISOString() } }),
 })
-console.log("debug_whoami STATUS:", w.status, "BODY:", (await w.text()).slice(0, 300))
+console.log("WRITE insert STATUS:", ins.status, ins.status === 201 ? "(ok)" : "(" + (await ins.text()).slice(0, 150) + ")")
+const del = await fetch(`${SUPA_URL}/rest/v1/patients?id=eq.${testId}`, {
+  method: "DELETE",
+  headers: { apikey: SUPA_PUB, Authorization: `Bearer ${idToken}` },
+})
+console.log("WRITE delete STATUS:", del.status, "(cleanup)")
